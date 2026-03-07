@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable,Image } from "react-native";
 import { useRouter } from "expo-router";
 import Animated, {
   useSharedValue,
@@ -8,6 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import MyButton from "../../components/MyButton";
 
 export default function Splash() {
 
@@ -40,34 +41,61 @@ export default function Splash() {
   }));
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-center bg-white-500">
+    <>
 
-      {/* Logo */}
+
+    <Animated.View style={logoStyle}>
+        <Image
+      source={require('../../assets/images/shape.png')}
+      style={{ width:"136", height: "141" }}
+    />
+      </Animated.View>
+    <SafeAreaView className="flex-1 flex-col bg-white py-0 mt-2">
+
+      <View className="flex-1 items-center">
+        {/* Logo */}
+      <Image
+      source={require('../../assets/images/welcome.png')}
+      style={{zIndex: 0, width: "341", height: "235" }}
+      />
+
+
       <Animated.View style={logoStyle}>
-        <Text className="text-black text-5xl font-bold">
-          WomenHub
+        <Text className="text-black text-3xl  px-4font-semibold text-center">
+          welcome to <Text className="text-3xl">Tithandizane Womem Hub</Text>
         </Text>
       </Animated.View>
 
       {/* Subtitle */}
-      <Animated.View style={textStyle}>
+      {/* <Animated.View style={textStyle}>
         <Text className="text-black mt-4 text-lg">
-          Empowering Women Together
+          Tithandizane Womem Hub
+        </Text>
+      </Animated.View> */}
+
+      <Animated.View style={textStyle}>
+        <Text className="text-black mt-4 px-8 text-center text-sm">
+          Giving women and girls the support,
+      knowledge and protection
+                  they deserve
         </Text>
       </Animated.View>
+      </View>
 
       {/* Button */}
-      <Animated.View style={buttonStyle} className="mt-16">
-        <Pressable
-          onPress={() => router.replace("/(auth)/login")}
-          className="bg-violet-500 px-10 py-4 rounded-full"
-        >
-          <Text className="text-white font-bold text-lg">
-            Get Started
-          </Text>
-        </Pressable>
+      <Animated.View style={buttonStyle} className="mb-16">
+
+      <MyButton
+          title="Get Started"
+          style={{ width: "80%" }}
+          onPress={() => router.push("/(auth)/login")}
+          disabled={false}
+        />
+
       </Animated.View>
 
     </SafeAreaView>
+
+    </>
   );
 }

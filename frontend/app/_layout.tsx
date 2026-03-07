@@ -8,6 +8,7 @@ import "../global.css";
 SplashScreen.preventAutoHideAsync(); // Keep splash screen visible until ready
 
 //AsyncStorage.clear(); // Clear AsyncStorage for testing purposes
+
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
