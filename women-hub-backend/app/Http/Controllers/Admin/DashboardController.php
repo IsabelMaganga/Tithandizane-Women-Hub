@@ -34,6 +34,11 @@ class DashboardController extends Controller
         // New mentors this week (simplified - using all mentors as "new")
         $newMentorsThisWeek = min(3, $totalMentors); // Placeholder logic
 
+        // Get current admin user info
+        $adminUser = Auth::guard('admin')->user();
+        $adminName = $adminUser ? $adminUser->name : 'Admin';
+        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.com';
+
         return view('admin.dashboard', compact(
             'stats', 
             'recentReports', 
@@ -44,7 +49,9 @@ class DashboardController extends Controller
             'inReviewReports',
             'totalUsers',
             'mentorCompletionRate',
-            'newMentorsThisWeek'
+            'newMentorsThisWeek',
+            'adminName',
+            'adminEmail'
         ));
     }
 }

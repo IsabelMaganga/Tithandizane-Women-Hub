@@ -10,49 +10,60 @@
 <body class="bg-gray-100">
     <div class="flex h-screen">
         <!-- Left Sidebar - Dark Navigation -->
-        <div class="w-64 bg-gray-900 text-white">
+        <div class="w-64 bg-gray-900 text-white flex flex-col">
             <div class="p-6">
                 <h1 class="text-xl font-bold">Tithandizane</h1>
                 <p class="text-sm text-gray-400">Women Hub</p>
             </div>
             
-            <nav class="mt-6">
-                <a href="#" class="flex items-center px-6 py-3 bg-blue-600 border-l-4 border-blue-400">
+            <nav class="mt-6 flex-1" id="sidebar-nav">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="dashboard">
                     <i class="fas fa-home w-5"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="mentors">
                     <i class="fas fa-users w-5"></i>
                     <span class="ml-3">Mentors</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="reports">
                     <i class="fas fa-flag w-5"></i>
                     <span class="ml-3">Harassment Reports</span>
                     @if($pendingReports > 0)
                         <span class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full">{{ $pendingReports }}</span>
                     @endif
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
                     <i class="fas fa-book-open w-5"></i>
                     <span class="ml-3">Guidance Content</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="users">
                     <i class="fas fa-user-circle w-5"></i>
                     <span class="ml-3">Users</span>
                     <span class="ml-auto bg-gray-700 text-xs px-2 py-1 rounded-full">{{ $totalUsers }}</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="settings">
                     <i class="fas fa-cog w-5"></i>
                     <span class="ml-3">Settings</span>
                 </a>
+                
+                <!-- Logout Button -->
+                <div class="mt-auto pt-6">
+                    <a href="{{ route('admin.logout') }}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-red-600 hover:text-white transition-colors" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span class="ml-3">Logout</span>
+                    </a>
+                    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                </div>
             </nav>
             
-            <div class="absolute bottom-0 w-64 p-6">
+            <div class="p-6 border-t border-gray-800">
                 <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=0D8F81&color=fff" class="w-10 h-10 rounded-full">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0D8F81&color=fff" class="w-10 h-10 rounded-full">
                     <div class="ml-3">
-                        <p class="text-sm font-medium">Admin User</p>
-                        <p class="text-xs text-gray-400">admin@tithandizane.com</p>
+                        <p class="text-sm font-medium">{{ $adminName }}</p>
+                        <p class="text-xs text-gray-400">{{ $adminEmail }}</p>
                     </div>
                 </div>
             </div>
@@ -60,18 +71,24 @@
         
         <!-- Main Content -->
         <div class="flex-1 overflow-y-auto">
-            <!-- Top Header - Like "Welcome bock, Andrea" -->
+            <!-- Top Header - Like "Welcome back, Andrea" -->
             <div class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-8 py-4">
                     <div>
-                        <h2 class="text-2xl font-semibold text-gray-800">Welcome back, Admin</h2>
+                        <h2 class="text-2xl font-semibold text-gray-800">Welcome back, {{ $adminName }}</h2>
                         <p class="text-sm text-gray-500">Here's what's happening with your platform today</p>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <i class="fas fa-bell text-gray-500 text-xl"></i>
-                        <i class="fas fa-envelope text-gray-500 text-xl"></i>
+                        <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-blue-600"></i>
+                        <i class="fas fa-envelope text-gray-500 text-xl cursor-pointer hover:text-blue-600"></i>
                         <div class="h-8 w-px bg-gray-300"></div>
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0D8F81&color=fff&size=128" class="w-10 h-10 rounded-full">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-right">
+                                <p class="text-sm font-medium">{{ $adminName }}</p>
+                                <p class="text-xs text-gray-500">{{ $adminEmail }}</p>
+                            </div>
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0D8F81&color=fff&size=128" class="w-10 h-10 rounded-full">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -96,7 +113,7 @@
                         </div>
                     </div>
                     
-                    <!-- Active Mentors Card - Like "Juventus" in design -->
+                    <!-- Active Mentors Card -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex items-center">
                             <div class="p-3 bg-green-100 rounded-full">
@@ -158,9 +175,9 @@
                         <div class="bg-white rounded-lg shadow">
                             <div class="p-6 border-b flex justify-between items-center">
                                 <h3 class="text-lg font-semibold">Manage Mentors</h3>
-                                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                <a href="{{ route('admin.mentors.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
                                     <i class="fas fa-plus mr-2"></i>Add New Mentor
-                                </button>
+                                </a>
                             </div>
                             
                             <!-- Search Bar -->
@@ -243,7 +260,7 @@
                     
                     <!-- Right Column - Recent Reports & New Mentors (1/3 width) -->
                     <div class="space-y-6">
-                        <!-- Recent Harassment Reports Card - Like design -->
+                        <!-- Recent Harassment Reports Card -->
                         <div class="bg-white rounded-lg shadow">
                             <div class="p-6 border-b flex justify-between items-center">
                                 <h3 class="text-lg font-semibold">Recent Reports</h3>
@@ -313,7 +330,7 @@
                             @endif
                         </div>
                         
-                        <!-- Quick Stats Card - Like "Setup training" in design -->
+                        <!-- Quick Stats Card -->
                         <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow text-white p-6">
                             <h3 class="text-lg font-semibold mb-2">Quick Actions</h3>
                             <p class="text-sm opacity-90 mb-4">Setup next mentor training session</p>
@@ -327,78 +344,52 @@
         </div>
     </div>
     
-    <!-- Add Mentor Modal (Hidden by default) -->
-    <div id="addMentorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-6 border-b">
-                <h3 class="text-xl font-semibold">Add New Mentor</h3>
-            </div>
-            <form method="POST" action="{{ route('admin.mentors.store') }}">
-                @csrf
-                <div class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                        <input type="text" name="name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Expertise</label>
-                        <select name="expertise[]" multiple class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" size="3">
-                            <option value="Menstrual Hygiene">Menstrual Hygiene</option>
-                            <option value="Self-Esteem">Self-Esteem</option>
-                            <option value="Stress Management">Stress Management</option>
-                            <option value="Relationships">Relationships</option>
-                            <option value="Career Guidance">Career Guidance</option>
-                            <option value="Emergency Support">Emergency Support</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
-                        <input type="text" name="availability" placeholder="e.g., Mon, Wed (3PM-5PM)" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select name="status" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            <option value="active">Active</option>
-                            <option value="pending">Pending</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Mentor</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
     <script>
-        // Modal functions
-        function openModal() {
-            document.getElementById('addMentorModal').classList.remove('hidden');
-            document.getElementById('addMentorModal').classList.add('flex');
-        }
-        
-        function closeModal() {
-            document.getElementById('addMentorModal').classList.add('hidden');
-            document.getElementById('addMentorModal').classList.remove('flex');
-        }
-        
-        // Attach to Add Mentor button
-        document.querySelector('button:contains("Add New Mentor")').addEventListener('click', openModal);
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('addMentorModal');
-            if (event.target == modal) {
-                closeModal();
+        // Navigation active state management
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const currentPage = window.location.pathname.split('/').pop() || 'dashboard';
+            
+            // Function to set active nav item
+            function setActiveNavItem(activeItem) {
+                navItems.forEach(item => {
+                    item.classList.remove('bg-blue-600', 'border-l-4', 'border-blue-400');
+                    item.classList.add('text-gray-300');
+                });
+                
+                activeItem.classList.remove('text-gray-300');
+                activeItem.classList.add('bg-blue-600', 'border-l-4', 'border-blue-400');
             }
-        }
+            
+            // Set active based on current page
+            navItems.forEach(item => {
+                const page = item.getAttribute('data-page');
+                if (page === currentPage) {
+                    setActiveNavItem(item);
+                }
+                
+                // Add click handler
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    setActiveNavItem(this);
+                    
+                    // Here you would typically load the corresponding page content
+                    // For now, we'll just update the URL
+                    const page = this.getAttribute('data-page');
+                    history.pushState({}, '', `/${page}`);
+                });
+            });
+        });
+        
+        // Notification and email icon hover effects
+        document.querySelectorAll('.fa-bell, .fa-envelope').forEach(icon => {
+            icon.addEventListener('mouseenter', function() {
+                this.classList.add('text-blue-600');
+            });
+            icon.addEventListener('mouseleave', function() {
+                this.classList.remove('text-blue-600');
+            });
+        });
     </script>
 </body>
 </html>

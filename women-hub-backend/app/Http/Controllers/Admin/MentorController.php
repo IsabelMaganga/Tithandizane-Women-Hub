@@ -24,16 +24,30 @@ class MentorController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:mentors',
-            'expertise' => 'required|array',
-            'availability' => 'nullable|string',
-            'status' => 'required|in:active,pending,inactive'
+            'phone' => 'nullable|string',
+            'bio' => 'required|string|min:10',
+            'expertise' => 'required|array|min:1',
+            'available_days' => 'required|array|min:1',
+            'available_time_from' => 'required|string',
+            'available_time_to' => 'required|string',
+            'status' => 'required|in:active,inactive'
         ]);
+
+        // Convert expertise array to area_of_support
+        $areaOfSupport = 'both';
+        if (count($request->expertise) === 1) {
+            $areaOfSupport = $request->expertise[0];
+        }
 
         Mentor::create([
             'name' => $request->name,
             'email' => $request->email,
-            'expertise' => $request->expertise,
-            'availability' => $request->availability,
+            'phone' => $request->phone,
+            'bio' => $request->bio,
+            'area_of_support' => $areaOfSupport,
+            'available_days' => $request->available_days,
+            'available_time_from' => $request->available_time_from,
+            'available_time_to' => $request->available_time_to,
             'status' => $request->status
         ]);
 
@@ -56,16 +70,30 @@ class MentorController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:mentors,email,' . $mentor->id,
-            'expertise' => 'required|array',
-            'availability' => 'nullable|string',
-            'status' => 'required|in:active,pending,inactive'
+            'phone' => 'nullable|string',
+            'bio' => 'required|string|min:10',
+            'expertise' => 'required|array|min:1',
+            'available_days' => 'required|array|min:1',
+            'available_time_from' => 'required|string',
+            'available_time_to' => 'required|string',
+            'status' => 'required|in:active,inactive'
         ]);
+
+        // Convert expertise array to area_of_support
+        $areaOfSupport = 'both';
+        if (count($request->expertise) === 1) {
+            $areaOfSupport = $request->expertise[0];
+        }
 
         $mentor->update([
             'name' => $request->name,
             'email' => $request->email,
-            'expertise' => $request->expertise,
-            'availability' => $request->availability,
+            'phone' => $request->phone,
+            'bio' => $request->bio,
+            'area_of_support' => $areaOfSupport,
+            'available_days' => $request->available_days,
+            'available_time_from' => $request->available_time_from,
+            'available_time_to' => $request->available_time_to,
             'status' => $request->status
         ]);
 

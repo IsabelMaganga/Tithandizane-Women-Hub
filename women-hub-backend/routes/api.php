@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
-use App\Http\Controllers\HarassmentController;
+use App\Http\Controllers\HarassmentReportController;
 use App\Http\Controllers\ContentController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +18,7 @@ Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts'
 Route::get('/mentors', [MentorshipController::class, 'mentors']);
 
 // Anonymous harassment report
-Route::post('/harassment-reports/anonymous', [HarassmentController::class, 'store']);
+Route::post('/harassment-reports/anonymous', [HarassmentReportController::class, 'store']);
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -32,10 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/mentorship/sessions/{session}', [MentorshipController::class, 'updateStatus']);
 
     // Harassment reports (authenticated)
-    Route::post('/harassment-reports', [HarassmentController::class, 'store']);
-    Route::get('/harassment-reports/my-reports', [HarassmentController::class, 'myReports']);
+    Route::post('/harassment-reports', [HarassmentReportController::class, 'store']);
+    Route::get('/harassment-reports/my-reports', [HarassmentReportController::class, 'myReports']);
 
     // Admin
-    Route::get('/admin/harassment-reports', [HarassmentController::class, 'index']);
-    Route::patch('/admin/harassment-reports/{report}', [HarassmentController::class, 'updateStatus']);
+    Route::get('/admin/harassment-reports', [HarassmentReportController::class, 'index']);
+    Route::patch('/admin/harassment-reports/{report}', [HarassmentReportController::class, 'updateStatus']);
 });

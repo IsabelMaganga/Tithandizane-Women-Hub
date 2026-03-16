@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+<!-- @extends('layouts.admin')
 
 @section('title', 'Add Mentor')
 @section('page-title', 'Add Mentor')
@@ -17,4 +17,4 @@
         <a href="{{ route('admin.mentors.index') }}" class="btn btn-outline-secondary" style="border-radius:10px;">Cancel</a>
     </div>
 </form>
-@endsection
+@endsection -->
