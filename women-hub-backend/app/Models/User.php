@@ -42,4 +42,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(MentorshipSession::class, 'mentee_id');
     }
+
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 }

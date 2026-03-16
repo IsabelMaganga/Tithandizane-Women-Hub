@@ -1,59 +1,72 @@
+import "react-native-get-random-values";
+import "react-native-url-polyfill/auto";
+
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "../hooks/useAuth";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import * as SplashScreen from "expo-splash-screen";
 import "../global.css";
+import "../src/i18n/i18n";
+import Toast from "react-native-toast-message";
 
-SplashScreen.preventAutoHideAsync(); // Keep splash screen visible until ready
+SplashScreen.preventAutoHideAsync();
 
-//AsyncStorage.clear(); // Clear AsyncStorage for testing purposes
-
-export default function RootLayout() {
+function Navigation() {
   const router = useRouter();
   const segments = useSegments();
   const { user, loading } = useAuth();
-  const [firstLaunch, setFirstLaunch] = useState<boolean | null>(null);
+  const [firstLaunch, setFirstLaunch] = useState(null);
 
   useEffect(() => {
     const init = async () => {
       const opened = await AsyncStorage.getItem("alreadyOpened");
-      if (opened === null) {
+
+      if (!opened) {
         await AsyncStorage.setItem("alreadyOpened", "true");
         setFirstLaunch(true);
       } else {
         setFirstLaunch(false);
       }
-
-      // Hide splash once we know firstLaunch
-      await SplashScreen.hideAsync();
     };
+
     init();
   }, []);
 
   useEffect(() => {
     if (firstLaunch === null || loading) return;
 
-    const group = segments[0];
-    const inOnboarding = group === "(onboarding)";
-    const inAuth = group === "(auth)";
-    const inProtected = group === "(protected)";
+    SplashScreen.hideAsync(); // hide immediately
 
-    if (firstLaunch && !inOnboarding) {
+    const group = segments[0];
+
+    if (firstLaunch && group !== "(onboarding)") {
       router.replace("/(onboarding)/splash");
       return;
     }
 
-    if (!user && inProtected) {
+    if (!user && group === "(protected)") {
       router.replace("/(auth)/login");
       return;
     }
 
-    if (user && inAuth) {
+    if (user && group === "(auth)") {
       router.replace("/(protected)/(tabs)");
       return;
     }
   }, [firstLaunch, user, loading, segments]);
 
   return <Stack screenOptions={{ headerShown: false }} />;
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <Navigation />
+        <Toast
+        position="top"
+        topOffset={60}
+      />
+    </AuthProvider>
+  );
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\HarassmentController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
 // Auth routes (public)
@@ -25,6 +26,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
+
+
+    // Messaging routes
+    Route::post('/messages', [MessageController::class, 'send']);
+    Route::get('/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
+    Route::post('/conversations', [MessageController::class, 'createConversation']);
+    Route::get('/conversations', [MessageController::class, 'getConversations']);
+
+
     // Mentorship
     Route::post('/mentorship/request', [MentorshipController::class, 'request']);
     Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
@@ -38,4 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin
     Route::get('/admin/harassment-reports', [HarassmentController::class, 'index']);
     Route::patch('/admin/harassment-reports/{report}', [HarassmentController::class, 'updateStatus']);
+    Route::get('/admin/conversations', [MessageController::class, 'getAllGroups']);
+
+    // Group Discovery & Joining
+    Route::get('/groups/available', [MessageController::class, 'getAvailableGroups']);
+    Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
 });

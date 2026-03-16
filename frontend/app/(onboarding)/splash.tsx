@@ -62,16 +62,16 @@ export default function Splash() {
 
       <Animated.View style={logoStyle}>
         <Text className="text-black text-3xl  px-4font-semibold text-center">
-          welcome to <Text className="text-3xl">Tithandizane Womem Hub</Text>
+          welcome to
         </Text>
       </Animated.View>
 
       {/* Subtitle */}
-      {/* <Animated.View style={textStyle}>
-        <Text className="text-black mt-4 text-lg">
+      <Animated.View style={textStyle}>
+        <Text className="text-black mt-4 text-4xl text-center">
           Tithandizane Womem Hub
         </Text>
-      </Animated.View> */}
+      </Animated.View>
 
       <Animated.View style={textStyle}>
         <Text className="text-black mt-4 px-8 text-center text-sm">

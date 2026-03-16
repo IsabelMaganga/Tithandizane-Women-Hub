@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorshipSession;
 use App\Models\User;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 
 class MentorshipController extends Controller
 {
-    // List all available mentors
     public function mentors(Request $request)
     {
         $mentors = User::where('role', 'mentor')
@@ -19,7 +19,6 @@ class MentorshipController extends Controller
         return response()->json($mentors);
     }
 
-    // Request a mentorship session
     public function request(Request $request)
     {
         $validated = $request->validate([
@@ -44,7 +43,6 @@ class MentorshipController extends Controller
         ], 201);
     }
 
-    // Get my mentorship sessions
     public function mySessions(Request $request)
     {
         $sessions = MentorshipSession::where('mentee_id', $request->user()->id)
@@ -55,7 +53,6 @@ class MentorshipController extends Controller
         return response()->json($sessions);
     }
 
-    // For mentors: get their sessions
     public function mentorSessions(Request $request)
     {
         if (!$request->user()->isMentor()) {
@@ -70,7 +67,6 @@ class MentorshipController extends Controller
         return response()->json($sessions);
     }
 
-    // For mentors: update session status
     public function updateStatus(Request $request, MentorshipSession $session)
     {
         if ($session->mentor_id !== $request->user()->id && !$request->user()->isAdmin()) {
@@ -84,6 +80,25 @@ class MentorshipController extends Controller
         ]);
 
         $session->update($validated);
+
+        // Auto-create conversation when the session is accepted
+        if ($validated['status'] === 'accepted') {
+            $existingConvo = Conversation::where('is_group', false)
+                ->whereHas('participants', function($q) use ($session) {
+                    $q->where('user_id', $session->mentor_id);
+                })
+                ->whereHas('participants', function($q) use ($session) {
+                    $q->where('user_id', $session->mentee_id);
+                })->first();
+
+            if (!$existingConvo) {
+                $conversation = Conversation::create([
+                    'is_group' => false,
+                    'name' => null
+                ]);
+                $conversation->participants()->attach([$session->mentor_id, $session->mentee_id]);
+            }
+        }
 
         return response()->json([
             'message' => 'Session updated',
