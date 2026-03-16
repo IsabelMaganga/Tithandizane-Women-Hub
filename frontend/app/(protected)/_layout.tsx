@@ -36,7 +36,7 @@ export default function ProtectedLayout() {
     <Stack.Screen name="mentorshipScreen" options={ { headerShown:false,headerTitle: "Mentorship" } } />
     <Stack.Screen name="reportHarrasmentScreen" options={ { headerShown:false,headerTitle: "Report Harassment" } } />
     <Stack.Screen name="menstrualHealthScreen" options={ { headerShown:false,headerTitle: "Menstrual Health" } } />
-    <Stack.Screen name="chat/[id]" options={ { headerShown:true,headerTitle: `${Conversation.name}` } } />
+    <Stack.Screen name="chat/[id]" options={ { headerShown:true,headerTitle: `chat` } } />
     <Stack.Screen name="profileScreen" options={ { headerShown:true,headerTitle: "Settings" } } />
 
   </Stack>
