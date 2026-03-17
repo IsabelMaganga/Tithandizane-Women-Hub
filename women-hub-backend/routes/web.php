@@ -7,7 +7,15 @@ use App\Http\Controllers\Admin\MentorController;
 use App\Http\Controllers\Admin\HarassmentReportController;
 
 // Redirect root to login
-Route::get('/', fn() => redirect()->route('admin.login'));
+// Route::get('/', fn() => redirect()->route('admin.login'));
+
+//home page
+Route::get('/', fn() => view('welcome'))->name('welcome');
+
+// get started route
+Route::get('/get-started', function() {
+    return view('get-started');
+})->name('get.started');
 
 // Auth routes (guest only)
 Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {

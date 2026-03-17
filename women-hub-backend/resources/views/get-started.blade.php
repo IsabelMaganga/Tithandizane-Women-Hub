@@ -4,14 +4,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="short icon" href="{{ asset('images/Ellipse 3.png') }}">
-        <title>{{ config('app.name', 'Tithandizane-Women-hub') }}</title>
+        <title>{{ 'get-started' }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Styles / Scripts -->
-        
+
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -21,73 +21,79 @@
         @endif
     </head>
     <body class=" text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            {{-- @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            Log in
-                        </a>
+        <header class=" w-[90%] md:w-full fixed  flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6 not-has-[nav]:hidden">
+            <a  href="{{ route('get.started')}}" class="logo decoration-0 text-[#ffff] flex justify-start items-center gap-3">
+                <img src="{{ asset('images/Ellipse 3.png')}}" class=" w-10" alt="">
+                <h1 class=" font-bold">Tithandizane Women Hub</h1>
+            </a>
+            <nav class="flex items-center text-[#ffff] justify-end gap-4 ">
+                <a href="{{ route('welcome')}}" class="inline-block px-5 py-3 hover:text-[#ee8edb] cursor-pointer  text-sm leading-normal">
+                    Home
+                </a>
+                <a class="inline-block px-5 py-3 hover:text-[#ee8edb] cursor-pointer  text-sm leading-normal">
+                    Dashboard
+                </a>
+                <a class="inline-block px-5 py-3 bg-[#874179] rounded-3xl font-semibold hover:bg-[#44273e] cursor-pointer  text-sm leading-normal">
+                    About
+                </a>
 
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
-                        @endif
-                    @endauth
-                </nav>
-            @endif --}}
+            </nav>
         </header>
 
-        <div class="flex relative bg-amber-50 items-center justify-center  w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-            <div class="background absolute bg-amber-50 z-0 w-full top-0 h-screen contain-content">
-                <img src="{{ asset('images/background2.jpg')}}" class=" -z-10 object-cover w-full h-screen" alt="">
+        <div class="flex relative  items-center justify-center  w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+            {{-- background image --}}
+            <div class="background absolute  z-0 w-full top-0 h-screen ">
+                <img src="{{ asset('images/background2.jpg')}}" class=" -z-10 object-cover w-full h-[114vh] md:h-screen" alt="">
             </div>
-            
-            <div class="div bg-black/60 z-30 h-screen flex justify-center items-center w-full">
-            
-                <main class="flex max-w-[400px] z-20  w-full justify-center  items-center bg-linear-to-l backdrop-blur   flex-col-reverse lg:max-w-5xl lg:flex-row">
 
-                    <div class=" flex-2  text-[30px]  p-6 pb-12 lg:p-20  text-[#ffffff] shadow-[inset_0px_0px_0px_10px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-2xl">
-                        <h1 class="mb-1 text-2xl  font-bold capitalize"> 
-                            <span class=" text-2xl md:text-6xl flex mt-3 md:mt-3 items-center gap-2.5 justify-center">
-                                <img src="{{ asset('images/Ellipse 3.png')}}" class=" w-8 md:w-[70px] " alt="">
-                                Tithandizane women hub
-                            </span>
-                        </h1>
-                        <p class="mb-2 mt-3 text-sm text-center  text-gray-100">
-                            Welcome to the heart of women's empowerment in Malawi. Tithandizane Women Hub is more than a platform; it is a movement dedicated to the safety, growth, and leadership of women. From 24-hour crisis support to community-led economic initiatives, we provide the tools you need to move from vulnerability to victory. Step inside and discover the power of helping one another
+            <div class="div bg-black/60 z-30 md:h-screen pt-40 md:pt-0 flex flex-col justify-center items-center w-full">
+
+                <main class="flex max-w-5xl z-20 gap-5 pt-30 md:pt-10  w-full justify-center  items-center text-gray-200 flex-col md:flex-row ">
+                </main>
+
+                <main class="flex max-w-5xl h-full mt-30 z-20 gap-5 md:pt-10  w-full justify-center  items-center text-gray-100 flex-col md:flex-row ">
+                    <p class="mb-2 mt-3 w-[90%] max-w-5xl text-shadow-black text-shadow-2xs font-semibold text-2xl md:text-4xl text-center  ">
+                        Empowering women to claim their rights, restore their dignity, and lead with justice
+                    </p>
+                </main>
+
+                {{-- buttons section --}}
+                <main class=" flex max-w-4xl  z-20 gap-5 mb-5 pt-10 md:pt-0  w-full justify-center  items-top text-gray-200 flex-col md:flex-row ">
+
+                    <div class=" flex-1 mx-auto  text-[30px] w-[90%] md:w-[40%] border-2 border-amber-50/20 hover:border-[#962980]/80  transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
+                        <h1 class="mb-1 text-2xl  font-bold">Mentors DashBoard</h1>
+                        <p class="mb-2 mt-3 text-sm  text-gray-200">
+                            Tiyambe Ntchito: Empowerment starts with a single step. Step inside to lead the change. Dive into the Dashboard
                         </p>
-                        
-                        {{-- get started --}}
-                        <ul class="flex gap-6 mt-7 text-[20px] justify-center leading-normal">
-                                <a href="{{route('get.started')}}" target="_parent" class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#962980]/80   transition delay-75 px-10 py-3 rounded-3xl border text-white text-sm leading-normal">
-                                    Get started
+
+                        <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
+                            <li>
+                                <a href="{{ route('get.started')}}"  class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                    Enter Portal
                                 </a>
-                                <a href="" target="_parent" class="inline-block  active:bg-[#5c1a4f] hover:bg-[#af2a95] border-2 border-[#962980]/80  transition delay-75 px-10 py-3 rounded-3xl border text-white text-sm leading-normal">
-                                    Download an App
-                                </a>
+                            </li>
                         </ul>
                     </div>
 
-                    {{-- left section image --}}
-                    <div class="bg-[#fff2f2] flex-1 dark:bg-[#e9e9e9] relative flex justify-center py-2 items-center lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg h-[51vh] w-full overflow-hidden">
-                        <img src="{{ asset('images/welcome.png')}}" class=" w-[100%] " alt="">
+                    <div class=" flex-1 mx-auto text-[30px] w-[90%] md:w-[40%] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
+                        <h1 class="mb-1 text-2xl  font-bold">Admin DashBoard</h1>
+                        <p class="mb-2 mt-3 text-sm  text-gray-200">
+                            Control the platform. Empower the community. Let's get to work.
+                        </p>
+
+                        <ul class="flex gap-3 mt-5 text-[20px] leading-normal">
+                            <li>
+                                <a href="{{ route('admin.login') }}"  class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                    Manage Platform
+                                </a>
+                            </li>
+                        </ul>
                     </div>
 
                 </main>
+
+                {{-- footer --}}
+                <p class=" flex text-sm text-center justify-center text-gray-300 w-full py-2"> &copy; 2026 Tithandizane-women-hub . All rights reserved </p>
             </div>
         </div>
 
