@@ -16,7 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'broadcasting/auth', // This is important for mobile apps!
         ]);
-        //
+
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class
+        ]);
+
+        $middleware->alias([
+            'mentor' => \App\Http\Middleware\MentorMiddleware::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

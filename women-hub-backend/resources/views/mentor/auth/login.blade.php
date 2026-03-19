@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Tithandizane Women Hub</title>
+    <title>Mentor Login - Tithandizane Women Hub</title>
+    <link rel="short icon" href="{{ asset('images/Ellipse 3.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
 {{-- back link --}}
-<a href="{{ route('get.started')}}"  class=" bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200 rounded-xl absolute top-7 left-5 delay-75 px-6 py-3 text-gray-100 text-sm leading-normal">
+<a href="{{ route('get.started')}}"  class=" bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200 rounded-xl absolute top-10 left-5 delay-75 px-6 py-3 text-gray-100 text-sm leading-normal">
     Back
 </a>
 
 <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 
     <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Admin Login</h1>
+        <h1 class="text-3xl font-bold text-gray-800">Mentor Login</h1>
         <p class="text-gray-600 mt-2">Tithandizane Women Hub</p>
     </div>
 
@@ -41,7 +42,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.login.post') }}">
+    <form method="POST" action="{{ route('mentor.login.post') }}">
         @csrf
 
         <div class="mb-6">
@@ -55,7 +56,7 @@
                 name="email"
                 value="{{ old('email') }}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="admin@tithandizane.mw"
+                placeholder="mentor@tithandizane.mw"
                 required
                 autocomplete="email"
                 autofocus
@@ -89,19 +90,10 @@
 
     </form>
 
-    <!-- Register Link -->
-    <div class="text-center mb-4">
-        <p class="text-gray-600 text-sm">
-            Don't have an account?
-            <a href="{{ route('admin.register') }}" class="text-purple-600 font-semibold hover:underline">
-                Register
-            </a>
-        </p>
-    </div>
 
     <div class="text-center">
         <p class="text-gray-600 text-sm">
-            Admin Portal - Tithandizane Women Hub
+            Mentor Portal - Tithandizane Women Hub
         </p>
     </div>
 

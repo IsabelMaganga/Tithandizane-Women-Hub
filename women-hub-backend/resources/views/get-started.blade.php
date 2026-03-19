@@ -68,7 +68,7 @@
 
                         <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
                             <li>
-                                <a href="{{ route('get.started')}}"  class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                <a href="{{ route('mentor.login')}}"  class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
                                     Enter Portal
                                 </a>
                             </li>

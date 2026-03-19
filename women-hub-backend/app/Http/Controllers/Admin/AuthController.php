@@ -21,10 +21,19 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        if (Auth::guard('admin')->attempt([ ...$credentials, 'role' => 'admin' ])) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('admin.dashboard'))->with('success', 'logout successfully.');
+        }
+
+         // check if user exist but with wrong role
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
+
+        if ($user && !$user->isAdmin()) {
+            return back()->withErrors([
+                'email' => 'This account does not have Admin privileges.',
+            ]);
         }
 
         return back()->withErrors([
@@ -64,6 +73,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.login')->with('success', 'logout successfully.');
     }
 }

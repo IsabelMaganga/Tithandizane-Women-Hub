@@ -27,10 +27,10 @@ class DashboardController extends Controller
         $pendingReports = \App\Models\Harassmentreport::where('status', 'pending')->count();
         $inReviewReports = \App\Models\Harassmentreport::where('status', 'in_review')->count();
         $totalUsers = \App\Models\User::count() + $totalMentors; // Users + mentors
-        
+
         // Calculate completion rate
         $mentorCompletionRate = $totalMentors > 0 ? round(($activeMentors / $totalMentors) * 100) : 0;
-        
+
         // New mentors this week (simplified - using all mentors as "new")
         $newMentorsThisWeek = min(3, $totalMentors); // Placeholder logic
 
@@ -40,11 +40,11 @@ class DashboardController extends Controller
         $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.com';
 
         return view('admin.dashboard', compact(
-            'stats', 
-            'recentReports', 
+            'stats',
+            'recentReports',
             'recentMentors',
             'totalMentors',
-            'activeMentors', 
+            'activeMentors',
             'pendingReports',
             'inReviewReports',
             'totalUsers',

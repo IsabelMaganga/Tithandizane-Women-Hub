@@ -1,23 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\MentorController;
 use App\Http\Controllers\Admin\HarassmentReportController;
-
-// Redirect root to login
-// Route::get('/', fn() => redirect()->route('admin.login'));
+use App\Http\Controllers\Admin\MentorController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Mentor\AuthController as MentorAuthController;
+use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
+use App\Http\Controllers\Mentor\SecurityController as MentorSecurityController;
 
 //home page
 Route::get('/', fn() => view('welcome'))->name('welcome');
 
 // get started route
-Route::get('/get-started', function() {
-    return view('get-started');
-})->name('get.started');
+Route::get('/get-started', fn() => view('get-started'))->name('get.started');
 
-// Auth routes (guest only)
+// Auth admin routes (guest only)
 Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -39,4 +37,31 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     // Harassment Reports
     Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
     Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
+    });
+
+    // fallback for auth redirecting to get started
+    Route::get('/login', function() {
+        return redirect()->route('get.started');
+        })->name('login');
+
+        // Auth mentors routes (guest only)
+Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(function () {
+    Route::get('/login',  [MentorAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [MentorAuthController::class, 'login'])->name('login.post');
+});
+
+// Protected mentor routes
+Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(function () {
+    Route::post('/logout', [MentorAuthController::class, 'logout'])->name('logout');
+    Route::delete('/sessions', [MentorAuthController::class, 'logoutAllSessions'])->name('logoutAllSessions');
+
+    // dashboard
+    Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
+
+    // settings related routes
+    Route::get('/settings', [MentorSecurityController::class, 'showSettings'])->name('settings');
+    Route::get('/settings/profile', [MentorSecurityController::class, 'showProfile'])->name('showProfile');
+    Route::put('/settings/profile', [MentorSecurityController::class, 'updateProfile'])->name('updateProfile');
+    Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
+    Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
 });

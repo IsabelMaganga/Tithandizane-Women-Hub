@@ -112,7 +112,7 @@ class MentorController extends Controller
     {
         $newStatus = $mentor->status === 'active' ? 'inactive' : 'active';
         $mentor->update(['status' => $newStatus]);
-        
+
         return redirect()->back()
             ->with('success', "Mentor status changed to {$newStatus}.");
     }
