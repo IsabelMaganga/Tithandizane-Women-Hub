@@ -58,6 +58,14 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     // dashboard
     Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/profile', [MentorSecurityController::class, 'showMyProfile'])->name('profile');
+
+    // guidance routes
+    Route::get('/guidance', [MentorSecurityController::class, 'showGuidance'])->name('Guidance');
+    Route::get('/guidance/hygiene', [MentorSecurityController::class, 'showHygiene'])->name('hygiene');
+    Route::get('/guidance/general', [MentorSecurityController::class, 'showGeneral'])->name('general');
+    Route::get('/guidance/emergency', [MentorSecurityController::class, 'showEmergency'])->name('emergency');
+
     // settings related routes
     Route::get('/settings', [MentorSecurityController::class, 'showSettings'])->name('settings');
     Route::get('/settings/profile', [MentorSecurityController::class, 'showProfile'])->name('showProfile');

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\EmergencyContact;
+use App\Models\GeneralGuide;
+use App\Models\HygieneArticle;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +17,105 @@ use function Symfony\Component\String\s;
 
 class SecurityController extends Controller
 {
+     public function showMyProfile(){
 
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+        $mentorPhone = $mentorUser->phone;
+        $mentorBio = $mentorUser->bio;
+        $mentorCreatedAt = $mentorUser->created_at->format('l, d F Y');
+        $mentorAvailable = $mentorUser->is_available;
+
+
+        return view('mentor.profile.index', compact(
+            'mentorName',
+            'mentorPhone',
+            'mentorEmail',
+            'mentorUser',
+            'mentorBio',
+            'mentorCreatedAt',
+            'mentorAvailable'
+        ));
+
+    }
+
+
+    // guidance controllers
+    public function showGuidance(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.guidance.index', compact(
+            'mentorName',
+            'mentorEmail'
+        ));
+
+    }
+
+    public function showHygiene(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+        $hygiene = HygieneArticle::all();
+        $hygieneCreatedAt = $mentorUser->updated_at->format('d F Y');
+
+        return view('mentor.guidance.hygiene.index', compact(
+            'mentorName',
+            'mentorEmail',
+            'mentorUser',
+            'hygiene',
+            'hygieneCreatedAt'
+        ));
+
+    }
+
+    public function showEmergency(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+        $contact = EmergencyContact::all();
+
+
+        return view('mentor.guidance.emergency.index', compact(
+            'mentorName',
+            'mentorEmail',
+            'mentorUser',
+            'contact'
+        ));
+
+    }
+
+    public function showGeneral(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+        $general = GeneralGuide::all();
+        $generalCreatedAt = $mentorUser->updated_at->format('d F Y');
+
+
+        return view('mentor.guidance.general.index', compact(
+            'mentorName',
+            'mentorEmail',
+            'mentorUser',
+            'general',
+            'generalCreatedAt'
+        ));
+
+    }
+
+    // settings related controllers below
     public function showSettings(){
 
         // Get current admin user info

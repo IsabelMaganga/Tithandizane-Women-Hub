@@ -12,10 +12,10 @@
     <div class="flex h-screen">
         <!-- Left Sidebar - Dark Navigation -->
         <div class="w-64 bg-gray-900 text-white flex flex-col">
-            <div class="p-6">
+            <a href=" {{ route('mentor.dashboard')}}" class="p-6 select-none">
                 <h1 class="text-xl font-bold">Tithandizane</h1>
                 <p class="text-sm text-gray-400">Women Hub</p>
-            </div>
+            </a>
 
             <nav class="mt-6 flex-1" id="sidebar-nav">
                 <a href="{{ route('mentor.dashboard')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="dashboard">
@@ -30,7 +30,11 @@
                     <i class="fa-regular fa-comment w-5"></i>
                     <span class="ml-3">chats</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
+                <a href="{{ route('mentor.Guidance')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
+                    <i class="fa-solid fa-circle-info w-5"></i>
+                    <span class="ml-3">Guidance content</span>
+                </a>
+                <a href="{{ route('mentor.profile')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
                     <i class="fa-regular fa-circle-user w-5"></i>
                     <span class="ml-3">Profile</span>
                 </a>
@@ -65,19 +69,19 @@
         <!-- Main Content -->
         <div class="flex-1 overflow-y-auto">
             <!-- Top Header - Like "Welcome back, Andrea" -->
-            <div class="bg-white sticky top-0 z-30 shadow-2xl shadow-sm">
+            <div class="bg-[#111827] sticky top-0 z-30 shadow-2xl shadow-sm">
                 <div class="flex justify-between items-center px-8 py-4">
                     <div>
-                        <h2 class="text-2xl font-semibold text-gray-800">Hi, {{ $mentorName }}</h2>
-                        <p class="text-sm text-gray-500">Here's what's happening with your platform today</p>
+                        {{-- <h2 class="text-2xl font-semibold text-gray-100">Hi, {{ $mentorName }}</h2> --}}
+                        {{-- <p class="text-sm text-gray-300">Here's what's happening with your platform today</p> --}}
                     </div>
                     <div class="flex items-center space-x-4">
-                        <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-blue-600"></i>
-                        <i class="fas fa-envelope text-gray-500 text-xl cursor-pointer hover:text-blue-600"></i>
+                        <i class="fas fa-bell text-gray-200 text-xl cursor-pointer hover:text-blue-600"></i>
+                        <i class="fas fa-envelope text-gray-200 text-xl cursor-pointer hover:text-blue-600"></i>
                         <div class="h-8 w-px bg-gray-300"></div>
                         <div class="flex items-center space-x-3">
                             <div class="text-right">
-                                <p class="text-sm font-medium">{{ $mentorName }}</p>
+                                <p class="text-sm text-gray-400 font-medium">{{ $mentorName }}</p>
                                 <p class="text-xs text-gray-500">{{ $mentorEmail }}</p>
                             </div>
                             <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName) }}&background=0D8F81&color=fff&size=128" class="w-10 h-10 rounded-full">
