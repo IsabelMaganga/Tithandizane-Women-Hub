@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 // v0.1
 Route::prefix('v1')->group(function () {
 
+
     // Auth routes (public)
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
