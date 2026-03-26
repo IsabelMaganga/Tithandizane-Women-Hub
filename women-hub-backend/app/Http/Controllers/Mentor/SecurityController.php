@@ -17,7 +17,25 @@ use function Symfony\Component\String\s;
 
 class SecurityController extends Controller
 {
-     public function showMyProfile(){
+
+    // chat tab controller
+    public function showChat(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.chat.index', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
+
+    // profile tab controller
+    public function showMyProfile(){
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -40,7 +58,6 @@ class SecurityController extends Controller
         ));
 
     }
-
 
     // guidance controllers
     public function showGuidance(){

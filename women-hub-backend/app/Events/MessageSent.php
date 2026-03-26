@@ -9,20 +9,21 @@ use Illuminate\Queue\SerializesModels;
 
 class MessageSent implements ShouldBroadcastNow
 {
-use Dispatchable, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-public $message;
+    public $message;
 
-public function __construct(Message $message)
-{
-// Eager load the sender to avoid the "Anonymous" crash on mobile
-$this->message = $message->load('sender');
-}
+    public function __construct(Message $message)
+    {
+        // Eager load the sender to avoid the "Anonymous" crash on mobile
+        $this->message = $message->load('sender');
+    }
 
-public function broadcastOn(): array
-{
-return [
-new PrivateChannel('chat.'.$this->message->conversation_id),
-];
-}
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('chat.'.$this->message->conversation_id),
+        ];
+    }
+
 }

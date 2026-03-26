@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Mentor\AuthController as MentorAuthController;
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
 use App\Http\Controllers\Mentor\SecurityController as MentorSecurityController;
+use Illuminate\Support\Facades\Broadcast;
 
 //home page
 Route::get('/', fn() => view('welcome'))->name('welcome');
@@ -21,10 +22,10 @@ Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(functio
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-});
+    });
 
-// Protected admin routes
-Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
+    // Protected admin routes
+    Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Dashboard
@@ -48,9 +49,9 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
 Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(function () {
     Route::get('/login',  [MentorAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [MentorAuthController::class, 'login'])->name('login.post');
-});
+    });
 
-// Protected mentor routes
+    // Protected mentor routes
 Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(function () {
     Route::post('/logout', [MentorAuthController::class, 'logout'])->name('logout');
     Route::delete('/sessions', [MentorAuthController::class, 'logoutAllSessions'])->name('logoutAllSessions');
@@ -58,8 +59,12 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     // dashboard
     Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/profile', [MentorSecurityController::class, 'showMyProfile'])->name('profile');
+    // chat
+    Route::get('/chats',[MentorSecurityController::class, 'showChat'])->name('chat');
 
+    // profile section
+    Route::get('/profile', [MentorSecurityController::class, 'showMyProfile'])->name('profile');
+    
     // guidance routes
     Route::get('/guidance', [MentorSecurityController::class, 'showGuidance'])->name('Guidance');
     Route::get('/guidance/hygiene', [MentorSecurityController::class, 'showHygiene'])->name('hygiene');
@@ -72,4 +77,7 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::put('/settings/profile', [MentorSecurityController::class, 'updateProfile'])->name('updateProfile');
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
-});
+    // Route::get('/test-broadcast', [MentorDashboardController::class, 'testBroadcast']);
+    });
+
+Broadcast::routes();

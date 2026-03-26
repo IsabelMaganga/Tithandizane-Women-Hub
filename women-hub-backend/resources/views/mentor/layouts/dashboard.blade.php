@@ -6,6 +6,8 @@
     <title>@yield('title') - Tithandizane Women Hub</title>
     <link rel="short icon" href="{{ asset('images/Ellipse 3.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    @vite('resources/js/app.js')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-gray-100">
@@ -26,7 +28,7 @@
                     <i class="fa-regular fa-calendar w-5"></i>
                     <span class="ml-3">Appointments</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
+                <a href="{{ route('mentor.chat')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
                     <i class="fa-regular fa-comment w-5"></i>
                     <span class="ml-3">chats</span>
                 </a>
@@ -90,12 +92,13 @@
                 </div>
             </div>
 
-            <div class="p-8">
+            <div class="p-4">
                 @yield('content')
             </div>
         </div>
     </div>
 
+    {{-- <script src=" {{ asset('resources/js/app.js')}}"></script> --}}
     <script>
         // Navigation active state management
         document.addEventListener('DOMContentLoaded', function() {
@@ -139,6 +142,9 @@
                 this.classList.remove('text-blue-600');
             });
         });
+
     </script>
+
+    @stack('scripts')
 </body>
 </html>

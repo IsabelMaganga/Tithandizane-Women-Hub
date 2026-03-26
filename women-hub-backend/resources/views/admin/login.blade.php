@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Tithandizane Women Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body{
+            background: linear-gradient(135deg,#f3f4f6e7 50%,#f3f4f6 80%),  url('/images/Ellipse 3.png');
+            background-attachment: fixed;
+            background-size: 90vh;
+            backdrop-filter: overlay;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
