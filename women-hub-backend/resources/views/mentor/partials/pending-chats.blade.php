@@ -36,6 +36,3 @@
         <p >No pending requests</p>
     </div>
 @endforelse
-
-
-
