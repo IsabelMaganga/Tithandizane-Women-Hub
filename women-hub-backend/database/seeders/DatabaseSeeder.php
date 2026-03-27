@@ -21,6 +21,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
+        // user
+        User::create([
+            'name' => 'user',
+            'email' => 'user@tithandizane.mw',
+            'password' => Hash::make('user123'),
+            'role' => 'user',
+        ]);
+
         // Sample Mentors
         $mentors = [
             [
