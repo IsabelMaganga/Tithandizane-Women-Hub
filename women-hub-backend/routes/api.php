@@ -49,7 +49,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/mentorship/request', [MentorshipController::class, 'request']);
         Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
         Route::get('/mentorship/mentor-sessions', [MentorshipController::class, 'mentorSessions']);
-        Route::patch('/mentorship/sessions/{sessionId}', [MentorshipController::class, 'updateStatus']);
+        Route::patch('/mentorship/sessions/{session}', [MentorshipController::class, 'updateStatus']);
 
         // Harassment reports (authenticated)
         Route::post('/harassment-reports', [HarassmentController::class, 'store']);
