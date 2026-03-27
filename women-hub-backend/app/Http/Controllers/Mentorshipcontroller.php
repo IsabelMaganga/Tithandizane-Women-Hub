@@ -44,14 +44,26 @@ class MentorshipController extends Controller
     }
 
     public function mySessions(Request $request)
-    {
-        $sessions = MentorshipSession::where('mentee_id', $request->user()->id)
-            ->with('mentor:id,name,expertise_area,bio')
-            ->orderBy('created_at', 'desc')
-            ->get();
+{
+    $user = $request->user();
 
-        return response()->json($sessions);
-    }
+    // Requests I sent to mentors
+    $outgoing = MentorshipSession::where('mentee_id', $user->id)
+        ->with('mentor:id,name,expertise_area,status')
+        ->latest()
+        ->get();
+
+    // Requests sent to ME by others
+    $incoming = MentorshipSession::where('mentor_id', $user->id)
+        ->with('mentee:id,name')
+        ->latest()
+        ->get();
+
+    return response()->json([
+        'outgoing' => $outgoing,
+        'incoming' => $incoming
+    ]);
+}
 
     public function mentorSessions(Request $request)
     {

@@ -58,7 +58,7 @@ export default function Login() {
 
       
       else if (err?.message === "Network Error") {
-        setError("Login failed. Please try again.");
+        setError("You are not connected to internet");
       }
 
       // fallback

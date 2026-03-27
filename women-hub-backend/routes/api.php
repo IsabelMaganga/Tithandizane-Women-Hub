@@ -5,6 +5,7 @@ use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\HarassmentController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // v0.1
@@ -38,12 +39,17 @@ Route::prefix('v1')->group(function () {
         Route::post('/conversations', [MessageController::class, 'createConversation']);
         Route::get('/conversations', [MessageController::class, 'getConversations']);
 
+        Route::get('/conversations/{id}', [MessageController::class, 'showInfo']);
+
+        //get users
+        Route::get('/users',[UserController::class,'getAllUsers']);
+        Route::get('/users/{userId}',[UserController::class,'getUser']);
 
         // Mentorship
         Route::post('/mentorship/request', [MentorshipController::class, 'request']);
         Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
         Route::get('/mentorship/mentor-sessions', [MentorshipController::class, 'mentorSessions']);
-        Route::patch('/mentorship/sessions/{session}', [MentorshipController::class, 'updateStatus']);
+        Route::patch('/mentorship/sessions/{sessionId}', [MentorshipController::class, 'updateStatus']);
 
         // Harassment reports (authenticated)
         Route::post('/harassment-reports', [HarassmentController::class, 'store']);

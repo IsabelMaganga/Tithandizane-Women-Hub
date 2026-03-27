@@ -26,10 +26,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="inbox"
         options={{
-          title: "Inbox",
+          title: "Chats",
           tabBarIcon: ({ color, size }) => (
             <AntDesign name="inbox" size={size} color={color} />
-          ), headerShown: true,headerTitle: "Chat Inbox",headerStyle: { elevation: 0, shadowOpacity: 0, shadowOffset: { width: 0, height: 0 }, shadowRadius: 0, borderBottomWidth: 0 },
+          ), headerShown: false,headerStyle: { elevation: 0, shadowOpacity: 0, shadowOffset: { width: 0, height: 0 }, shadowRadius: 0, borderBottomWidth: 0 },
         }}
       />
       <Tabs.Screen
@@ -38,7 +38,7 @@ export default function TabsLayout() {
           title: "Articles",
           tabBarIcon: ({ color, size }) => (
             <AntDesign name="file-text" size={size} color={color} />
-          ), headerShown: true,headerTitle: "Articles Category",headerStyle: { elevation: 0, shadowOpacity: 0, shadowOffset: { width: 0, height: 0 }, shadowRadius: 0, borderBottomWidth: 0 },
+          ), headerShown: false,headerStyle: { elevation: 0, shadowOpacity: 0, shadowOffset: { width: 0, height: 0 }, shadowRadius: 0, borderBottomWidth: 0 },
         }}
       />
 

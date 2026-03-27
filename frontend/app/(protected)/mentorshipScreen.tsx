@@ -6,6 +6,8 @@ import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icon
 import Toast from 'react-native-toast-message';
 import { useTranslation } from "react-i18next";
 import LottieView from 'lottie-react-native';
+import { useRouter } from 'expo-router';
+import {BackButton} from '@/components/BackButton';
 
 type Mentor = {
   id: number;
@@ -22,6 +24,7 @@ const MentorshipScreen = () => {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  const router = useRouter();
 
   useEffect(() => {
     fetchMentors();
@@ -65,8 +68,16 @@ const MentorshipScreen = () => {
     <View className="flex-1 bg-slate-50">
       {/* Header Info */}
       <View className="bg-violet-600 pt-14 pb-10 px-6 rounded-b-[40px] shadow-xl">
+        <View className='text-blue-50 color-white'><BackButton /></View>
         <Text className="text-white text-2xl font-bold">{t("Expert Mentors")}</Text>
         <Text className="text-violet-100 text-sm mt-1">Connect with leaders to guide your journey</Text>
+        <Pressable
+            onPress={() => router.push('/(protected)/sessionsDashboard')}
+            className="flex-row items-center bg-purple-50 px-3 py-2 mt-2 rounded-xl border border-purple-100 active:bg-purple-100"
+          >
+            <MaterialCommunityIcons name="calendar-clock" size={18} color="#8A4FFF" />
+            <Text className="text-purple-600 font-bold text-xs ml-2">My Sessions</Text>
+          </Pressable>
       </View>
 
       <LegendList
@@ -138,9 +149,17 @@ const MentorshipScreen = () => {
 
                 {/* Action */}
                 <Pressable
-                  onPress={handleBooking}
-                  className="mt-5 bg-violet-600 py-3 rounded-2xl shadow-md active:bg-violet-700"
-                >
+                    className="bg-purple-600 h-16 rounded-2xl flex-row justify-center items-center space-x-3 border-2 border-purple-600 active:bg-purple-50"
+                    onPress={() => {
+                      router.push({
+                        pathname: '/mentorship-request',
+                        params: {
+                          mentorId: item.id,
+                          mentorName: item.name
+                        }
+                      });
+                    }}
+                  >
                   <Text className="text-white text-center font-bold">Book Free Session</Text>
                 </Pressable>
               </View>

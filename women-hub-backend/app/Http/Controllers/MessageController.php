@@ -158,4 +158,22 @@ class MessageController extends Controller
 
         return response()->json($conversations);
     }
+
+public function showInfo($id)
+{
+    $conversation = Conversation::with('participants')->findOrFail($id);
+
+    return response()->json([
+        'id' => $conversation->id,
+        'name' => $conversation->name,
+        'is_group' => $conversation->is_group,
+        'participants' => $conversation->participants->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'is_admin' => $user->pivot->is_admin ?? false,
+            ];
+        }),
+    ]);
+}
 }

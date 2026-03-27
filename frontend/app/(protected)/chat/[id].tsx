@@ -1,223 +1,209 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  FlatList,
-  KeyboardAvoidingView,
-  Keyboard,
-  StyleSheet,
-  Platform,
-  ActivityIndicator
+import React, { useEffect, useState, useRef } from 'react';
+import { 
+  View, Text, TextInput, Pressable, KeyboardAvoidingView, 
+  Platform, ActivityIndicator 
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import { getMessages, sendMessage } from '@/services/api';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
+import { LegendList } from '@legendapp/list';
+import { getMessages, sendMessage, getConversation, createConversation } from '@/services/api';
 import { getUserToken } from '@/hooks/useAuth';
 import { useAuth } from '@/context/AuthContext';
 import { initializeEcho } from '@/services/echo';
-
-type Message = {
-  id: number;
-  message: string;
-  sender_id: number;
-  is_anonymous: boolean;
-  sender?: {
-    name: string;
-  };
-};
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChatScreen = () => {
-  const { id: conversationIdParam } = useLocalSearchParams();
-  const conversationId = Number(conversationIdParam);
-
+  const { id, isNew, name } = useLocalSearchParams();
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const router = useRouter();
+
+  const [activeId, setActiveId] = useState<number | null>(isNew === 'true' ? null : Number(id));
+  const [messages, setMessages] = useState<any[]>([]);
+  const [conversation, setConversation] = useState<any>(null);
   const [text, setText] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
-  const flatListRef = useRef<FlatList>(null);
+  const echoRef = useRef<any>(null);
 
-  // 1. WebSocket Real-time Listener
+  // Setup WebSocket for conversation
+  const setupWebsocket = async (convId: number) => {
+    if (echoRef.current) return;
+    const echo = await initializeEcho();
+    echoRef.current = echo;
+
+    echo.private(`chat.${convId}`)
+      .listen('MessageSent', (e: any) => {
+        setMessages(prev => prev.some(m => m.id === e.message.id) ? prev : [...prev, e.message]);
+      })
+      .listenForWhisper('typing', (e: { name: string }) => {
+        setTypingUser(e.name);
+        setTimeout(() => setTypingUser(null), 2000);
+      });
+  };
+
+  // Initialize chat
   useEffect(() => {
-    let echoInstance: any;
-
-    const setupWebSockets = async () => {
-      echoInstance = await initializeEcho();
-
-      echoInstance.private(`chat.${conversationId}`)
-        .listen('MessageSent', (e: { message: Message }) => {
-          // Add message if it's from someone else
-          if (e.message.sender_id !== user?.id) {
-            setMessages((prev) => [...prev, e.message]);
-            scrollEnd();
-          }
-        })
-        .listenForWhisper('typing', (e: { name: string }) => {
-          setTypingUser(e.name);
-          setTimeout(() => setTypingUser(null), 3000);
-        });
-    };
-
-    if (conversationId && user) setupWebSockets();
-
-    return () => {
-      if (echoInstance) echoInstance.leave(`chat.${conversationId}`);
-    };
-  }, [conversationId, user]);
-
-  // 2. Initial Fetch
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (!conversationId) return;
+    const initChat = async () => {
       try {
-        const token = await getUserToken();
-        const data = await getMessages(conversationId, token);
-        setMessages(data);
-        scrollEnd();
+        if (isNew === 'true') {
+          setConversation({ name: name, is_group: false });
+          setLoading(false);
+        } else {
+          const token = await getUserToken();
+          const [msgs, convo] = await Promise.all([
+            getMessages(Number(id), token),
+            getConversation(Number(id), token)
+          ]);
+          setMessages(msgs);
+          setConversation(convo);
+          setActiveId(Number(id));
+          setupWebsocket(Number(id));
+          setLoading(false);
+        }
       } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
+        console.error('Init chat error:', err);
         setLoading(false);
       }
     };
 
-    fetchInitialData();
-  }, [conversationId]);
+    initChat();
+    return () => echoRef.current?.leave(`chat.${activeId}`);
+  }, [id]);
 
-  const scrollEnd = () => {
-    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-  };
-
-  const handleSendMessage = async () => {
-    if (!text.trim() || !conversationId) return;
+  // Handle sending a message
+  const handleSend = async () => {
+    if (!text.trim() || sending) return;
+    setSending(true);
 
     try {
       const token = await getUserToken();
-      // Pass is_anonymous to your API service
-      const newMessage = await sendMessage(conversationId, text, token, isAnonymous);
+      let currentConvId = activeId;
 
-      setMessages(prev => [...prev, newMessage]);
+      // Create conversation if first message
+      if (!currentConvId) {
+        const newConvo = await createConversation({ receiver_id: Number(id) }, token);
+        currentConvId = newConvo.id;
+        setActiveId(currentConvId);
+        setConversation(newConvo);
+        setupWebsocket(currentConvId);
+      }
+
+      // Send message
+      const newMsg = await sendMessage(currentConvId, text, token, false);
+      setMessages(prev => [...prev, newMsg]);
       setText('');
-      scrollEnd();
     } catch (err) {
-      console.error("Send error:", err);
+      console.error('Send message error:', err);
+    } finally {
+      setSending(false);
     }
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
+      <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#8A4FFF" />
       </View>
     );
   }
 
+  const getTitle = () => {
+    if (!conversation) return '';
+    return conversation.is_group ? conversation.name : conversation.name || name;
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#f8fafc' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
-    >
-      <View style={styles.container}>
-        <FlatList
-          ref={flatListRef}
+    <View className="flex-1 bg-[#F8FAFC]">
+      <StatusBar style="dark" />
+      
+      {/* HEADER */}
+      <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
+        <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
+          <Feather name="chevron-left" size={28} color="#1E293B" />
+        </Pressable>
+        
+        <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center">
+          <Text className="text-purple-600 font-bold">{getTitle()?.charAt(0)}</Text>
+        </View>
+        
+        <View className="ml-3 flex-1">
+          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>{getTitle()}</Text>
+          <Text className="text-slate-400 text-[11px] font-medium">
+            {typingUser ? `${typingUser} is typing...` : 'Online'}
+          </Text>
+        </View>
+      </View>
+
+      {/* MESSAGES */}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <LegendList
           data={messages}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={{ paddingVertical: 10 }}
+          estimatedItemSize={70}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => {
             const isMe = item.sender_id === user?.id;
-            
-            // CRITICAL FIX: Handle anonymous display safely
-            const senderDisplayName = item.is_anonymous 
-              ? "Anonymous User" 
-              : (item.sender?.name || "User");
-
             return (
-              <View style={[styles.messageWrapper, isMe ? { alignItems: 'flex-end' } : { alignItems: 'flex-start' }]}>
-                {!isMe && (
-                  <Text style={styles.senderName}>{senderDisplayName}</Text>
-                )}
-                <View style={[styles.bubble, isMe ? styles.myBubble : styles.theirBubble]}>
-                  <Text style={[styles.msgText, isMe ? { color: '#fff' } : { color: '#1e293b' }]}>
+              <View className={`mb-4 max-w-[85%] ${isMe ? 'self-end' : 'self-start'}`}>
+                <View className={`p-4 rounded-3xl ${isMe ? 'bg-purple-600 rounded-tr-none shadow-md shadow-purple-200' : 'bg-white border border-slate-100 rounded-tl-none shadow-sm'}`}>
+                  <Text className={`${isMe ? 'text-white' : 'text-slate-800'} text-[15px] leading-5`}>
                     {item.message}
                   </Text>
                 </View>
+                <Text className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? 'text-right' : 'text-left'}`}>
+                  {isMe ? 'Sent' : item.sender?.name}
+                </Text>
               </View>
             );
           }}
+          ListEmptyComponent={
+            <View className="items-center mt-10 px-10">
+              <Text className="text-slate-300 text-center font-medium">
+                Your conversation starts here. Messages are encrypted and private.
+              </Text>
+            </View>
+          }
         />
 
-        {typingUser && (
-          <Text style={styles.typingText}>{typingUser} is typing...</Text>
-        )}
+        {/* INPUT */}
+        <SafeAreaView edges={['bottom']} className="bg-white border-t border-slate-100">
+          <View className="p-3 flex-row items-end space-x-2">
+            <View className="flex-1 bg-slate-50 rounded-[24px] px-4 py-2 border border-slate-200 flex-row items-end">
+              <TextInput
+                className="flex-1 text-slate-800 text-[15px] max-h-32 py-1"
+                placeholder="Type a message..."
+                value={text}
+                onChangeText={(v) => setText(v)}
+                multiline
+                placeholderTextColor="#94A3B8"
+              />
+              <Pressable className="pb-1 pl-2">
+                <Feather name="smile" size={20} color="#94A3B8" />
+              </Pressable>
+            </View>
 
-        <View style={styles.inputArea}>
-          {/* Toggle Anonymity */}
-          <Pressable 
-            onPress={() => setIsAnonymous(!isAnonymous)}
-            style={[styles.anonToggle, isAnonymous && styles.anonActive]}
-          >
-            <Feather name="eye-off" size={18} color={isAnonymous ? "#fff" : "#94a3b8"} />
-          </Pressable>
-
-          <TextInput
-            style={styles.input}
-            placeholder={isAnonymous ? "Message anonymously..." : "Type a message..."}
-            value={text}
-            onChangeText={setText}
-            multiline
-          />
-
-          <Pressable onPress={handleSendMessage} disabled={!text.trim()}>
-            <MaterialCommunityIcons 
-              name="send-circle" 
-              size={44} 
-              color={text.trim() ? "#8A4FFF" : "#cbd5e1"} 
-            />
-          </Pressable>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            <Pressable 
+              onPress={handleSend} 
+              disabled={!text.trim() || sending}
+              className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${text.trim() ? 'bg-purple-600 shadow-purple-300' : 'bg-slate-200 shadow-none'}`}
+            >
+              {sending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="send" size={20} color="white" style={{ marginLeft: 3 }} />
+              )}
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16 },
-  messageWrapper: { marginVertical: 4, width: '100%' },
-  senderName: { fontSize: 11, color: '#94a3b8', marginBottom: 2, marginLeft: 4 },
-  bubble: { padding: 12, borderRadius: 20, maxWidth: '80%' },
-  myBubble: { backgroundColor: '#8A4FFF', borderBottomRightRadius: 4 },
-  theirBubble: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#e2e8f0' },
-  msgText: { fontSize: 15, lineHeight: 20 },
-  typingText: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8, marginLeft: 8 },
-  inputArea: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    gap: 8
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    maxHeight: 100,
-  },
-  anonToggle: {
-    padding: 10,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9'
-  },
-  anonActive: {
-    backgroundColor: '#64748b'
-  }
-});
 
 export default ChatScreen;

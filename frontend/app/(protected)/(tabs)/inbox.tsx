@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { LegendList } from "@legendapp/list";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { getChatList } from "@/services/api";
 import { getUserToken } from "@/hooks/useAuth";
 import { useRouter, useSegments } from "expo-router";
@@ -163,13 +163,22 @@ export default function ChatListScreen() {
         />
       </View>
 
-      {/* Floating Action Button */}
-      <Pressable
-        onPress={() => router.push("/mentorshipScreen")}
-        className="absolute bottom-8 right-8 bg-violet-600 w-16 h-16 rounded-full items-center justify-center shadow-xl shadow-violet-400"
-      >
-        <Ionicons name="add" size={32} color="white" />
-      </Pressable>
+      {/* Floating Action Buttons */}
+      <View className="absolute bottom-6 right-6 flex-col gap-4">
+        <Pressable
+          onPress={() => router.push("../usersScreen")}
+          className="bg-violet-600 w-16 h-16 rounded-full items-center justify-center shadow-xl shadow-violet-400"
+        >
+          <MaterialCommunityIcons name="chat-plus-outline" size={24} color="white" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/mentorshipScreen")}
+          className="bg-violet-600 w-16 h-16 rounded-full items-center justify-center shadow-xl shadow-violet-400"
+        >
+          <Ionicons name="add" size={32} color="white" />
+        </Pressable>
+      </View>
     </View>
   );
 }

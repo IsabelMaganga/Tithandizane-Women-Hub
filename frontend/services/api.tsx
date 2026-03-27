@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // fetching data from Laravel API
 const api = axios.create({
-  baseURL: 'http://192.168.43.103:8000/api',
+  baseURL: 'http://192.168.43.103:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const api = axios.create({
 
 
 //handler user registration
-export const registerUser = async (userData) => {
+export const registerUser = async (userData:any) => {
   try {
     const response = await api.post('/register', userData);
     return response.data;
@@ -33,7 +33,7 @@ export const registerUser = async (userData) => {
 // };
 
 // Fetch hygiene articles (optional category filter)
-export const getHygieneArticles = async (category) => {
+export const getHygieneArticles = async (category:any) => {
   try {
     const url = category
       ? `/hygiene-articles?category=${category}`
@@ -126,7 +126,7 @@ export const sendMessage = async (
 };
 
 
-export const createConversation = async (payload, token:string) => {
+export const createConversation = async (payload:any, token:string) => {
   try {
     const response = await api.post('/conversations', payload, {
       headers: { Authorization: `Bearer ${token}` },
@@ -199,6 +199,121 @@ export const getGeneralGuides= async ()=>{
     
   }
 }
+
+//get all users except mentor and admins
+export const getAllUsers = async (token: string) => {
+  try {
+    const response = await api.get("/users", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetch Users Error:", error);
+    throw error;
+  }
+};
+
+
+export const getConversation = async (
+        conversationId: number,
+        token: string
+      ) => {
+        try {
+          const response = await api.get(`/conversations/${conversationId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          return response.data;
+        } catch (error) {
+          console.error("Error fetching conversation:", error);
+          throw error;
+        }
+};
+
+
+export const getUser = async (userId:number,token:string) => {
+   try {
+    const response = await api.get(`users/${userId}`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    })
+    return response.data;
+    
+   } catch (error) {
+    
+   }
+}
+
+//requesting the mentorship session
+export const sendMentorshipRequest = async (data: {
+    mentor_id: number;
+    topic: string;
+    message?: string
+  }, token: string) => {
+    const response = await api.post('/mentorship/request', data, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
+
+//getting all sessions
+export const getMentorshipSessions = async (token: string) => {
+  const response = await api.get('/mentorship/my-sessions', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+//updating mentorship session by mentors
+export const updateSessionStatus = async (
+  sessionId: string,
+  token: string,
+  payload: { 
+    status: 'accepted' | 'declined' | 'completed'; 
+    mentor_notes?: string; 
+    scheduled_at?: string 
+  }
+) => {
+  try {
+    // Ensure the URL matches: /mentorship/sessions/{session}
+    const response = await api.patch(`/mentorship/sessions/${sessionId}`, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("API Error:", error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+//group finding an joining
+export const getGroups = async (token:string)=>{
+  try {
+    const response = await api.get('/groups/available',{
+      headers:{ Authorization:`Bearer ${token}`}
+    })
+    return response.data;
+  } catch (error) {
+
+  }
+}
+
+export const joinGroup = async (token:string,conversationID:number) => {
+  try {
+    const response = await api.post('/conversations/{conversationId}/join',{
+      headers:{ Authorization:`Bearer ${token}`}
+    })
+    return response.data
+  } catch (error) {
+
+  }
+}
+
 
 
 export default api;

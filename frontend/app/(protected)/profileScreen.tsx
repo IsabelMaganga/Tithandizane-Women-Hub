@@ -20,6 +20,7 @@ import {
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
+
 const Setting = () => {
   const { t } = useTranslation("settings");
   const { user, logout } = useAuth();
@@ -56,6 +57,7 @@ const Setting = () => {
           borderRadius: 12
         }}
       >
+        
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           {user?.profile_url ? (
             <Image

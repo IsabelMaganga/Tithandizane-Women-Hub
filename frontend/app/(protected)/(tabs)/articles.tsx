@@ -14,6 +14,7 @@ import { getHygieneArticles, getGeneralGuides } from '../../../services/api';
 import { LegendList } from '@legendapp/list';
 import LottieView from 'lottie-react-native';
 import { Feather } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 // --- Types ---
 type Article = {
@@ -28,7 +29,7 @@ type SourceType = 'hygiene' | 'general';
 
 const ArticlesScreen = () => {
   const router = useRouter();
-  
+
   // --- State ---
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +42,6 @@ const ArticlesScreen = () => {
   const fetchArticles = useCallback(async (source: SourceType) => {
     try {
       setLoading(true);
-      // Reset filters when switching sources for a clean state
       setSelectedCategory(null);
       setSearchQuery('');
       
@@ -52,7 +52,6 @@ const ArticlesScreen = () => {
       const safeData = Array.isArray(data) ? data : [];
       setArticles(safeData);
 
-      // Extract unique categories from the new data
       const uniqueCategories = [
         ...new Set(safeData.map((article: Article) => article.category).filter(Boolean)),
       ];
@@ -69,7 +68,6 @@ const ArticlesScreen = () => {
     fetchArticles(activeSource);
   }, [activeSource, fetchArticles]);
 
-  // --- Combined Filtering Logic ---
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
       const matchesCategory = !selectedCategory || 
@@ -83,12 +81,10 @@ const ArticlesScreen = () => {
     });
   }, [articles, selectedCategory, searchQuery]);
 
-  // --- Handlers ---
   const handlePressArticle = (id: number) => {
     router.push(`/articles/${id}`);
   };
 
-  // --- Loading State ---
   if (loading && articles.length === 0) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -103,56 +99,48 @@ const ArticlesScreen = () => {
     );
   }
 
-  return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      className="flex-1 bg-slate-50"
-    >
-      {/* Header & Search Section */}
-      <View className="bg-emerald-600 pt-14 pb-6 px-6 rounded-b-[40px] shadow-md">
-        <Text className="text-white text-2xl font-bold">Health & Education</Text>
-        <Text className="text-emerald-100 text-sm mt-1 mb-5">Expert advice for your wellbeing</Text>
-        
-        {/* Search Bar */}
-        <View className="flex-row items-center bg-emerald-700/40 rounded-2xl px-4 mb-5 border border-emerald-500/30">
-          <Feather name="search" size={18} color="#A7F3D0" />
-          <TextInput
-            placeholder="Search articles..."
-            placeholderTextColor="#A7F3D0"
-            className="flex-1 py-3 px-3 text-white font-medium"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Feather name="x-circle" size={18} color="#A7F3D0" />
-            </Pressable>
-          )}
-        </View>
-
-        {/* Source Toggle Switches */}
-        <View className='flex-row bg-emerald-700/30 p-1 rounded-2xl'>
-          <Pressable 
-            onPress={() => setActiveSource('hygiene')}
-            className={`flex-1 py-2.5 rounded-xl items-center ${activeSource === 'hygiene' ? 'bg-white shadow-sm' : ''}`}
-          >
-            <Text className={`font-bold text-xs ${activeSource === 'hygiene' ? 'text-emerald-700' : 'text-emerald-50'}`}>
-              Hygiene
-            </Text>
+  //Header Component for the List
+  const ListHeader = () => (
+    <View className="mt-[-30px]">
+      {/* Search Bar */}
+      <View className="flex-row items-center bg-white rounded-2xl px-4 mb-5 mt-10 border border-slate-200 shadow-sm mx-5">
+        <Feather name="search" size={18} color="#059669" />
+        <TextInput
+          placeholder="Search articles..."
+          placeholderTextColor="#94a3b8"
+          className="flex-1 py-4 px-3 text-slate-900 font-medium"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')}>
+            <Feather name="x-circle" size={18} color="#94a3b8" />
           </Pressable>
-          <Pressable 
-            onPress={() => setActiveSource('general')}
-            className={`flex-1 py-2.5 rounded-xl items-center ${activeSource === 'general' ? 'bg-white shadow-sm' : ''}`}
-          >
-            <Text className={`font-bold text-xs ${activeSource === 'general' ? 'text-emerald-700' : 'text-emerald-50'}`}>
-              General Guides
-            </Text>
-          </Pressable>
-        </View>
+        )}
       </View>
 
-      {/* Category Horizontal Filter */}
-      <View className="py-4">
+      {/* Source Toggle */}
+      <View className="mx-5 mb-6 flex-row bg-slate-200/50 p-1.5 rounded-2xl border border-slate-100">
+        <Pressable 
+          onPress={() => setActiveSource('hygiene')}
+          className={`flex-1 py-3 rounded-xl items-center ${activeSource === 'hygiene' ? 'bg-white shadow-sm' : ''}`}
+        >
+          <Text className={`font-bold text-xs ${activeSource === 'hygiene' ? 'text-emerald-700' : 'text-slate-500'}`}>
+            Hygiene Tips
+          </Text>
+        </Pressable>
+        <Pressable 
+          onPress={() => setActiveSource('general')}
+          className={`flex-1 py-3 rounded-xl items-center ${activeSource === 'general' ? 'bg-white shadow-sm' : ''}`}
+        >
+          <Text className={`font-bold text-xs ${activeSource === 'general' ? 'text-emerald-700' : 'text-slate-500'}`}>
+            General Guides
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Category Filter */}
+      <View className="mb-4">
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -173,26 +161,46 @@ const ArticlesScreen = () => {
           ))}
         </ScrollView>
       </View>
+    </View>
+  );
 
-      {/* Articles List */}
+  return (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      className="flex-1 bg-slate-50"
+    >
+      <StatusBar style="light" />
+      
+      {/* Header*/}
+      <View className="bg-emerald-600 pt-16 pb-6 px-6 rounded-b-[48px] z-10">
+        <Text className="text-white text-3xl font-black tracking-tight">Health & Education</Text>
+        <Text className="text-emerald-100 text-sm mt-1 font-medium">Expert advice for your wellbeing</Text>
+      </View>
+
+      {/* ARTICLES LIST */}
       <LegendList
         data={filteredArticles}
         estimatedItemSize={350}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        ListHeaderComponent={ListHeader}
         ListEmptyComponent={
-          <View className="items-center mt-20 px-10">
-            <Feather name="search" size={48} color="#cbd5e1" />
-            <Text className="text-slate-500 mt-4 text-center font-bold text-lg">
+          <View className="items-center mt-30 px-10">
+            <View className="bg-slate-100 p-6 rounded-full">
+               <Feather name="search" size={40} color="#94a3b8" />
+            </View>
+            <Text className="text-slate-900 mt-6 text-center font-bold text-lg">
               {searchQuery ? `No results for "${searchQuery}"` : "No articles found"}
             </Text>
-            <Text className="text-slate-400 text-center mt-1">
-              Try adjusting your search or switching categories.
+            <Text className="text-slate-400 text-center mt-2 leading-5">
+              Try adjusting your keywords or exploring a different category.
             </Text>
           </View>
         }
         renderItem={({ item }) => (
-          <ArticleCard item={item} onPress={() => handlePressArticle(item.id)} />
+          <View className="px-5">
+            <ArticleCard item={item} onPress={() => handlePressArticle(item.id)} />
+          </View>
         )}
       />
     </KeyboardAvoidingView>
@@ -204,13 +212,13 @@ const ArticlesScreen = () => {
 const CategoryPill = ({ label, isActive, onPress }: { label: string, isActive: boolean, onPress: () => void }) => (
   <Pressable
     onPress={onPress}
-    className={`px-6 py-2.5 mr-2 rounded-2xl border ${
+    className={`px-6 py-3 mr-2 rounded-[18px] border ${
       isActive 
-        ? 'bg-emerald-600 border-emerald-600 shadow-md shadow-emerald-200' 
-        : 'bg-white border-slate-200 shadow-sm shadow-slate-50'
+        ? 'bg-emerald-600 border-emerald-600 shadow-md shadow-emerald-100' 
+        : 'bg-white border-slate-200 shadow-sm'
     }`}
   >
-    <Text className={`font-bold text-xs ${isActive ? 'text-white' : 'text-slate-500'}`}>
+    <Text className={`font-bold text-[13px] ${isActive ? 'text-white' : 'text-slate-500'}`}>
       {label}
     </Text>
   </Pressable>
@@ -219,43 +227,45 @@ const CategoryPill = ({ label, isActive, onPress }: { label: string, isActive: b
 const ArticleCard = ({ item, onPress }: { item: Article, onPress: () => void }) => (
   <Pressable
     onPress={onPress}
-    className="bg-white mb-6 rounded-[24px] overflow-hidden shadow-sm border border-slate-100 active:opacity-95"
+    className="bg-white mb-5 rounded-[32px] overflow-hidden shadow-sm border border-slate-100 active:opacity-95"
   >
     {item.image_url ? (
       <Image
         source={{ uri: item.image_url }}
-        className="w-full h-48"
+        className="w-full h-52"
         resizeMode="cover"
       />
     ) : (
-      <View className="w-full h-48 bg-emerald-50 items-center justify-center">
+      <View className="w-full h-52 bg-emerald-50 items-center justify-center">
         <Feather name="image" size={32} color="#10b981" />
       </View>
     )}
 
-    <View className="p-5">
-      <View className="bg-emerald-50 self-start px-2 py-1 rounded-md mb-2">
-        <Text className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
-          {item.category}
-        </Text>
+    <View className="p-6">
+      <View className="flex-row items-center mb-3">
+        <View className="bg-emerald-50 px-3 py-1 rounded-full">
+          <Text className="text-emerald-700 text-[10px] font-black uppercase tracking-widest">
+            {item.category || "General"}
+          </Text>
+        </View>
       </View>
 
-      <Text className="text-slate-900 font-bold text-lg mb-2 leading-6" numberOfLines={2}>
+      <Text className="text-slate-900 font-bold text-xl mb-2 leading-7" numberOfLines={2}>
         {item.title}
       </Text>
 
-      <Text className="text-slate-500 text-sm leading-5 mb-4" numberOfLines={3}>
+      <Text className="text-slate-500 text-[14px] leading-6 mb-5" numberOfLines={3}>
         {item.content}
       </Text>
 
       <View className="flex-row items-center justify-between pt-4 border-t border-slate-50">
         <View className="flex-row items-center">
-          <Feather name="clock" size={12} color="#94a3b8" />
-          <Text className="text-slate-400 text-[11px] ml-1">5 min read</Text>
+          <Feather name="book-open" size={14} color="#94a3b8" />
+          <Text className="text-slate-400 text-xs ml-1.5 font-medium">5 min read</Text>
         </View>
         <View className="flex-row items-center">
-          <Text className="text-emerald-600 font-bold text-xs mr-1">Read More</Text>
-          <Feather name="chevron-right" size={14} color="#059669" />
+          <Text className="text-emerald-600 font-bold text-sm mr-1">Continue</Text>
+          <Feather name="arrow-right" size={14} color="#059669" />
         </View>
       </View>
     </View>
