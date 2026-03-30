@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
@@ -22,10 +24,12 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+
         if (Auth::guard('mentor')->attempt([ ...$credentials, 'role' => 'mentor'])) {
             $request->session()->regenerate();
 
-            // session(['auth_guard' => 'mentor']);
+            $mentor = Auth::guard('mentor')->user();
+            // $mentor->notify(new WelcomeNotification());
 
             return redirect()->intended(route('mentor.dashboard'))->with('success', 'Welcome back'. $credentials['email']);
         }

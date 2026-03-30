@@ -13,10 +13,57 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-use function Symfony\Component\String\s;
 
 class SecurityController extends Controller
 {
+
+    // showCalender controller
+    public function showCalender(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.calender.index', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
+
+    // reports controller
+    public function showReports(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.report.index', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
+
+    // showAppointments controller
+    public function showAppointments(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.appointments.index', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
 
     // chat tab controller
     public function showChat(){
@@ -28,6 +75,37 @@ class SecurityController extends Controller
 
 
         return view('mentor.chat.index', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
+
+    // chat tab controller
+    public function showChatGroups(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.chat.groups', compact(
+            'mentorName',
+            'mentorEmail',
+        ));
+
+    }
+
+    public function showGroupForm(){
+
+        // Get current admin user info
+        $mentorUser = Auth::guard('mentor')->user();
+        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+
+
+        return view('mentor.chat.create-group', compact(
             'mentorName',
             'mentorEmail',
         ));

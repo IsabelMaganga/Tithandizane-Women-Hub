@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\NewChatRequest;
 use App\Models\MentorshipSession;
 use App\Models\User;
 use App\Models\Conversation;
@@ -10,7 +9,6 @@ use Illuminate\Http\Request;
 
 class MentorshipController extends Controller
 {
-
     public function mentors(Request $request)
     {
         $mentors = User::where('role', 'mentor')
@@ -29,60 +27,13 @@ class MentorshipController extends Controller
             'message' => 'nullable|string|max:1000',
         ]);
 
-        $menteeId = $request->user()->id;
-        $mentorId = $validated['mentor_id'];
-
-        // checking if a user is trying to request themselves
-        if($menteeId == $mentorId)
-        {
-            return response()->json([
-                'message' => 'You cannot request mentorship from yourself'
-            ],422);
-        }
-
-        // check for existing pending or accepted requests
-        // $existing = MentorshipSession::where('mentor_id', $mentorId)
-        //     ->where('mentee_id', $menteeId)
-        //     ->whereIn('status', ['pending', 'accepted'])
-        //     ->first();
-
-        // if ($existing) {
-        //     $status = $existing->status;
-        //     $message = $status === 'pending'
-        //         ? "You already have a pending request with this mentor"
-        //         : "You are already connected with this mentor";
-
-        //     return response()->json([
-        //         'message' => $message,
-        //         'existing_session' => $existing
-        //     ],422);
-        // }
-
-        // check if the user has rejected a previous request
-        // $rejectedRequest = MentorshipSession::where('mentor_id', $mentorId)
-        //     ->where('mentee_id', $menteeId)
-        //     ->where('status', 'declined')
-        //     ->where('updated_at', '>', now()->subDays(7))
-        //     ->first();
-
-        // if($rejectedRequest){
-        //     return response()->json([
-        //         'message' => "This mentor previously declined your request. You can try again after 2 days "            ],422);
-        // }
-
-        // create a session
         $session = MentorshipSession::create([
-            'mentor_id' => $mentorId,
-            'mentee_id' => $menteeId,
+            'mentor_id' => $validated['mentor_id'],
+            'mentee_id' => $request->user()->id,
             'topic' => $validated['topic'],
             'message' => $validated['message'] ?? null,
             'status' => 'pending',
         ]);
-
-        // $session->load('mentee:id,name,email');
-
-        // Broadcast to mentor
-        broadcast(new NewChatRequest());
 
         $session->load('mentor:id,name,expertise_area');
 
@@ -131,8 +82,8 @@ class MentorshipController extends Controller
     public function updateStatus(Request $request, MentorshipSession $session)
     {
         if ($session->mentor_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+    return response()->json(['message' => 'Unauthorized'], 403);
+}
 
         $validated = $request->validate([
             'status' => 'required|in:accepted,declined,completed',
