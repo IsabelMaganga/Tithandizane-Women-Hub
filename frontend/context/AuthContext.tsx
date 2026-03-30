@@ -105,6 +105,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await api.post("/login", { email, password });
       const { token: newToken, user: userData } = response.data;
       console.log('Login successful:', { user: userData.name, token: newToken.substring(0, 20) + '...' });
+      if (userData.role === "admin") {
+        throw new Error("Admin accounts cannot log in here");
+      }
 
       setToken(newToken);
       api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;

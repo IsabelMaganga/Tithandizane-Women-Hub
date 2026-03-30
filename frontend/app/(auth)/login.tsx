@@ -14,7 +14,7 @@ export default function Login() {
 
   const router = useRouter();
   const { t } = useTranslation("auth");
-  const { login } = useAuth();
+  const { login, user, logout } = useAuth();
 
   // form states
   const [email, setEmail] = useState("");
@@ -44,6 +44,11 @@ export default function Login() {
       await login(email, password);
 
       // success message
+      if (user?.role === "admin") {
+        setError("Admin accounts cannot log in here");
+        logout();
+        
+      }
       setSuccessMessage("Login successful, getting things ready...");
       setTimeout(() => {
         setSuccessMessage("");

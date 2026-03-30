@@ -7,132 +7,182 @@ import { useAuth } from '../../context/AuthContext';
 import Profile from '../Profile';
 import { useTranslation } from "react-i18next";
 import { useThemeToggle } from "../../hooks/useTheme";
-import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons } from '@expo/vector-icons';
-import { MenuItem  }  from '../MenuItem';
-import Animated, { BounceIn } from "react-native-reanimated";
+import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons, Feather } from '@expo/vector-icons';
+import { MenuItem } from '../MenuItem';
+import Animated, { FadeInDown, BounceIn, FadeInRight } from "react-native-reanimated";
+import { LinearGradient } from 'expo-linear-gradient';
 
-
-export default function App() {
+export default function UserDashboard() {
   const router = useRouter();
   const { user } = useAuth();
-  const { colorScheme, toggleTheme } = useThemeToggle();
+  const { colorScheme } = useThemeToggle();
   const { t } = useTranslation();
-
   const isDark = colorScheme === "dark";
 
-
-  
-
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-slate-900">
+    <View className="flex-1 bg-gray-50 dark:bg-slate-950">
       <StatusBar style={isDark ? "light" : "dark"} />
       
-      <ImageBackground
-        source={require('../../assets/images/Ellipse 4.png')}
-        className="absolute top-0 w-full h-[305px]"
-        resizeMode="cover"
-      >
-        <Image
-          source={require('../../assets/images/shape (1).png')}
-          className="absolute top-0 left-0 w-32 h-32 opacity-60"
-        />
-      </ImageBackground>
+      {/* Background Aesthetic Layer */}
+      <View className="absolute top-0 left-0 right-0">
+        <ImageBackground
+          source={require('../../assets/images/Ellipse 4.png')}
+          className="w-full h-[280px]"
+          resizeMode="cover"
+        >
+          <LinearGradient
+            colors={isDark ? ['rgba(15,23,42,0.8)', '#0f172a'] : ['rgba(255,255,255,0.1)', '#f9fafb']}
+            className="absolute inset-0"
+          />
+        </ImageBackground>
+      </View>
 
       <SafeAreaView className="flex-1">
-        {/* Header Section */}
-        
-        <View className="flex-row items-center justify-between px-6 mt-4">
+        {/* --- TOP NAV BAR --- */}
+        <View className="flex-row items-center justify-between px-6 py-4">
           <View className="flex-row items-center space-x-3">
-            <Pressable onPress={() => router.push("../settingsScreen")}>
-              <View className="border-2 border-white rounded-full">
-                <Profile />
-              </View>
+            <Pressable 
+              onPress={() => router.push("/settingsScreen")}
+              className="border-2 border-white dark:border-slate-700 rounded-full shadow-sm"
+            >
+              <Profile />
             </Pressable>
             <View>
-              <Text className="text-gray-500 dark:text-gray-400 text-xs font-medium">
-                {t("welcome")}
+              <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                {t("welcome_back")}
               </Text>
-              <Text className="text-slate-800 dark:text-white font-bold text-base">
-                {user?.name ?? "Guest"}
+              <Text className="text-slate-900 dark:text-white font-black text-lg">
+                {user?.name?.split(' ')[0] ?? "Sister"}
               </Text>
             </View>
           </View>
 
-          <View className="flex-row items-center space-x-4">
-            {/* <Pressable 
-              onPress={toggleTheme}
-              className="p-2 bg-white/20 rounded-full"
-            >
-              <MaterialCommunityIcons
-                name={isDark ? "weather-night" : "white-balance-sunny"}
-                size={22}
-                color={isDark ? "#fbbf24" : "white"}
-              />
-            </Pressable> */}
-
-            <Pressable
-              onPress={()=>router.push("/notificationScreen")}
-              className="p-2 bg-white/20 rounded-full">
-              <Ionicons name="notifications" size={22} color="white" />
-            </Pressable>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.push("/notificationScreen")}
+            className="w-11 h-11 bg-white/80 dark:bg-slate-800 rounded-2xl items-center justify-center shadow-sm border border-white/20"
+          >
+            <Ionicons name="notifications-outline" size={22} color={isDark ? "white" : "#1e293b"} />
+            <View className="absolute top-3 right-3 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800" />
+          </TouchableOpacity>
         </View>
 
-        {/* Dashboard Grid */}
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 40 }}
+        <ScrollView 
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
         >
-          <View className="flex-row flex-wrap justify-between">
-            <MenuItem 
+          {/*FEATURED INSIGHT CARD*/}
+          <Animated.View entering={FadeInDown.delay(200)} className="px-6 mt-2">
+            <LinearGradient
+              colors={['#7c3aed', '#6d28d9']}
+              className="rounded-[32px] p-6 shadow-xl shadow-violet-200 dark:shadow-none"
+            >
+              <View className="flex-row justify-between items-center">
+                <View className="flex-1">
+                  <Text className="text-violet-100 text-xs font-bold uppercase tracking-wider">Daily Tip</Text>
+                  <Text className="text-white text-lg font-bold mt-1 leading-6">
+                    "Your strength is in your sisterhood. Reach out to a mentor today."
+                  </Text>
+                </View>
+                <View className="bg-white/20 p-3 rounded-2xl ml-4">
+                  <MaterialCommunityIcons name="comment-quote" size={28} color="white" />
+                </View>
+              </View>
+              
+              <TouchableOpacity 
+                className="mt-6 bg-white/20 py-3 rounded-2xl items-center flex-row justify-center space-x-2"
+                onPress={() => router.push("/mentorshipScreen")}
+              >
+                <Text className="text-white font-bold text-sm">Talk to a Mentor</Text>
+                <Feather name="arrow-right" size={16} color="white" />
+              </TouchableOpacity>
+            </LinearGradient>
+          </Animated.View>
+
+          {/* --- STATUS ROW --- */}
+          <View className="flex-row px-6 mt-8 justify-between">
+            <View className="bg-white dark:bg-slate-900 flex-1 mr-3 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+              <Text className="text-gray-400 text-[10px] font-bold uppercase">Cycle Day</Text>
+              <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Day 14</Text>
+              <Text className="text-emerald-500 text-[10px] font-bold mt-1">● Healthy</Text>
+            </View>
+            <View className="bg-white dark:bg-slate-900 flex-1 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+              <Text className="text-gray-400 text-[10px] font-bold uppercase">Safety Status</Text>
+              <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Secure</Text>
+              <Text className="text-blue-500 text-[10px] font-bold mt-1">Hub Encrypted</Text>
+            </View>
+          </View>
+
+          {/* --- SERVICES GRID --- */}
+          <Text className="px-8 mt-10 text-slate-900 dark:text-white font-black text-xl mb-4">
+            Services
+          </Text>
+          <View className="flex-row flex-wrap px-4">
+            <GridItem 
               title="Mentorship" 
               icon="hands-holding-child" 
-              bgColor="bg-violet-500" 
+              color="#8b5cf6" 
               family={FontAwesome6}
-              onPress={() => router.push("/mentorshipScreen")}
+              onPress={() => router.push("/mentorshipScreen")} 
             />
-            
-            <MenuItem 
-              title="Emergency Help" 
+            <GridItem 
+              title="Emergency" 
               icon="contact-emergency" 
-              bgColor="bg-orange-500" 
+              color="#f43f5e" 
               family={MaterialIcons}
-              onPress={() => router.push("./emergencyScreen")}
+              onPress={() => router.push("/emergencyScreen")} 
             />
-
-            <MenuItem 
-              title="Menstrual Health" 
+            <GridItem 
+              title="Health" 
               icon="calendar-days" 
-              bgColor="bg-emerald-500" 
+              color="#10b981" 
               family={FontAwesome6}
-              onPress={() => router.push("./menstrualHealthScreen")}
+              onPress={() => router.push("/menstrualHealthScreen")} 
             />
-
-            <MenuItem 
-              title="Report Harassment" 
+            <GridItem 
+              title="Reports" 
               icon="report-problem" 
-              bgColor="bg-rose-500" 
+              color="#f59e0b" 
               family={MaterialIcons}
-              onPress={() => router.push("../reportHarrasmentScreen")}
+              onPress={() => router.push("/reportHarrasmentScreen")} 
             />
           </View>
+
+          {/*  RECENT ACTIVITY / FORUM PREVIEW */}
+          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-8">
+            <TouchableOpacity 
+              className="bg-white dark:bg-slate-900 p-5 rounded-[32px] flex-row items-center justify-between border border-gray-100 dark:border-slate-800"
+              onPress={() => router.push("/community")}
+            >
+              <View className="flex-row items-center">
+                <View className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-2xl items-center justify-center">
+                  <Ionicons name="people" size={24} color="#7c3aed" />
+                </View>
+                <View className="ml-4">
+                  <Text className="text-slate-900 dark:text-white font-bold text-base">Community Hub</Text>
+                  <Text className="text-gray-500 text-xs">8 mentors currently online</Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          </Animated.View>
+
         </ScrollView>
 
-        {/* FAQ button */}
+        {/* --- FLOATING FAQ BOT --- */}
         <Animated.View
-          entering={BounceIn.delay(300)}
-          className="absolute bottom-8 right-8"
+          entering={BounceIn.delay(800)}
+          className="absolute bottom-10 right-8"
         >
           <TouchableOpacity 
-            onPress={() => {}}
-            className="bg-white dark:bg-slate-800 w-16 h-16 rounded-full items-center justify-center shadow-lg border border-gray-100 dark:border-slate-700"
+            className="bg-white dark:bg-slate-800 w-16 h-16 rounded-full items-center justify-center shadow-2xl border border-gray-100 dark:border-slate-700"
+            activeOpacity={0.9}
           >
             <MaterialCommunityIcons 
               name="robot-confused" 
               size={28} 
               color={isDark ? "#a78bfa" : "#7c3aed"} 
             />
-            <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold">
+            <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-extrabold uppercase">
               {t("FAQ")}
             </Text>
           </TouchableOpacity>
@@ -141,3 +191,19 @@ export default function App() {
     </View>
   );
 }
+
+// Reusable Professional Grid Component
+const GridItem = ({ title, icon, color, family: IconFamily, onPress }: any) => (
+  <TouchableOpacity 
+    onPress={onPress}
+    style={{ width: '50%', padding: 8 }}
+    activeOpacity={0.7}
+  >
+    <View className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-gray-100 dark:border-slate-800 shadow-sm items-center">
+      <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
+        <IconFamily name={icon} size={26} color={color} />
+      </View>
+      <Text className="text-slate-800 dark:text-slate-100 font-bold text-sm text-center">{title}</Text>
+    </View>
+  </TouchableOpacity>
+);
