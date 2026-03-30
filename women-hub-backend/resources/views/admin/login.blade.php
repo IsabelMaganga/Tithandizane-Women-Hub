@@ -288,16 +288,11 @@
                 loginButton.classList.add('btn-loading');
                 buttonText.innerHTML = '<span class="loading-spinner"></span>Signing in...';
                 
-                // For demo purposes, we'll simulate a successful login and redirect to dashboard
-                // In production, the form will submit to Laravel backend and redirect naturally
-                // This prevents the default submission for demo and redirects to dashboard page
+                // Allow the form to submit naturally to Laravel backend
+                // The backend will handle authentication and redirect to dashboard
+            } else {
                 e.preventDefault();
-                
-                // Simulate authentication delay
-                setTimeout(function() {
-                    // Redirect to admin dashboard page (in admin folder)
-                    window.location.href = "{{ route('admin.dashboard') }}";
-                }, 800);
+                alert('Please fill in all fields');
             }
         });
 

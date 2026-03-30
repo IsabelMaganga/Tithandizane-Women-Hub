@@ -24,7 +24,7 @@ class AuthController extends Controller
         if (Auth::guard('admin')->attempt([ ...$credentials, 'role' => 'admin' ])) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.dashboard'))->with('success', 'logout successfully.');
+            return redirect()->intended(route('admin.dashboard'))->with('success', 'Login successful.');
         }
 
          // check if user exist but with wrong role

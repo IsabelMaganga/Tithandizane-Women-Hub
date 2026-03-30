@@ -16,7 +16,7 @@ class MentorController extends Controller
 
     public function create()
     {
-        return view('admin.mentors.create', [
+        return view('admin.addmentor', [
             'adminName' => auth()->user()->name,
             'adminEmail' => auth()->user()->email
         ]);
