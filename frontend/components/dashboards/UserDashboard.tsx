@@ -43,7 +43,7 @@ export default function App() {
         
         <View className="flex-row items-center justify-between px-6 mt-4">
           <View className="flex-row items-center space-x-3">
-            <Pressable onPress={() => router.push("../profileScreen")}>
+            <Pressable onPress={() => router.push("../settingsScreen")}>
               <View className="border-2 border-white rounded-full">
                 <Profile />
               </View>

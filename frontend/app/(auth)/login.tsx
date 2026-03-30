@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Image, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Image, KeyboardAvoidingView, Platform, TouchableOpacity, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import MyButton from "../../components/MyButton";
@@ -176,9 +176,11 @@ export default function Login() {
 
           </View>
 
-          <Text className="text-purple-400 text-sm mb-2 text-right">
+          <Pressable onPress={() => router.push("/(auth)/forgotPasswordScreen")}>
+            <Text className="text-purple-400 text-sm mb-2 text-right">
             {t("forgot_password")}
           </Text>
+          </Pressable>
 
           {/* login button */}
           <MyButton

@@ -86,7 +86,7 @@ export default function UserDashboard() {
         <View className="flex-row items-center justify-between px-6 mt-4">
           <View className="flex-row items-center space-x-3">
             <Pressable 
-              onPress={() => handleNavigation("/(protected)/profileScreen")}
+              onPress={() => handleNavigation("/(protected)/settingsScreen")}
               className="active:opacity-80"
             >
               <View className="border-2 border-white rounded-full shadow-sm">
