@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+<!-- @extends('layouts.admin')
 
 @section('title', 'Mentors')
 @section('page-title', 'Mentors')
@@ -172,4 +172,4 @@
         </div>
     </div>
 </div>
-@endsection
+@endsection -->

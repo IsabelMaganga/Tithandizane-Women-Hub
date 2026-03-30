@@ -1,4 +1,4 @@
-@php $days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']; @endphp
+<!-- @php $days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']; @endphp
 
 <div class="row g-3">
     {{-- Personal Info --}}
@@ -98,4 +98,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
