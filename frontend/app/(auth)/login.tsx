@@ -186,6 +186,7 @@ export default function Login() {
           <MyButton
             title={loading ?  "Logging in..." : t("login")}
             style={{ width: "100%", alignSelf: "center" }}
+            textStyle={{}}
             onPress={handleLogIn}
             disabled={loading}
 
