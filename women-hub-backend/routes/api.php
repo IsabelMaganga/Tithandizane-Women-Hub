@@ -7,6 +7,12 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Broadcasting\BroadcastManager;
+
+// Broadcasting auth endpoint for API (token-based auth with Sanctum)
+Route::post('/broadcasting/auth', function () {
+    return BroadcastManager::auth();
+})->middleware(['auth:sanctum'])->withoutMiddleware('api');
 
 // v0.1
 Route::prefix('v1')->group(function () {

@@ -1,6 +1,8 @@
 import Echo from 'laravel-echo';
-
 import Pusher from 'pusher-js';
+
+console.log('echo loaded');
+
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -9,6 +11,20 @@ window.Echo = new Echo({
     wsHost: import.meta.env.VITE_REVERB_HOST,
     wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
     wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    // forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    forceTLS: false,
     enabledTransports: ['ws', 'wss'],
+
+    authEndPoint: '/broadcasting/auth',
+    auth: {
+        headers: {
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute('content'),
+        },
+    },
+
 });
+
+
+console.log('Echo initialized!', window.Echo);

@@ -17,7 +17,7 @@
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Group Name</label>
             <input type="text" name="name" value="{{ old('name') }}"
-                   class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200"
+                   class="w-full rounded-lg p-2 outline-1 focus:outline-blue-500/70"
                    placeholder="Enter group name">
 
             @error('name')
@@ -29,7 +29,7 @@
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Description</label>
             <textarea name="description"
-                      class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200"
+                      class="w-full rounded-lg p-2 outline-1 focus:outline-blue-500/70"
                       rows="3"
                       placeholder="Optional description">{{ old('description') }}</textarea>
 
@@ -42,7 +42,7 @@
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Privacy</label>
             <select name="is_private"
-                    class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
+                    class="w-full rounded-lg p-2 outline-1 focus:outline-blue-500/70">
                 <option value="0">Public</option>
                 <option value="1">Private</option>
             </select>

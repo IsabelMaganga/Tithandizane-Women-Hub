@@ -4,11 +4,13 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HarassmentReportController;
 use App\Http\Controllers\Admin\MentorController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Mentor\AuthController as MentorAuthController;
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
+use App\Http\Controllers\Mentor\NotificationController;
 use App\Http\Controllers\Mentor\SecurityController as MentorSecurityController;
+use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Route;
 
     //home page
     Route::get('/', fn() => view('welcome'))->name('welcome');
@@ -56,6 +58,8 @@ use Illuminate\Support\Facades\Broadcast;
 
         // dashboard
         Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/notifications/{id}/read',[NotificationController::class, 'markAsRead'])->name('notification.read');
+        Route::post('/notifications/read-all',[NotificationController::class, 'markAllAsRead'])->name('notification.read-all');
 
         // appointments
         Route::get('/appointments',[MentorSecurityController::class, 'showAppointments'])->name('appointment');
@@ -88,5 +92,3 @@ use Illuminate\Support\Facades\Broadcast;
         Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
         // Route::get('/test-broadcast', [MentorDashboardController::class, 'testBroadcast']);
     });
-
-Broadcast::routes();

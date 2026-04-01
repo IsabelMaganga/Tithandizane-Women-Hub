@@ -32,11 +32,21 @@ class DashboardController extends Controller
             return view('mentor.partials.pending-chats', compact('pendingChats'));
         }
 
+        // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
+
+        // dd(auth()->guard());
+
         return view('mentor.dashboard.index', compact(
             'mentorName',
             'mentorEmail',
             'pendingChats',
-            'activeChats'
+            'activeChats',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
