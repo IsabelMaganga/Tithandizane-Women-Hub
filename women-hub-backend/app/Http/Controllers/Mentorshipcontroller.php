@@ -88,7 +88,7 @@ class MentorshipController extends Controller
     {
         if ($session->mentor_id !== $request->user()->id && !$request->user()->isAdmin()) {
     return response()->json(['message' => 'Unauthorized'], 403);
-}
+            }
 
         $validated = $request->validate([
             'status' => 'required|in:accepted,declined,completed',

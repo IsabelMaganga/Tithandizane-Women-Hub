@@ -1,183 +1,221 @@
-import React, { useMemo } from 'react';
-import { View, ImageBackground, Image, Text, TouchableOpacity, ScrollView, Pressable } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Pressable, Dimensions, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from "react-i18next";
-import Animated, { FadeInDown, BounceIn } from "react-native-reanimated";
-import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInRight } from "react-native-reanimated";
+import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons, Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { LineChart } from "react-native-chart-kit"; // Switched to stable kit
 import { useAuth } from '../../context/AuthContext';
 import { useThemeToggle } from "../../hooks/useTheme";
 import Profile from '../Profile';
-import { MenuItem } from '../MenuItem';
-import { NotFound } from '../NotFound';
 
-
-const getUserMenuConfig = (t: any) => [
-  {
-    id: 'mentorship',
-    title: t("mentorship"),
-    icon: "hands-holding-child",
-    bgColor: "bg-violet-500",
-    family: FontAwesome6,
-    route: "/(protected)/sessionsDashboard",
-  },
-  {
-    id: 'emergency',
-    title: t("emergency_help"),
-    icon: "contact-emergency",
-    bgColor: "bg-orange-500",
-    family: MaterialIcons,
-    route: "/(protected)/emergencyScreen",
-  },
-  {
-    id: 'menstrual',
-    title: t("menstrual_health"),
-    icon: "calendar-days",
-    bgColor: "bg-emerald-500",
-    family: FontAwesome6,
-    route: "/(protected)/menstrualHealthScreen",
-  },
-  {
-    id: 'report',
-    title: t("report_harassment"),
-    icon: "report-problem",
-    bgColor: "bg-rose-500",
-    family: MaterialIcons,
-    route: "/(protected)/reportHarrasmentScreen",
-  },
-];
+const { width } = Dimensions.get('window');
 
 export default function UserDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const { colorScheme } = useThemeToggle();
   const { t } = useTranslation();
-
   const isDark = colorScheme === "dark";
-  const menuItems = useMemo(() => getUserMenuConfig(t), [t]);
 
   const handleNavigation = (route: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push(route as any);
   };
 
+  const handleUnderConstruction = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Alert.alert(
+      "Coming Soon",
+      "The Sisterhood Forum is currently under construction.",
+      [{ text: "OK" }]
+    );
+  };
+
+  // Chart Configuration
+  const chartConfig = {
+    backgroundGradientFrom: isDark ? "#0f172a" : "#ffffff",
+    backgroundGradientTo: isDark ? "#0f172a" : "#ffffff",
+    color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
+    labelColor: (opacity = 1) => isDark ? `rgba(255, 255, 255, ${opacity})` : `rgba(100, 116, 139, ${opacity})`,
+    strokeWidth: 3,
+    propsForDots: { r: "5", strokeWidth: "2", stroke: "#7c3aed" },
+    decimalPlaces: 0,
+  };
+
+  const chartData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    datasets: [{ data: [2, 5, 3, 8, 5, 9] }]
+  };
+
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-slate-900">
+    <View className="flex-1 bg-gray-50 dark:bg-slate-950">
       <StatusBar style={isDark ? "light" : "dark"} />
 
-
-      <View className="absolute top-0 left-0 right-0">
-        <ImageBackground
-          source={require('../../assets/images/Ellipse 4.png')}
-          className="w-full h-[305px]"
-          resizeMode="cover"
-        >
-          <Image
-            source={require('../../assets/images/shape (1).png')}
-            className="absolute top-0 left-0 w-32 h-32 opacity-60"
-          />
-        </ImageBackground>
-      </View>
-
       <SafeAreaView className="flex-1">
-        {/* Header Section */}
-        <View className="flex-row items-center justify-between px-6 mt-4">
+        {/* --- Header --- */}
+        <View className="flex-row items-center justify-between px-6 py-4">
           <View className="flex-row items-center space-x-3">
             <Pressable 
-              onPress={() => handleNavigation("/(protected)/profileScreen")}
-              className="active:opacity-80"
+              onPress={() => handleNavigation("/(protected)/settingsScreen")}
+              className="border-2 border-violet-200 dark:border-slate-700 rounded-full p-0.5"
             >
-              <View className="border-2 border-white rounded-full shadow-sm">
-                <Profile />
-              </View>
+              <Profile />
             </Pressable>
             <View>
-              <Text className="text-gray-500 dark:text-gray-300 text-xs font-medium uppercase tracking-widest">
-                {t("welcome")}
+              <Text className="text-gray-400 text-xs font-bold uppercase tracking-tighter">
+                {t("welcome_back")},
               </Text>
-              <Text className="text-slate-800 dark:text-white font-bold text-xl">
-                {user?.name ?? t("guest")}
+              <Text className="text-slate-900 dark:text-white font-black text-xl">
+                {user?.name || "Sister"}
               </Text>
             </View>
           </View>
-
           <TouchableOpacity
             onPress={() => handleNavigation("/notificationScreen")}
-            className="p-2 bg-white/20 rounded-full backdrop-blur-md"
+            className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl items-center justify-center shadow-sm border border-gray-100 dark:border-slate-700"
           >
-            <Ionicons name="notifications" size={24} color="white" />
+            <Ionicons name="notifications-outline" size={24} color={isDark ? "white" : "#1e293b"} />
           </TouchableOpacity>
         </View>
 
-        {/* User Content Area */}
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 40,marginTop:200,marginLeft:20 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Main Grid */}
-          <View className="flex-row flex-wrap justify-center items-center">
-            {menuItems.map((item, index) => (
-              <Animated.View
-                key={item.id}
-                entering={FadeInDown.delay(index * 100).duration(500)}
-                style={{ width: '50%', marginBottom: 16 }}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+
+          {/*SESSION REQUESTS */}
+          <Animated.View entering={FadeInDown.delay(200)} className="px-6 mt-4">
+            <LinearGradient
+              colors={['#7c3aed', '#4f46e5']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="rounded-[32px] p-6 shadow-xl shadow-violet-300 dark:shadow-none"
+            >
+              <View className="flex-row justify-between items-start">
+                <View>
+                  <Text className="text-violet-100 font-medium text-sm">Session Requests</Text>
+                  <Text className="text-white text-3xl font-black mt-1">02 Pending</Text>
+                  <View className="bg-white/20 self-start px-3 py-1 rounded-full mt-2">
+                    <Text className="text-white text-[10px] font-bold tracking-widest uppercase">Awaiting Mentor</Text>
+                  </View>
+                </View>
+                <MaterialCommunityIcons name="clock-fast" size={48} color="rgba(255,255,255,0.3)" />
+              </View>
+
+              <TouchableOpacity
+                onPress={() => handleNavigation("/(protected)/sessionsDashboard")}
+                className="mt-6 flex-row justify-between items-center bg-white/20 p-4 rounded-2xl"
               >
-                <MenuItem
-                  title={item.title}
-                  icon={item.icon}
-                  bgColor={item.bgColor}
-                  family={item.family}
-                  onPress={() => handleNavigation(item.route)}
-                />
-              </Animated.View>
-            ))}
+                <Text className="text-white text-xs font-bold">View Recent Requests</Text>
+                <Feather name="arrow-right" size={16} color="white" />
+              </TouchableOpacity>
+            </LinearGradient>
+          </Animated.View>
+
+          {/* ANALYTICS CHART SECTION */}
+          <View className="px-6 mt-8">
+            <Text className="text-slate-900 dark:text-white font-bold text-lg mb-4">Hub Activity</Text>
+            <View className="bg-white dark:bg-slate-900 rounded-[28px] py-4 items-center border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+              <LineChart
+                data={chartData}
+                width={width - 48}
+                height={160}
+                chartConfig={chartConfig}
+                bezier
+                style={{ marginLeft: -20, borderRadius: 28 }}
+                withInnerLines={false}
+                withOuterLines={false}
+                withHorizontalLabels={true}
+                withVerticalLabels={true}
+              />
+            </View>
           </View>
 
-          {/* Featured Action Card for Users */}
-          <Animated.View entering={FadeInDown.delay(500)}>
+          {/* QUICK ACTIONS GRID */}
+          <Text className="px-8 mt-10 text-slate-500 dark:text-white font-black text-lg mb-4">Core Services</Text>
+          <View className="flex-row flex-wrap px-4 border-t border-gray-200 dark:border-slate-700 pt-2">
+            <GridItem 
+              title="Mentorship" 
+              icon="hands-holding-child" 
+              color="#8b5cf6" 
+              onPress={() => handleNavigation("/(protected)/sessionsDashboard")} 
+            />
+            <GridItem 
+              title="Emergency" 
+              icon="shield-alert" 
+              color="#f43f5e" 
+              onPress={() => handleNavigation("/(protected)/emergencyScreen")} 
+              isMaterial
+            />
+            <GridItem 
+              title="Hygiene Hub" 
+              icon="water-outline" 
+              color="#0ea5e9" 
+              onPress={() => handleNavigation("/(protected)/menstrualHealthScreen")} 
+              isIonicons
+            />
+            <GridItem 
+              title="Reports" 
+              icon="flag" 
+              color="#f59e0b" 
+              onPress={() => handleNavigation("/(protected)/reportHarrasmentScreen")} 
+            />
+          </View>
+
+          {/* COMMUNITY HUB CARD*/}
+          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-6">
             <TouchableOpacity 
-              className="w-full bg-white dark:bg-slate-800 p-6 rounded-[32px] mt-4 flex-row items-center border border-gray-100 dark:border-slate-700 shadow-xl shadow-black/5"
-              onPress={() => handleNavigation("/community")}
+              onPress={handleUnderConstruction}
+              className="bg-slate-900 dark:bg-slate-800 p-6 rounded-[28px] flex-row items-center justify-between"
             >
-              <View className="bg-emerald-100 dark:bg-emerald-900/30 p-4 rounded-2xl mr-4">
-                <FontAwesome6 name="users-line" size={24} color="#10b981" />
+              <View className="flex-row items-center">
+                <View className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center">
+                  <Ionicons name="chatbubbles-outline" size={24} color="white" />
+                </View>
+                <View className="ml-4">
+                  <Text className="text-white font-bold text-base">Community Hub</Text>
+                  <Text className="text-slate-400 text-xs italic">Coming soon</Text>
+                </View>
               </View>
-              <View className="flex-1">
-                <Text className="text-slate-800 dark:text-white font-bold text-base">
-                  {t("join_community")}
-                </Text>
-                <Text className="text-slate-500 dark:text-slate-400 text-xs mt-1">
-                  {t("community_desc")}
-                </Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
+              <MaterialIcons name="lock-outline" size={20} color="#94a3b8" />
             </TouchableOpacity>
           </Animated.View>
+
         </ScrollView>
 
-        {/* Floating FAQ Bot */}
-        <Animated.View
-          entering={BounceIn.delay(800)}
-          className="absolute bottom-10 right-8 shadow-2xl"
+        {/*EMERGENCY FAB */}
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={() => handleNavigation("/(protected)/emergencyScreen")}
+          className="absolute bottom-10 right-6 w-16 h-16 bg-rose-600 rounded-full items-center justify-center shadow-2xl border-4 border-white dark:border-slate-900"
         >
-          <TouchableOpacity 
-            onPress={() => <NotFound description="Service not available for now" />}
-            activeOpacity={0.8}
-            className="bg-white dark:bg-slate-800 w-16 h-16 rounded-full items-center justify-center border border-gray-100 dark:border-slate-700 shadow-xl"
-          >
-            <MaterialCommunityIcons 
-              name="robot-confused" 
-              size={28} 
-              color={isDark ? "#a78bfa" : "#7c3aed"} 
-            />
-            <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold">
-              {t("FAQ")}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+          <MaterialIcons name="sos" size={32} color="white" />
+        </TouchableOpacity>
       </SafeAreaView>
     </View>
   );
 }
+
+// Reusable Grid Component
+const GridItem = ({ title, icon, color, onPress, isMaterial, isIonicons }: any) => (
+  <TouchableOpacity 
+    onPress={onPress}
+    style={{ width: '50%', padding: 8 }}
+    activeOpacity={0.7}
+  >
+    <View className=" dark:bg-slate-900 p-2 rounded-[32px]  items-center">
+      <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
+        {isMaterial ? (
+          <MaterialCommunityIcons name={icon} size={26} color={color} />
+        ) : isIonicons ? (
+          <Ionicons name={icon} size={26} color={color} />
+        ) : (
+          <FontAwesome6 name={icon} size={22} color={color} />
+        )}
+      </View>
+      <Text className="text-slate-800 dark:text-slate-200 font-bold text-xs">{title}</Text>
+    </View>
+  </TouchableOpacity>
+);

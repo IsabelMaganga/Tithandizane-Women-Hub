@@ -21,7 +21,7 @@
         @endif
         <style>
             body{
-                background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/images/background2.jpg');
+                background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/images/background.png');
                 background-attachment: fixed;
                 background-size: cover;
                 background-repeat: no-repeat
