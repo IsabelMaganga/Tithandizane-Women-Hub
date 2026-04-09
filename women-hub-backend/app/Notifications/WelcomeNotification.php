@@ -11,8 +11,10 @@ class WelcomeNotification extends Notification
 {
     use Queueable;
 
-    public function __construct()
+    public $user;
+    public function __construct($user)
     {
+        $this->user = $user;
     }
 
     /**
@@ -20,7 +22,7 @@ class WelcomeNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via( $notifiable): array
+    public function via($notifiable): array
     {
         return ['database'];
     }
@@ -28,10 +30,11 @@ class WelcomeNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail( $notifiable)
+    public function toDatabase( $notifiable )
     {
         return [
-            'message' => 'You have successfully logged in as a mentor.',
+            'title' => "Tithandizane Women's Hub,",
+            'message' => 'welcome back! ' . $this->user->name .'. You have successfully logged in as a mentor.',
             'time' => now()->toDateTimeString(),
         ];
 
@@ -42,7 +45,7 @@ class WelcomeNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray( $notifiable ): array
     {
         return [
             //

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Image, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Image, KeyboardAvoidingView, Platform, TouchableOpacity, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import MyButton from "../../components/MyButton";
@@ -14,7 +14,7 @@ export default function Login() {
 
   const router = useRouter();
   const { t } = useTranslation("auth");
-  const { login } = useAuth();
+  const { login, user, logout } = useAuth();
 
   // form states
   const [email, setEmail] = useState("");
@@ -44,6 +44,11 @@ export default function Login() {
       await login(email, password);
 
       // success message
+      if (user?.role === "admin") {
+        setError("Admin accounts cannot log in here");
+        logout();
+        
+      }
       setSuccessMessage("Login successful, getting things ready...");
       setTimeout(() => {
         setSuccessMessage("");
@@ -176,9 +181,11 @@ export default function Login() {
 
           </View>
 
-          <Text className="text-purple-400 text-sm mb-2 text-right">
+          <Pressable onPress={() => router.push("/(auth)/forgotPasswordScreen")}>
+            <Text className="text-purple-400 text-sm mb-2 text-right">
             {t("forgot_password")}
           </Text>
+          </Pressable>
 
           {/* login button */}
           <MyButton

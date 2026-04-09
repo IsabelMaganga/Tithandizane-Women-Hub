@@ -28,7 +28,7 @@ const UsersScreen = () => {
 
   const router = useRouter();
 
-
+  // Load token
   useEffect(() => {
     const loadToken = async () => {
       const t = await getUserToken();
@@ -38,14 +38,14 @@ const UsersScreen = () => {
     loadToken();
   }, []);
 
-  // Load users AFTER token is ready
+  // Load users after token
   useEffect(() => {
     if (token) {
       loadUsers();
     }
   }, [token]);
 
-  // 🔍 Search filter
+  // Filter users
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return users;
     return users.filter(user =>
@@ -53,7 +53,7 @@ const UsersScreen = () => {
     );
   }, [users, searchQuery]);
 
-  //Load from cache first
+  // Load from cache
   const loadUsers = async () => {
     try {
       const now = Date.now();
@@ -78,7 +78,7 @@ const UsersScreen = () => {
     }
   };
 
-  //Fetch from API
+  // Fetch from API
   const fetchUsersFromAPI = async () => {
     if (!token) return;
 
@@ -86,10 +86,9 @@ const UsersScreen = () => {
       setRefreshing(true);
 
       const data = await getAllUsers(token);
-
       setUsers(data);
 
-      // Cache
+      // Cache data
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
       await AsyncStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
 
@@ -101,7 +100,7 @@ const UsersScreen = () => {
     }
   };
 
-  //Loading state
+  // Loading state
   if (loading && !refreshing) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -116,7 +115,7 @@ const UsersScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
 
-      {/* HEADER */}
+      {/* HEADER TEXT */}
       <View className="px-5 pt-2 pb-4">
         <Text className="text-3xl font-black text-slate-900 tracking-tight">
           Discover
@@ -124,19 +123,6 @@ const UsersScreen = () => {
         <Text className="text-slate-400 text-sm font-medium mb-5">
           Connect with mentors and peers
         </Text>
-
-        <TextInput
-          placeholder="Search by name..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          mode="outlined"
-          outlineColor="#F1F5F9"
-          activeOutlineColor="#8A4FFF"
-          placeholderTextColor="#94A3B8"
-          style={{ backgroundColor: '#F8FAFC', height: 48 }}
-          right={<TextInput.Icon icon={() => <Feather name="search" size={18} color="#94A3B8" />} />}
-          className="rounded-2xl"
-        />
       </View>
 
       {/* USERS LIST */}
@@ -145,7 +131,15 @@ const UsersScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         estimatedItemSize={85}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
-        onRefresh={fetchUsersFromAPI}
+
+        ListHeaderComponent={
+          <Header
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+        }
+
+        onRefresh={() => fetchUsersFromAPI()}
         refreshing={refreshing}
 
         renderItem={({ item }) => (
@@ -206,3 +200,32 @@ const UsersScreen = () => {
 };
 
 export default UsersScreen;
+
+
+//sub component for header with search and create group button
+const Header = React.memo(({ searchQuery, setSearchQuery }) => {
+  return (
+    <View className="mb-4">
+      <TextInput
+        placeholder="Search by name..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        mode="outlined"
+        outlineColor="#F1F5F9"
+        activeOutlineColor="#8A4FFF"
+        placeholderTextColor="#94A3B8"
+        style={{ backgroundColor: '#F8FAFC', height: 48 }}
+        right={
+          <TextInput.Icon
+            icon={() => <Feather name="search" size={18} color="#94A3B8" />}
+          />
+        }
+        className="rounded-2xl"
+      />
+
+      <Pressable className="mt-3 bg-purple-500 p-3 rounded-xl items-center">
+        <Text className="text-white font-semibold">Create group</Text>
+      </Pressable>
+    </View>
+  );
+});

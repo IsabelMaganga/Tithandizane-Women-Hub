@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\Broadcast;
 
 class BroadcastServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function boot()
     {
-        Broadcast::routes(['middleware' => ['auth:sanctum']]);
+        Broadcast::routes([
+            'middleware' => ['web'],
+        ]);
 
         require base_path('routes/channels.php');
     }

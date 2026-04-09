@@ -91,6 +91,7 @@ function Navigation() {
       {/* Define explicit stacks if needed, otherwise Slot/Stack handles it */}
       <Stack.Screen name="(auth)" options={{ gestureEnabled: false }} />
       <Stack.Screen name="(protected)" options={{ gestureEnabled: false }} />
+
     </Stack>
   );
 }

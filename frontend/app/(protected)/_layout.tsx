@@ -37,12 +37,17 @@ export default function ProtectedLayout() {
     <Stack.Screen name="reportHarrasmentScreen" options={ { headerShown:false,headerTitle: "Report Harassment" } } />
     <Stack.Screen name="menstrualHealthScreen" options={ { headerShown:false,headerTitle: "Menstrual Health"  } } />
     <Stack.Screen name="chat/[id]" options={ { headerShown:false } } />
-    <Stack.Screen name="profileScreen" options={ { headerShown:true} } />
+    <Stack.Screen name="settingsScreen" options={ { headerShown:false} } />
     <Stack.Screen name="usersScreen" options={{ headerShown:false}} />
     <Stack.Screen name="group-info/[id]" options={{ headerShown:true}} />
     <Stack.Screen name="user-info/[id]" options={{ headerShown:false}} />
     <Stack.Screen name="sessionsDashboard"/>
-    <Stack.Screen name="notificationScreen" />
+    <Stack.Screen name="editProfile" />
+    <Stack.Screen name="changePasswordScreen" />
+    <Stack.Screen name="twoFactorAuthScreen" />
+    <Stack.Screen name="aboutScreen" />
+    <Stack.Screen name="privacyPolicyScreen" />
+
 
   </Stack>
 }

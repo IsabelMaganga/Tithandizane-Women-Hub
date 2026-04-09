@@ -29,9 +29,9 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $mentor = Auth::guard('mentor')->user();
-            // $mentor->notify(new WelcomeNotification());
+            $mentor->notify(new WelcomeNotification($mentor));
 
-            return redirect()->intended(route('mentor.dashboard'))->with('success', 'Welcome back'. $credentials['email']);
+            return redirect()->intended(route('mentor.dashboard'))->with('success', 'Welcome back ' . $credentials['email']);
         }
 
          // check if user exist but with wrong role

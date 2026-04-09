@@ -13,10 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playwrite+DK+Uloopet+Guides&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-
-    @vite('resources/js/app.js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    @vite(['resources/js/app.js'])
+
     <style>
         /* Custom scrollbar styles */
         ::-webkit-scrollbar {
@@ -206,16 +206,18 @@
                 <div class="flex justify-between items-center px-8 py-4">
 
                     <div class="flex items-center space-x-4">
+
                         {{-- notifications --}}
                         <div class=" relative notifications px-2">
                             <i class="fas fa-bell text-yellow-500 text-xl cursor-pointer hover:text-yellow-600"></i>
-                            <p class=" absolute right-0 -top-2 text-[11px] text-white">2</p>
-                        </div>
+                            <p id="notifCount" class=" absolute right-0 -top-2 text-[11px] text-white">
+                                @if ($unreadCount > 0)
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                @else
 
-                        {{-- mails --}}
-                        <div class=" relative notifications px-2">
-                            <i class="fas fa-envelope text-gray-200 text-xl cursor-pointer hover:text-gray-100"></i>
-                            <p class=" absolute right-0 -top-2 text-[11px] text-white">2</p>
+                                @endif
+
+                            </p>
                         </div>
 
                         {{-- name-section --}}
@@ -243,74 +245,67 @@
                     <div class=" p-3 flex flex-1 justify-between items-top w-full">
 
                         {{-- notifications --}}
-                        <div  class=" text-sm h-full flex  flex-col overflow-auto w-full">
+                        <div  class=" text-sm flex gap-2 flex-col w-full">
 
-                            {{-- @foreach (auth()->user()->notifications as $notification) --}}
 
-                            {{-- notification --}}
-                            <div  class="list text-sm grid rounded bg-gray-100/20 p-2 grid-cols-3 w-full">
-                                <div class="text flex-col col-span-3">
-                                    <div class="div flex justify-between items-center w-full">
-                                        <h1 class=" font-semibold">New notification</h1>
-                                        <h1 class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px] p-2">Mark as read</h1>
+                            @if ($unreadNotifications->isEmpty())
+                                <p class="text-gray-500 text-center mt-4">No notifications</p>
+
+                            @else
+
+                                @foreach ($unreadNotifications as $notification)
+
+                                    {{-- notification --}}
+                                    <div  class="list text-sm grid rounded bg-gray-100/20 p-2 grid-cols-3 w-full">
+                                        <div class="text flex-col col-span-3">
+                                            <div class="div flex justify-between items-center mb-2 w-full">
+                                                <h1 class=" font-semibold">{{ $notification->data['title'] ?? 'Notification'}}</h1>
+                                                <form  action="{{ route("mentor.notification.read", $notification->id )}}" method="POST" class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px] p-1 px-3">
+                                                    @csrf
+                                                    <button type="submit">Mark as read</button>
+                                                </form>
+                                            </div>
+
+                                            <p class=" wrap-break-word text-gray-500">{{ $notification->data['message'] ?? '' }}</p>
+                                            <p class=" text-sm text-gray-400">{{ $notification->created_at->diffForHumans()}}</p>
+                                        </div>
                                     </div>
 
-                                    {{-- <p class=" wrap-break-word text-gray-500">{{ $notification->data['message'] }}</p> --}}
-                                    {{-- <p class=" text-sm text-gray-400">{{ $notification->data['times']}}</p> --}}
-                                </div>
-                            </div>
+                                @endforeach
 
-                            {{-- @endforeach --}}
+                            @endif
+
+
 
                        </div>
 
                     </div>
-                    <div class=" p-2 flex justify-center items-center w-full">
+
+                    {{-- Mark all as read --}}
+                    <div class=" p-2 flex justify-between items-center w-full">
+                        <form  action="{{ route('mentor.notification.read-all')}}" method="POST" class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px] p-2 px-3">
+                                @csrf
+                               <button type="submit"> Mark all as read</button>
+                        </form>
+
                         <p class=" text-sm text-gray-400">info@Tithandizane.com</p>
                     </div>
 
                 </div>
 
-                <div id="notificationChatSideBar" class="notificationChatHide select-none shadow flex flex-col bg-white fixed h-[89%] w-[20%] p-1 md:w-[30%] bottom-0 z-10">
-                    <div class=" p-3 flex justify-end items-center w-full">
-                        <p id="close"><i class="fa-regular fa-circle-xmark text-red-600 text-xl"></i></p>
-                    </div>
-                    <div class=" p-3 flex flex-1 justify-between items-top w-full">
-
-                        {{-- notifications --}}
-                        <div  class=" text-sm h-full flex  flex-col overflow-auto w-full">
-
-                            @for ($i = 0; $i < 2; $i++)
-
-                            {{-- notification --}}
-                            <div  class="list text-sm grid rounded bg-gray-100/20 p-2 grid-cols-3 w-full">
-                                <div class="text flex-col col-span-3">
-                                    <div class="div flex justify-between items-center w-full">
-                                        <h1 class=" font-semibold">Chat request</h1>
-                                        <h1 class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[12px] p-2">View Now</h1>
-                                    </div>
-
-                                    <p class=" wrap-break-word text-gray-500">From Isabella: Love issues</p>
-                                    <p class=" text-sm text-gray-400">12:00 am</p>
-                                </div>
-                            </div>
-
-                            @endfor
-                       </div>
-
-                    </div>
-                    <div class=" p-2 flex justify-center items-center w-full">
-                        <p class=" text-sm text-gray-400">info@Tithandizane.com</p>
-                    </div>
+                <div id="notificationPopUp" class="fixed bg-white text-xs bottom-3 right-10 select-none w-60  space-y-2 z-50 ">
 
                 </div>
+
             </div>
         </div>
+
+
     </div>
 
-    {{-- <script src=" {{ asset('resources/js/app.js')}}"></script> --}}
     <script>
-        // Navigation active state management
+
+        //  Navigation active state management
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
             const currentPage = window.location.pathname.split('/').pop() || 'dashboard';
@@ -352,12 +347,6 @@
 
             notificationSideBar.classList.remove('notificationHide');
             notificationSideBar.classList.add('notificationShow');
-            notificationChatSideBar.classList.add('notificationChatHide');
-        });
-
-        closeBtn.addEventListener('click', function() {
-            notificationChatSideBar.classList.add('notificationChatHide');
-            notificationChatSideBar.classList.remove('notificationChatShow');
         });
 
         closeNotif.addEventListener('click', function() {
@@ -365,16 +354,6 @@
             notificationSideBar.classList.add('notificationHide');
         });
 
-
-        // chat logic for notification
-        notificationChatSideBar = document.getElementById('notificationChatSideBar');
-
-        document.querySelector('.fa-envelope ').addEventListener('click', function() {
-
-            notificationChatSideBar.classList.remove('notificationChatHide');
-            notificationChatSideBar.classList.add('notificationChatShow');
-            notificationSideBar.classList.add('notificationHide');
-        });
 
         // dropDownList logic for chat tab
         const showIcon = document.getElementById('showIcon');
@@ -385,7 +364,54 @@
             showIcon.classList.toggle('arrow-rotate');
         });
 
-        // alert('test');
+
+        // chat request broadcast channel
+        const userId = {{ auth()->id() }};
+        // console.log(userId);
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            if (window.Echo) {
+                console.log("Echo loaded");
+
+                window.Echo.private(`App.Models.User.${userId}`)
+                    .notification((notification) => {
+                        console.log('New notification:', notification);
+
+                    // increase badge
+                    const countEl = document.getElementById('notifCount');
+                    if (countEl) {
+                        const count = parseInt(countEl.innerText) || 0;
+                        countEl.innerText = count + 1;
+                    }
+
+                    // Show popup
+                    const container = document.getElementById('notificationPopUp');
+                    const div = document.createElement('div');
+                    div.className = ' bg-white shadow p-3 rounded border-l-4 border-blue-500'
+
+                    div.innerHTML = `
+                        <p class= " font-bold"> ${notification.name} </p>
+                        <p class= " font-bold text-sm text-gray-500">${notification.message} </p>
+                    `;
+
+                    container.appendChild(div);
+
+                    setTimeout(() => {
+                        div.remove();
+                    }, 5000);
+
+                    location.reload();
+                });
+
+
+            } else {
+                console.log("Echo is not loaded");
+            }
+
+        });
+
+
 
     </script>
 

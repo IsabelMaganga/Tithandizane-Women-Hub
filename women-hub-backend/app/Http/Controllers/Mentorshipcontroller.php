@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
 use App\Models\MentorshipSession;
 use App\Models\User;
-use App\Models\Conversation;
+use App\Notifications\ChatRequestNotification;
 use Illuminate\Http\Request;
 
 class MentorshipController extends Controller
@@ -50,6 +51,10 @@ class MentorshipController extends Controller
         ]);
 
         $session->load('mentor:id,name,expertise_area');
+
+        // sending a request notification to the mentor
+        $mentor = User::find($session->mentor_id);
+        $mentor->notify(new ChatRequestNotification($session));
 
         return response()->json([
             'message' => 'Mentorship request sent successfully',
@@ -97,7 +102,7 @@ class MentorshipController extends Controller
     {
         if ($session->mentor_id !== $request->user()->id && !$request->user()->isAdmin()) {
     return response()->json(['message' => 'Unauthorized'], 403);
-}
+            }
 
         $validated = $request->validate([
             'status' => 'required|in:accepted,declined,completed',
