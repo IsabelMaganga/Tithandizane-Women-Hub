@@ -8,6 +8,14 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Direct routes (without v1 prefix) for frontend compatibility
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/mentors', [MentorshipController::class, 'mentors']);
+Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
+Route::get('/general-guides', [ContentController::class, 'generalGuides']);
+Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
+
 // v0.1
 Route::prefix('v1')->group(function () {
 

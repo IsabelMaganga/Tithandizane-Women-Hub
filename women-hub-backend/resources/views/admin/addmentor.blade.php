@@ -7,9 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        /* Color Palette Variables */
+        :root {
+            --deep-blue: #3B59A8;
+            --bright-blue: #5CB8E4;
+            --purple-magenta: #9C27B0;
+            --vibrant-green: #4CAF50;
+            --lime-green: #8BC34A;
+        }
+
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #3b82f6 !important;
+            border-color: var(--deep-blue) !important;
+            ring: 2px solid var(--bright-blue);
         }
 
         .form-section {
@@ -53,9 +63,9 @@
         }
 
         .expertise-checkbox:checked + .expertise-label {
-            border-color: #3b82f6;
-            background: #eff6ff;
-            color: #1e40af;
+            border-color: var(--deep-blue);
+            background: #E8EAF6;
+            color: var(--deep-blue);
         }
 
         /* Tab navigation */
@@ -63,8 +73,8 @@
         .tab-content.active { display: block; }
         .tab-button { transition: all 0.3s ease; }
         .tab-button.active {
-            border-bottom: 3px solid #3b82f6;
-            color: #1e40af;
+            border-bottom: 3px solid var(--deep-blue);
+            color: var(--deep-blue);
         }
 
         /* Password strength meter */
@@ -83,40 +93,40 @@
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
 <div class="flex min-h-screen">
 
-    <!-- Sidebar -->
-    <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 bg-gray-900 text-white flex-shrink-0 fixed h-screen">
-        <div class="p-6 border-b border-gray-800">
+    <!-- Sidebar - Deep Blue Dominant -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: var(--deep-blue);">
+        <div class="p-6 border-b" style="border-color: #2C4A8C;">
             <h1 class="text-2xl font-bold tracking-tight">Tithandizane</h1>
-            <p class="text-sm text-teal-400 font-medium">Women Hub</p>
+            <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
         </div>
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/70 rounded-lg transition-colors">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
                 <i class="fas fa-home w-5 mr-3"></i><span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.mentors.index') }}" class="flex items-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium shadow-sm">
+            <a href="{{ route('admin.mentors.index') }}" class="flex items-center px-4 py-3 rounded-lg font-medium shadow-sm" style="background: #2C4A8C; color: white;">
                 <i class="fas fa-chalkboard-teacher w-5 mr-3"></i><span>Mentors</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/70 rounded-lg transition-colors">
-                <i class="fas fa-flag w-5 mr-3"></i><span>Harassment Reports</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+                <i class="fas fa-flag w-5 mr-3" style="color: var(--purple-magenta);"></i><span>Harassment Reports</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/70 rounded-lg transition-colors">
-                <i class="fas fa-book-open w-5 mr-3"></i><span>Guidance Content</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+                <i class="fas fa-book-open w-5 mr-3" style="color: var(--vibrant-green);"></i><span>Guidance Content</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/70 rounded-lg transition-colors">
-                <i class="fas fa-users w-5 mr-3"></i><span>Users</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+                <i class="fas fa-users w-5 mr-3" style="color: var(--bright-blue);"></i><span>Users</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/70 rounded-lg transition-colors">
-                <i class="fas fa-cog w-5 mr-3"></i><span>Settings</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+                <i class="fas fa-cog w-5 mr-3" style="color: var(--lime-green);"></i><span>Settings</span>
             </a>
         </nav>
         <!-- Sidebar footer — real admin credentials -->
-        <div class="p-6 border-t border-gray-800 mt-auto">
+        <div class="p-6 border-t mt-auto" style="border-color: #2C4A8C;">
             <div class="flex items-center">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0D9488&color=fff&size=128"
-                     class="w-11 h-11 rounded-full ring-2 ring-gray-700/60" alt="{{ $adminName }}">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=5CB8E4&color=fff&size=128"
+                     class="w-11 h-11 rounded-full ring-2 ring-white/30" alt="{{ $adminName }}">
                 <div class="ml-3 min-w-0">
                     <p class="text-sm font-medium truncate">{{ $adminName }}</p>
-                    <p class="text-xs text-gray-400 truncate">{{ $adminEmail }}</p>
+                    <p class="text-xs text-white/70 truncate">{{ $adminEmail }}</p>
                 </div>
             </div>
         </div>
@@ -126,7 +136,7 @@
     <div class="flex-1 flex flex-col lg:ml-72 xl:ml-80">
 
         <!-- Topbar — real admin credentials -->
-        <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+        <header class="bg-white border-b shadow-sm sticky top-0 z-10" style="border-color: #E2E8F0;">
             <div class="px-6 py-4 flex items-center justify-between">
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold text-gray-900">Add New Mentor</h1>
@@ -139,12 +149,12 @@
                     <button type="button" class="text-gray-500 hover:text-gray-700 transition-colors">
                         <i class="fas fa-envelope text-xl"></i>
                     </button>
-                    <div class="hidden sm:flex items-center space-x-3 pl-4 border-l border-gray-200">
+                    <div class="hidden sm:flex items-center space-x-3 pl-4 border-l" style="border-color: #E2E8F0;">
                         <div class="text-right">
                             <p class="text-sm font-medium text-gray-900">{{ $adminName }}</p>
                             <p class="text-xs text-gray-500">{{ $adminEmail }}</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0D9488&color=fff&size=128"
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=5CB8E4&color=fff&size=128"
                              class="w-10 h-10 rounded-full" alt="{{ $adminName }}">
                     </div>
                 </div>
@@ -157,35 +167,63 @@
             <!-- Breadcrumb -->
             <nav class="mb-8 text-sm" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600 transition-colors flex items-center">
+                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: var(--deep-blue);">
                         <i class="fas fa-home mr-1.5 text-xs"></i> Dashboard
                     </a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li><a href="{{ route('admin.mentors.index') }}" class="hover:text-blue-600 transition-colors">Mentors</a></li>
+                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: var(--deep-blue);">Mentors</a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
                     <li class="text-gray-500 font-medium">Add New Mentor</li>
                 </ol>
             </nav>
+
+            <!--adding to desplay session-->
+            <!-- Add at the top of the form to display session messages -->
+@if(session('success'))
+    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        {{ session('error') }}
+    </div>
+@endif
+
+<!-- Update the form opening tag to include files and error handling -->
+<form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
+    @csrf
+    
+    <!-- Add field for photo upload -->
+    <div>
+        <label for="photo" class="block text-sm font-semibold text-gray-900 mb-2">Profile Photo</label>
+        <input type="file" name="photo" id="photo" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        @error('photo')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
+
 
             <!-- Form Card -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
                 <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
                     @csrf
 
-                    <!-- Header — more visible blue gradient -->
-                    <div class="px-6 md:px-8 py-6 border-b border-blue-200"
-                         style="background: linear-gradient(135deg, #bfdbfe 0%, #c7d2fe 50%, #bfdbfe 100%);">
+                    <!-- Header — Deep Blue gradient -->
+                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #E8EAF6 0%, #D6E4F0 50%, #E8EAF6 100%); border-color: #C5CAE9;">
                         <div class="flex items-start justify-between">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900">Mentor Registration</h2>
+                                <h2 class="text-2xl font-bold" style="color: var(--deep-blue);">Mentor Registration</h2>
                                 <p class="mt-2 text-sm text-gray-700">
                                     Complete the form below to add a new mentor to the platform.
                                     All fields marked with <span class="text-red-500 font-semibold">*</span> are required.
                                 </p>
                             </div>
                             <div class="hidden sm:block">
-                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border border-blue-300 shadow-sm">
-                                    <i class="fas fa-info-circle text-blue-600 text-sm"></i>
+                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: var(--deep-blue);">
+                                    <i class="fas fa-info-circle text-sm" style="color: var(--deep-blue);"></i>
                                     <span class="text-sm font-medium text-gray-700">
                                         Step <span id="currentStep">1</span> of <span id="totalSteps">3</span>
                                     </span>
@@ -197,7 +235,7 @@
                     <!-- Tab Navigation -->
                     <div class="hidden md:block px-6 md:px-8 bg-gray-50 border-b border-gray-200">
                         <div class="flex space-x-8">
-                            <button type="button" class="tab-button active py-4 px-1 font-medium text-gray-900 border-b-2 border-blue-600" data-tab="basic">
+                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: var(--deep-blue); color: var(--deep-blue);">
                                 <i class="fas fa-user mr-2"></i> Basic Info
                             </button>
                             <button type="button" class="tab-button py-4 px-1 font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900" data-tab="professional">
@@ -232,8 +270,8 @@
                                             </label>
                                         </div>
                                         <p class="mt-3 text-xs text-gray-600 text-center">
-                                            <i class="fas fa-check-circle text-green-600 mr-1"></i> PNG, JPG
-                                            <br><i class="fas fa-info-circle text-blue-600 mr-1"></i> Max 2MB
+                                            <i class="fas fa-check-circle mr-1" style="color: var(--vibrant-green);"></i> PNG, JPG
+                                            <br><i class="fas fa-info-circle mr-1" style="color: var(--deep-blue);"></i> Max 2MB
                                         </p>
                                     </div>
                                 </div>
@@ -374,13 +412,13 @@
                                               placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
                                     <div class="mt-2 flex justify-between items-center">
-                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1 text-blue-600"></i> 2–4 sentences recommended</p>
+                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: var(--deep-blue);"></i> 2–4 sentences recommended</p>
                                         <span id="bio-count" class="text-xs text-gray-500">0 / 500 characters</span>
                                     </div>
                                     @error('bio')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                 </div>
 
-                                <!-- Status + Availability (removed: Years of Experience, Maximum Mentees) -->
+                                <!-- Status + Availability -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
@@ -397,7 +435,7 @@
                                                placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
                                                value="{{ old('availability') }}"
                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('availability') border-red-400 @enderror">
-                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1 text-blue-600"></i> Specify mentor's working hours and days</p>
+                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: var(--deep-blue);"></i> Specify mentor's working hours and days</p>
                                         @error('availability')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                     </div>
                                 </div>
@@ -409,14 +447,17 @@
                             <div class="space-y-8">
                                 <!-- Social Profiles -->
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Social & Professional Profiles</h3>
-                                    <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Social & Professional Profiles</h3>
+                                    <p class="text-sm text-gray-600 mb-4">Please provide at least one professional profile link below. <span class="text-red-500">*</span></p>
+                                    
+                                    <!-- Social Profiles Container with validation -->
+                                    <div class="space-y-4" id="socialProfilesContainer">
                                         <!-- LinkedIn -->
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-linkedin text-2xl text-blue-700"></i>
                                             </div>
-                                            <input type="url" name="linkedin_url" placeholder="https://linkedin.com/in/..." value="{{ old('linkedin_url') }}"
+                                            <input type="url" name="linkedin_url" id="linkedin_url" placeholder="https://linkedin.com/in/..." value="{{ old('linkedin_url') }}"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <!-- Twitter -->
@@ -424,19 +465,25 @@
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-twitter text-2xl text-sky-500"></i>
                                             </div>
-                                            <input type="url" name="twitter_url" placeholder="https://twitter.com/..." value="{{ old('twitter_url') }}"
+                                            <input type="url" name="twitter_url" id="twitter_url" placeholder="https://twitter.com/..." value="{{ old('twitter_url') }}"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <!-- Website -->
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-globe text-2xl text-purple-600"></i>
+                                                <i class="fas fa-globe text-2xl" style="color: var(--purple-magenta);"></i>
                                             </div>
-                                            <input type="url" name="website_url" placeholder="https://yourwebsite.com" value="{{ old('website_url') }}"
+                                            <input type="url" name="website_url" id="website_url" placeholder="https://yourwebsite.com" value="{{ old('website_url') }}"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                     </div>
-                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1 text-blue-600"></i> All social profile fields are optional</p>
+                                    
+                                    <!-- Error message for social profiles -->
+                                    <div id="socialProfilesError" class="mt-2 text-sm text-red-600 hidden flex items-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Please provide at least one social or professional profile link.
+                                    </div>
+                                    
+                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: var(--deep-blue);"></i> You can provide one or more profile links. At least one is required.</p>
                                 </div>
 
                                 <!-- Additional Notes -->
@@ -449,21 +496,21 @@
                                 </div>
 
                                 <!-- Notification Preferences -->
-                                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="p-4 rounded-lg" style="background: #E8EAF6; border: 1px solid #C5CAE9;">
                                     <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
-                                        <i class="fas fa-bell text-blue-600 mr-2"></i> Notification Preferences
+                                        <i class="fas fa-bell mr-2" style="color: var(--deep-blue);"></i> Notification Preferences
                                     </h4>
                                     <div class="space-y-3">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_welcome" value="1"
                                                    @if(old('notify_welcome')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-200">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-200" style="color: var(--deep-blue);">
                                             <span class="ml-2 text-sm text-gray-700">Send welcome email to mentor</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_training" value="1"
                                                    @if(old('notify_training')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-200">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-200" style="color: var(--deep-blue);">
                                             <span class="ml-2 text-sm text-gray-700">Notify about upcoming training sessions</span>
                                         </label>
                                     </div>
@@ -486,11 +533,11 @@
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <button type="button" id="nextBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-blue); hover:background: #2C4A8C;">
                                 Next <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                             <button type="submit" id="submitBtn"
-                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md">
+                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-blue), var(--bright-blue)); hover:opacity-90;">
                                 <i class="fas fa-check mr-2"></i> Create Mentor
                             </button>
                         </div>
@@ -499,11 +546,11 @@
                     <!-- Mobile Submit -->
                     <div class="sm:hidden px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
                         <button type="button" id="mobileNextBtn"
-                                class="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-blue); hover:background: #2C4A8C;">
                             Continue <i class="fas fa-arrow-right ml-2"></i>
                         </button>
                         <button type="submit"
-                                class="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-md">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-blue), var(--bright-blue));">
                             <i class="fas fa-check mr-2"></i> Create Mentor
                         </button>
                     </div>
@@ -543,7 +590,10 @@
             b.classList.add('border-transparent', 'text-gray-600');
         });
         document.getElementById(name).classList.add('active');
-        document.querySelector(`[data-tab="${name}"]`).classList.add('active', 'border-blue-600', 'text-gray-900');
+        const activeBtn = document.querySelector(`[data-tab="${name}"]`);
+        activeBtn.classList.add('active');
+        activeBtn.style.borderColor = '#3B59A8';
+        activeBtn.style.color = '#3B59A8';
         currentTab = name;
         const stepMap = { basic: 1, professional: 2, additional: 3 };
         document.getElementById('currentStep').textContent = stepMap[name];
@@ -559,7 +609,6 @@
         prevBtn?.classList.toggle('hidden', idx === 0);
         nextBtn?.classList.toggle('hidden', idx === tabs.length - 1);
         submitBtn?.classList.toggle('hidden', idx !== tabs.length - 1);
-        // Remove sm: prefix toggle to just use hidden on mobile
     }
 
     document.getElementById('nextBtn')?.addEventListener('click', () => {
@@ -670,6 +719,35 @@
         toggle();
     });
 
+    // ── Social Profiles Validation Function ───────────────────────────────────
+    function validateSocialProfiles() {
+        const linkedin = document.getElementById('linkedin_url')?.value.trim();
+        const twitter = document.getElementById('twitter_url')?.value.trim();
+        const website = document.getElementById('website_url')?.value.trim();
+        const errorEl = document.getElementById('socialProfilesError');
+        
+        const hasAtLeastOne = linkedin !== '' || twitter !== '' || website !== '';
+        
+        if (errorEl) {
+            if (!hasAtLeastOne) {
+                errorEl.classList.remove('hidden');
+            } else {
+                errorEl.classList.add('hidden');
+            }
+        }
+        
+        return hasAtLeastOne;
+    }
+    
+    // Add real-time validation for social profiles
+    const linkedinInput = document.getElementById('linkedin_url');
+    const twitterInput = document.getElementById('twitter_url');
+    const websiteInput = document.getElementById('website_url');
+    
+    if (linkedinInput) linkedinInput.addEventListener('input', validateSocialProfiles);
+    if (twitterInput) twitterInput.addEventListener('input', validateSocialProfiles);
+    if (websiteInput) websiteInput.addEventListener('input', validateSocialProfiles);
+    
     // ── Form validation ───────────────────────────────────────────────────────
     document.querySelector('form')?.addEventListener('submit', function (e) {
         const name     = document.getElementById('name')?.value.trim();
@@ -678,6 +756,9 @@
         const confirm  = confirmInput?.value;
         const expertise= document.querySelectorAll('input[name="expertise[]"]:checked').length;
         const bio      = bioField?.value.trim();
+        
+        // Check social profiles validation
+        const hasSocialProfile = validateSocialProfiles();
 
         if (!name || !email || !password || !confirm || !expertise || !bio) {
             alert('Please fill in all required fields.');
@@ -685,6 +766,10 @@
         }
         if (password !== confirm) {
             alert("Passwords don't match. Please check.");
+            e.preventDefault(); return;
+        }
+        if (!hasSocialProfile) {
+            alert('Please provide at least one social or professional profile link (LinkedIn, Twitter, or Website).');
             e.preventDefault(); return;
         }
 
@@ -698,6 +783,9 @@
 
     // Initialise button visibility
     updateNavButtons();
+    
+    // Run initial social profiles validation to show error if needed (for old values)
+    setTimeout(validateSocialProfiles, 100);
 </script>
 </body>
 </html>

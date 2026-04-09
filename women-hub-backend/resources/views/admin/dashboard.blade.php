@@ -10,20 +10,20 @@
     <!-- Chart.js CDN for analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* Custom smooth transitions & custom scrollbar - matches login aesthetic */
+        /* Custom smooth transitions & custom scrollbar */
         body {
-            background: #FDF8F0;
+            background: #F8FAFE;  /* Light, cool background to complement Deep Blue */
             font-family: system-ui, 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
         .custom-scroll::-webkit-scrollbar-track {
-            background: #e6dfd3;
+            background: #E2E8F0;
             border-radius: 10px;
         }
         .custom-scroll::-webkit-scrollbar-thumb {
-            background: #962980;
+            background: #3B59A8;  /* Deep Blue */
             border-radius: 10px;
         }
         .hover-scale {
@@ -45,81 +45,81 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        /* Custom focus ring to match login purple */
         input:focus, button:focus {
             outline: none;
-            ring: 2px solid #962980;
+            ring: 2px solid #5CB8E4;  /* Bright Blue focus ring */
         }
-        .mentor-expertise-tag {
-            transition: all 0.1s ease;
-        }
-        /* Gradient background matching login theme */
         .stat-card {
-            background: linear-gradient(135deg, #ffffff 0%, #fef9f5 100%);
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        /* Custom gradient for the quick actions card using Deep Blue and Bright Blue */
+        .empower-card {
+            background: linear-gradient(135deg, #3B59A8 0%, #5CB8E4 100%);
         }
     </style>
 </head>
 <body class="font-sans antialiased">
 
 <div class="flex h-screen overflow-hidden">
-    <!-- ================= LEFT SIDEBAR - Deep purple matching login button color ================= -->
-    <div class="w-64 flex flex-col shadow-xl" style="background: #1E1A2F; border-right: 1px solid #2D2A40;">
-        <div class="p-6 border-b" style="border-color: #3E2A4A;">
-            <h1 class="text-2xl font-bold tracking-tight" style="color: #F5C6A0;">Tithandizane</h1>
-            <p class="text-xs mt-1 opacity-80" style="color: #D4B87A;">Women Empowerment Hub</p>
+    <!-- ================= LEFT SIDEBAR - Deep Blue Dominant ================= -->
+    <div class="w-64 flex flex-col shadow-xl" style="background: #3B59A8; border-right: 1px solid #2C4A8C;">
+        <div class="p-6 border-b" style="border-color: #2C4A8C;">
+            <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
+            <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
         </div>
 
         <nav class="flex-1 mt-6 space-y-1 px-3" id="sidebar-nav">
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="dashboard" style="color: #E2E8F0; background: #2D2A44;">
-                <i class="fas fa-home w-5" style="color: #F5C6A0;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="dashboard" style="color: #FFFFFF; background: #2C4A8C;">
+                <i class="fas fa-home w-5 text-white"></i>
                 <span class="ml-3 font-medium">Dashboard</span>
             </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="mentors" style="color: #CBD5E1;">
-                <i class="fas fa-chalkboard-user w-5" style="color: #96B38F;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="mentors" style="color: #E2E8F0;">
+                <i class="fas fa-chalkboard-user w-5" style="color: #8BC34A;"></i> <!-- Lime Green -->
                 <span class="ml-3">Mentors</span>
             </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="reports" style="color: #CBD5E1;">
-                <i class="fas fa-flag w-5" style="color: #E09D8E;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="reports" style="color: #E2E8F0;">
+                <i class="fas fa-flag w-5" style="color: #9C27B0;"></i> <!-- Purple/Magenta -->
                 <span class="ml-3">Harassment Reports</span>
                 <span class="ml-auto bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-full" id="pendingReportsBadge">0</span>
             </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: #CBD5E1;">
-                <i class="fas fa-book-open w-5" style="color: #8DB5A4;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: #E2E8F0;">
+                <i class="fas fa-book-open w-5" style="color: #4CAF50;"></i> <!-- Vibrant Green -->
                 <span class="ml-3">Guidance Content</span>
             </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="users" style="color: #CBD5E1;">
-                <i class="fas fa-user-circle w-5" style="color: #C5A3C4;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="users" style="color: #E2E8F0;">
+                <i class="fas fa-user-circle w-5" style="color: #5CB8E4;"></i> <!-- Bright Blue -->
                 <span class="ml-3">Users</span>
                 <span class="ml-auto bg-gray-600 text-xs px-2 py-0.5 rounded-full" id="totalUsersBadge">0</span>
             </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="settings" style="color: #CBD5E1;">
-                <i class="fas fa-cog w-5" style="color: #C0A080;"></i>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="settings" style="color: #E2E8F0;">
+                <i class="fas fa-cog w-5" style="color: #8BC34A;"></i> <!-- Lime Green -->
                 <span class="ml-3">Settings</span>
             </a>
             <div class="pt-8 mt-auto">
-                <button type="button" onclick="handleLogout()" class="w-full flex items-center px-4 py-3 rounded-lg transition hover:bg-rose-800/50 text-stone-300 hover:text-white">
+                <button type="button" onclick="handleLogout()" class="w-full flex items-center px-4 py-3 rounded-lg transition hover:bg-rose-800/50 text-stone-200 hover:text-white">
                     <i class="fas fa-sign-out-alt w-5"></i>
                     <span class="ml-3">Logout</span>
                 </button>
             </div>
         </nav>
 
-        <!-- Admin user card with purple tones -->
-        <div class="p-5 m-3 rounded-xl mt-2" style="background: #2A253D; border: 1px solid #96298040;">
+        <!-- Admin user card with Deep Blue tones -->
+        <div class="p-5 m-3 rounded-xl mt-2" style="background: #2C4A8C; border: 1px solid #5CB8E4;">
             <div class="flex items-center">
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=962980&color=fff&bold=true&size=40" class="w-10 h-10 rounded-full border-2" style="border-color: #F5C6A0;" id="adminAvatarImg">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=5CB8E4&color=fff&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white" id="adminAvatarImg">
                 <div class="ml-3">
-                    <p class="text-sm font-semibold" style="color: #F5C6A0;" id="adminNameDisplay">Admin User</p>
-                    <p class="text-xs text-stone-400" id="adminEmailDisplay">admin@tithandizane.org</p>
+                    <p class="text-sm font-semibold text-white" id="adminNameDisplay">Admin User</p>
+                    <p class="text-xs text-white/80" id="adminEmailDisplay">admin@tithandizane.org</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ================= MAIN CONTENT ================= -->
-    <div class="flex-1 overflow-y-auto custom-scroll" style="background: #FDF8F0;">
-        <!-- Top welcome bar with purple accent -->
-        <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-sm shadow-sm border-b" style="border-color: #F0E2D4;">
+    <div class="flex-1 overflow-y-auto custom-scroll" style="background: #F8FAFE;">
+        <!-- Top welcome bar with Deep Blue accent -->
+        <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-sm shadow-sm border-b" style="border-color: #E2E8F0;">
             <div class="flex justify-between items-center px-8 py-5 flex-wrap gap-3">
                 <div>
                     <h2 class="text-3xl font-bold tracking-tight text-gray-900" id="welcomeMessage">Welcome back, Admin</h2>
@@ -127,53 +127,53 @@
                 </div>
                 <div class="flex items-center gap-5">
                     <div class="relative">
-                        <i class="fas fa-bell text-2xl cursor-pointer transition text-stone-600 hover:text-[#962980]"></i>
-                        <span class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full px-1.5" id="notificationBadge">0</span>
+                        <i class="fas fa-bell text-2xl cursor-pointer transition text-gray-600 hover:text-#3B59A8"></i>
+                        <span class="absolute -top-1 -right-2 bg-rose-500 text-white text-[10px] rounded-full px-1.5" id="notificationBadge">0</span>
                     </div>
-                    <i class="fas fa-envelope text-2xl cursor-pointer text-stone-600 hover:text-[#962980]"></i>
-                    <div class="h-8 w-px bg-amber-200"></div>
+                    <i class="fas fa-envelope text-2xl cursor-pointer text-gray-600 hover:text-#3B59A8"></i>
+                    <div class="h-8 w-px bg-gray-300"></div>
                     <div class="flex items-center gap-3">
                         <div class="text-right">
                             <p class="text-sm font-semibold text-gray-800" id="topAdminName">Admin User</p>
                             <p class="text-xs text-gray-600" id="topAdminRole">System Administrator</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=962980&color=fff&size=48" class="w-11 h-11 rounded-full border-2" style="border-color: #F5C6A0;" id="topAdminAvatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=5CB8E4&color=fff&size=48" class="w-11 h-11 rounded-full border-2 border-#3B59A8" id="topAdminAvatar">
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="p-8">
-            <!-- Stats Cards - purple/earth tones matching login -->
+            <!-- Stats Cards - using the new color palette -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #2F855A;">
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #8BC34A;"> <!-- Lime Green -->
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium uppercase tracking-wide text-gray-600">Total Mentors</p>
                             <p class="text-3xl font-extrabold mt-1 text-gray-900" id="statTotalMentors">0</p>
                         </div>
-                        <div class="p-3 rounded-full" style="background: #E7F0EA;"><i class="fas fa-chalkboard-user text-2xl" style="color: #2F855A;"></i></div>
+                        <div class="p-3 rounded-full" style="background: #F1F8E9;"><i class="fas fa-chalkboard-user text-2xl" style="color: #8BC34A;"></i></div>
                     </div>
                     <div class="mt-3 text-sm"><span class="font-semibold text-green-700" id="newMentorsWeekStat">0</span> <span class="text-gray-600">this week</span></div>
                 </div>
-                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #D99E4C;">
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #5CB8E4;"> <!-- Bright Blue -->
                     <div class="flex items-center justify-between">
                         <div><p class="text-sm font-medium uppercase text-gray-600">Active Mentors</p><p class="text-3xl font-extrabold text-gray-900" id="statActiveMentors">0</p></div>
-                        <div class="p-3 rounded-full" style="background: #FDF3E2;"><i class="fas fa-user-check text-2xl" style="color: #D99E4C;"></i></div>
+                        <div class="p-3 rounded-full" style="background: #E6F7FF;"><i class="fas fa-user-check text-2xl" style="color: #5CB8E4;"></i></div>
                     </div>
-                    <div class="mt-2"><div class="w-full bg-amber-100 rounded-full h-2"><div class="h-2 rounded-full" style="width: 0%; background: #D99E4C;" id="activePercentBar"></div></div><p class="text-xs text-gray-600 mt-1" id="activePercentText">0% of total mentors</p></div>
+                    <div class="mt-2"><div class="w-full bg-blue-100 rounded-full h-2"><div class="h-2 rounded-full" style="width: 0%; background: #5CB8E4;" id="activePercentBar"></div></div><p class="text-xs text-gray-600 mt-1" id="activePercentText">0% of total mentors</p></div>
                 </div>
-                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #C7522A;">
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #9C27B0;"> <!-- Purple/Magenta -->
                     <div class="flex items-center justify-between">
                         <div><p class="text-sm font-medium uppercase text-gray-600">Pending Reports</p><p class="text-3xl font-extrabold text-gray-900" id="statPendingReports">0</p></div>
-                        <div class="p-3 rounded-full" style="background: #FCE9E3;"><i class="fas fa-exclamation-triangle text-2xl" style="color: #C7522A;"></i></div>
+                        <div class="p-3 rounded-full" style="background: #F3E5F5;"><i class="fas fa-exclamation-triangle text-2xl" style="color: #9C27B0;"></i></div>
                     </div>
-                    <div class="mt-3 text-sm"><span class="font-semibold text-amber-700" id="statInReview">0 in review</span></div>
+                    <div class="mt-3 text-sm"><span class="font-semibold text-purple-700" id="statInReview">0 in review</span></div>
                 </div>
-                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #962980;">
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-md card-shadow hover-scale transition border-l-8" style="border-left-color: #3B59A8;"> <!-- Deep Blue (Dominant) -->
                     <div class="flex items-center justify-between">
                         <div><p class="text-sm font-medium uppercase text-gray-600">Total Users</p><p class="text-3xl font-extrabold text-gray-900" id="statTotalUsers">0</p></div>
-                        <div class="p-3 rounded-full" style="background: #F5E6F5;"><i class="fas fa-users text-2xl" style="color: #962980;"></i></div>
+                        <div class="p-3 rounded-full" style="background: #E8EAF6;"><i class="fas fa-users text-2xl" style="color: #3B59A8;"></i></div>
                     </div>
                     <div class="mt-3 text-sm"><i class="fas fa-arrow-up text-green-600"></i> <span class="text-green-700 font-semibold" id="userGrowthPercent">0%</span> <span class="text-gray-600">from last month</span></div>
                 </div>
@@ -184,19 +184,19 @@
                 <!-- LEFT: Manage Mentors Table -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                        <div class="p-5 border-b border-stone-100 flex flex-wrap justify-between items-center" style="background: linear-gradient(90deg, #FEF7EE 0%, #FFFFFF 100%);">
-                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-hands-helping mr-2" style="color: #962980;"></i>Mentor Directory</h3>
+                        <div class="p-5 border-b border-gray-100 flex flex-wrap justify-between items-center" style="background: linear-gradient(90deg, #F0F4FF 0%, #FFFFFF 100%);">
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-hands-helping mr-2" style="color: #3B59A8;"></i>Mentor Directory</h3>
                             {{-- ADD MENTOR BUTTON LINKED TO Addmentor.blade.php --}}
-                            <a href="{{ route('admin.mentors.create') }}" id="addMentorBtn" class="transition px-5 py-2 rounded-xl text-sm shadow-sm flex items-center gap-2" style="background: #962980; color: white;">
+                            <a href="{{ route('admin.mentors.create') }}" id="addMentorBtn" class="transition px-5 py-2 rounded-xl text-sm shadow-sm flex items-center gap-2" style="background: #3B59A8; color: white;">
                                 <i class="fas fa-plus-circle"></i> Add New Mentor
                             </a>
                         </div>
                         <div class="p-5 border-b">
-                            <div class="relative"><i class="fas fa-search absolute left-4 top-3.5 text-stone-400"></i><input type="text" id="mentorSearch" placeholder="Search by name, expertise..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-stone-200 focus:border-[#962980] focus:ring-1 focus:ring-[#962980] bg-stone-50"></div>
+                            <div class="relative"><i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i><input type="text" id="mentorSearch" placeholder="Search by name, expertise..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-#3B59A8 focus:ring-1 focus:ring-#3B59A8 bg-gray-50"></div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
-                                <thead class="bg-stone-50/90">
+                                <thead class="bg-gray-50/90">
                                     <tr>
                                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Mentor</th>
                                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Expertise</th>
@@ -205,10 +205,10 @@
                                         <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="mentorsTableBody" class="divide-y divide-stone-100"></tbody>
+                                <tbody id="mentorsTableBody" class="divide-y divide-gray-100"></tbody>
                             </table>
                         </div>
-                        <div class="p-4 text-center border-t"><a href="#" class="font-medium hover:underline" id="viewAllMentorsLink" style="color: #962980;">View all mentors →</a></div>
+                        <div class="p-4 text-center border-t"><a href="#" class="font-medium hover:underline" id="viewAllMentorsLink" style="color: #3B59A8;">View all mentors →</a></div>
                     </div>
                 </div>
 
@@ -216,29 +216,29 @@
                 <div class="space-y-7">
                     <!-- Recent Reports Card -->
                     <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                        <div class="p-5 border-b flex justify-between items-center" style="background: #FEF7EE;">
-                            <h3 class="font-bold text-gray-800"><i class="fas fa-flag-checkered mr-2" style="color: #C7522A;"></i> Recent Harassment Reports</h3>
-                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold" style="background: #FCE9E3; color: #C7522A;" id="reportsCountBadge">0 new</span>
+                        <div class="p-5 border-b flex justify-between items-center" style="background: #F0F4FF;">
+                            <h3 class="font-bold text-gray-800"><i class="fas fa-flag-checkered mr-2" style="color: #9C27B0;"></i> Recent Harassment Reports</h3>
+                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold" style="background: #F3E5F5; color: #9C27B0;" id="reportsCountBadge">0 new</span>
                         </div>
-                        <div id="reportsListContainer" class="divide-y divide-stone-100 max-h-64 overflow-y-auto"></div>
-                        <div class="p-3 border-t text-center"><a href="#" class="text-sm font-medium hover:underline" id="viewAllReportsLink" style="color: #962980;">Review all reports →</a></div>
+                        <div id="reportsListContainer" class="divide-y divide-gray-100 max-h-64 overflow-y-auto"></div>
+                        <div class="p-3 border-t text-center"><a href="#" class="text-sm font-medium hover:underline" id="viewAllReportsLink" style="color: #3B59A8;">Review all reports →</a></div>
                     </div>
 
                     <!-- New Mentors This Week -->
                     <div class="bg-white rounded-2xl shadow-md">
-                        <div class="p-5 border-b border-stone-100" style="background: #FEF2E6;">
-                            <h3 class="font-bold text-gray-800"><i class="fas fa-seedling mr-2" style="color: #2F855A;"></i> New Mentors</h3>
+                        <div class="p-5 border-b border-gray-100" style="background: #F1F8E9;">
+                            <h3 class="font-bold text-gray-800"><i class="fas fa-seedling mr-2" style="color: #8BC34A;"></i> New Mentors</h3>
                             <p class="text-xs text-gray-600">Joined this week</p>
                         </div>
-                        <div id="newMentorsList" class="divide-y divide-stone-100"></div>
+                        <div id="newMentorsList" class="divide-y divide-gray-100"></div>
                     </div>
 
-                    <!-- Quick Actions + mini chart preview with purple gradient -->
-                    <div class="rounded-2xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #962980, #5c1a4f);">
-                        <div class="flex items-center gap-3"><i class="fas fa-chalkboard fa-fw text-3xl" style="color: #F5C6A0;"></i><h3 class="text-xl font-bold">Empower a session</h3></div>
+                    <!-- Quick Actions + mini chart preview with Deep Blue and Bright Blue gradient -->
+                    <div class="rounded-2xl shadow-lg p-6 text-white empower-card">
+                        <div class="flex items-center gap-3"><i class="fas fa-chalkboard fa-fw text-3xl" style="color: #FFFFFF;"></i><h3 class="text-xl font-bold">Empower a session</h3></div>
                         <p class="text-sm mt-2 opacity-90">Organize next mentor training or community circle</p>
-                        <button class="mt-5 w-full bg-amber-100 text-amber-900 font-semibold py-2.5 rounded-xl hover:bg-white transition flex items-center justify-center gap-2" id="scheduleTrainingBtn"><i class="fas fa-calendar-alt"></i> Schedule Training</button>
-                        <div class="mt-5 pt-2 border-t border-amber-300/30 text-xs text-center opacity-80">✨ 45+ active community members this month</div>
+                        <button class="mt-5 w-full bg-white text-#3B59A8 font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2" id="scheduleTrainingBtn"><i class="fas fa-calendar-alt"></i> Schedule Training</button>
+                        <div class="mt-5 pt-2 border-t border-white/30 text-xs text-center opacity-80">✨ 45+ active community members this month</div>
                     </div>
                 </div>
             </div>
@@ -248,12 +248,12 @@
 
 <script>
     // Mock data for demonstration - matches the dashboard requirements
-    let mentorsList = [
-        { id: 1, name: "Dr. Grace Mumba", email: "grace@tithandizane.org", expertise: ["Leadership", "Entrepreneurship"], availability: "Mon, Wed 10AM-2PM", status: "active", created_at: new Date(Date.now() - 2*24*60*60*1000) },
-        { id: 2, name: "Esther Phiri", email: "esther@tithandizane.org", expertise: ["Financial Literacy", "Tech Skills"], availability: "Tue, Thu 1PM-5PM", status: "active", created_at: new Date(Date.now() - 1*24*60*60*1000) },
-        { id: 3, name: "Ruth Chisale", email: "ruth@tithandizane.org", expertise: ["Mental Health", "Counseling"], availability: "Weekends 9AM-12PM", status: "pending", created_at: new Date(Date.now() - 10*24*60*60*1000) },
-        { id: 4, name: "Mercy Banda", email: "mercy@tithandizane.org", expertise: ["Advocacy", "Legal Rights"], availability: "Flexible", status: "active", created_at: new Date(Date.now() - 3*24*60*60*1000) }
-    ];
+    // let mentorsList = [
+    //     { id: 1, name: "Dr. Grace Mumba", email: "grace@tithandizane.org", expertise: ["Leadership", "Entrepreneurship"], availability: "Mon, Wed 10AM-2PM", status: "active", created_at: new Date(Date.now() - 2*24*60*60*1000) },
+    //     { id: 2, name: "Esther Phiri", email: "esther@tithandizane.org", expertise: ["Financial Literacy", "Tech Skills"], availability: "Tue, Thu 1PM-5PM", status: "active", created_at: new Date(Date.now() - 1*24*60*60*1000) },
+    //     { id: 3, name: "Ruth Chisale", email: "ruth@tithandizane.org", expertise: ["Mental Health", "Counseling"], availability: "Weekends 9AM-12PM", status: "pending", created_at: new Date(Date.now() - 10*24*60*60*1000) },
+    //     { id: 4, name: "Mercy Banda", email: "mercy@tithandizane.org", expertise: ["Advocacy", "Legal Rights"], availability: "Flexible", status: "active", created_at: new Date(Date.now() - 3*24*60*60*1000) }
+    // ];
     
     let reportsList = [
         { report_id: "HR-101", description: "User reported inappropriate messaging from a community member. Immediate action needed.", report_type: "harassment", status: "new", created_at: new Date(Date.now() - 5*60*60*1000) },
@@ -264,7 +264,7 @@
     function getAvatarBg(name) {
         let hash = 0;
         for(let i=0; i<name.length; i++) hash = ((hash<<5)-hash)+name.charCodeAt(i);
-        const colors = ['962980', 'B87333', 'CA8A65', '5F7A55', '8B5F8C', '2F855A', 'D99E4C', '9C4A2C'];
+        const colors = ['3B59A8', '5CB8E4', '9C27B0', '4CAF50', '8BC34A'];
         return colors[Math.abs(hash) % colors.length];
     }
     
@@ -297,13 +297,13 @@
         if(!tbody) return;
         tbody.innerHTML = filtered.map(mentor => {
             const bgColor = getAvatarBg(mentor.name);
-            return `<tr class="hover:bg-stone-50 transition">
-                <td class="px-6 py-4"><div class="flex items-center gap-3"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=${bgColor}&color=fff&size=36" class="w-9 h-9 rounded-full border border-amber-200"><div><p class="font-semibold text-gray-800">${escapeHtml(mentor.name)}</p><p class="text-xs text-gray-500">${escapeHtml(mentor.email)}</p></div></div></td>
-                <td class="px-6 py-4">${mentor.expertise.map(e => `<span class="inline-block text-xs px-2 py-1 rounded-full mr-1 mb-1" style="background: #F3E8FF; color: #962980;">${escapeHtml(e)}</span>`).join('')}</td>
+            return `<tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4"><div class="flex items-center gap-3"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=${bgColor}&color=fff&size=36" class="w-9 h-9 rounded-full border border-gray-200"><div><p class="font-semibold text-gray-800">${escapeHtml(mentor.name)}</p><p class="text-xs text-gray-500">${escapeHtml(mentor.email)}</p></div></div></td>
+                <td class="px-6 py-4">${mentor.expertise.map(e => `<span class="inline-block text-xs px-2 py-1 rounded-full mr-1 mb-1" style="background: #E8EAF6; color: #3B59A8;">${escapeHtml(e)}</span>`).join('')}</td>
                 <td class="px-6 py-4 text-sm text-gray-700">${escapeHtml(mentor.availability)}</td>
-                <td class="px-6 py-4">${mentor.status === 'active' ? '<span class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full font-medium">Active</span>' : (mentor.status === 'inactive' ? '<span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">Inactive</span>' : '<span class="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full">Pending</span>')}</td>
-                <td class="px-6 py-4 text-right"><button class="mr-3 edit-mentor" data-id="${mentor.id}" style="color: #962980;"><i class="fas fa-edit"></i></button><button class="delete-mentor" style="color: #C7522A;" data-id="${mentor.id}"><i class="fas fa-trash-alt"></i></button></td>
-               </tr>`;
+                <td class="px-6 py-4">${mentor.status === 'active' ? '<span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">Active</span>' : (mentor.status === 'inactive' ? '<span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">Inactive</span>' : '<span class="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full">Pending</span>')}</td>
+                <td class="px-6 py-4 text-right"><button class="mr-3 edit-mentor" data-id="${mentor.id}" style="color: #3B59A8;"><i class="fas fa-edit"></i></button><button class="delete-mentor" style="color: #9C27B0;" data-id="${mentor.id}"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>`;
         }).join('');
         if(filtered.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">🌱 No mentors found</td></tr>';
         attachMentorActions();
@@ -322,10 +322,10 @@
         const container = document.getElementById('reportsListContainer');
         const sorted = [...reportsList].sort((a,b)=> new Date(b.created_at) - new Date(a.created_at)).slice(0,3);
         container.innerHTML = sorted.map(r => `
-            <div class="p-4 hover:bg-amber-50/40 transition">
+            <div class="p-4 hover:bg-blue-50/40 transition">
                 <div class="flex justify-between items-start"><div><span class="font-mono text-sm font-bold text-gray-800">${escapeHtml(r.report_id)}</span>${r.status === 'new' ? '<span class="ml-2 bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full">New</span>' : (r.status === 'in_review' ? '<span class="ml-2 bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full">Review</span>' : '')}</div><span class="text-xs text-gray-500">${timeAgo(new Date(r.created_at))}</span></div>
                 <p class="text-sm text-gray-700 mt-1 line-clamp-2">${escapeHtml(r.description.substring(0,80))}${r.description.length>80?'…':''}</p>
-                <div class="mt-2"><span class="bg-stone-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">${escapeHtml(r.report_type.replace('_',' '))}</span></div>
+                <div class="mt-2"><span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">${escapeHtml(r.report_type.replace('_',' '))}</span></div>
             </div>
         `).join('');
         if(sorted.length===0) container.innerHTML = '<div class="p-6 text-center text-gray-500">✅ No pending reports</div>';
@@ -372,8 +372,8 @@
         document.getElementById('topAdminRole').innerText = "Lead Administrator";
         document.getElementById('welcomeMessage').innerHTML = `Welcome back, Grace 🌾`;
         
-        document.getElementById('adminAvatarImg').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=962980&color=fff&bold=true&size=40`;
-        document.getElementById('topAdminAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=962980&color=fff&size=48`;
+        document.getElementById('adminAvatarImg').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=5CB8E4&color=fff&bold=true&size=40`;
+        document.getElementById('topAdminAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=5CB8E4&color=fff&size=48`;
         
         renderMentorsTable('');
         renderRecentReports();
@@ -385,12 +385,12 @@
         items.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                items.forEach(i => { i.style.background = 'transparent'; i.style.color = '#CBD5E1'; });
-                item.style.background = '#2D2A44'; item.style.color = '#F5C6A0';
+                items.forEach(i => { i.style.background = 'transparent'; i.style.color = '#E2E8F0'; });
+                item.style.background = '#2C4A8C'; item.style.color = '#FFFFFF';
                 const page = item.getAttribute('data-page');
                 if(page !== 'dashboard') alert(`✨ ${page} section — ready for backend integration.`);
             });
-            if(item.getAttribute('data-page') === 'dashboard') { item.style.background = '#2D2A44'; item.style.color = '#F5C6A0'; }
+            if(item.getAttribute('data-page') === 'dashboard') { item.style.background = '#2C4A8C'; item.style.color = '#FFFFFF'; }
         });
     }
     

@@ -13,13 +13,20 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
+            $table->string('location')->nullable();
+            $table->string('password');
             $table->string('photo')->nullable();
+            $table->json('expertise')->nullable();
             $table->text('bio');
-            $table->string('area_of_support'); // menstrual_hygiene, general_issues, both
-            $table->json('available_days'); // ['Monday','Wednesday','Friday']
-            $table->string('available_time_from'); // e.g. 09:00
-            $table->string('available_time_to');   // e.g. 17:00
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', ['pending', 'active', 'inactive'])->default('pending');
+            $table->string('availability')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('twitter_url')->nullable();
+            $table->string('website_url')->nullable();
+            $table->text('notes')->nullable();
+            $table->boolean('notify_welcome')->default(false);
+            $table->boolean('notify_training')->default(false);
+            $table->rememberToken();
             $table->timestamps();
         });
     }

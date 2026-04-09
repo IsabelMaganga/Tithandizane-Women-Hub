@@ -2,33 +2,42 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Mentor extends Model
+class Mentor extends Authenticatable
 {
+    use HasFactory, Notifiable;
+
     protected $fillable = [
-        'name', 'email', 'phone', 'photo', 'bio',
-        'area_of_support', 'available_days',
-        'available_time_from', 'available_time_to', 'status',
+        'name',
+        'email',
+        'phone',
+        'location',
+        'password',
+        'photo',
+        'expertise',
+        'bio',
+        'status',
+        'availability',
+        'linkedin_url',
+        'twitter_url',
+        'website_url',
+        'notes',
+        'notify_welcome',
+        'notify_training',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
-        'available_days' => 'array',
+        'expertise' => 'array',
+        'notify_welcome' => 'boolean',
+        'notify_training' => 'boolean',
+        'email_verified_at' => 'datetime',
     ];
-
-    public function getAreaLabelAttribute(): string
-    {
-        return match($this->area_of_support) {
-            'menstrual_hygiene' => 'Menstrual Hygiene',
-            'general_issues'    => 'General Issues',
-            'both'              => 'Menstrual Hygiene & General Issues',
-            default             => ucfirst($this->area_of_support),
-        };
-    }
-
-    public function getAvailabilityStringAttribute(): string
-    {
-        $days = implode(', ', $this->available_days ?? []);
-        return "{$days} · {$this->available_time_from} – {$this->available_time_to}";
-    }
 }

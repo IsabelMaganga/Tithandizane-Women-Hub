@@ -10,6 +10,7 @@ use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController
 use App\Http\Controllers\Mentor\SecurityController as MentorSecurityController;
 use Illuminate\Support\Facades\Broadcast;
 
+
     //home page
     Route::get('/', fn() => view('welcome'))->name('welcome');
 
@@ -22,22 +23,22 @@ use Illuminate\Support\Facades\Broadcast;
         Route::post('/login', [AuthController::class, 'login'])->name('login.post');
         Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-        });
 
         // Protected admin routes
         Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+            Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-        // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+            // Dashboard
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Mentors
-        Route::get('/mentors/toggle-status/{mentor}', [MentorController::class, 'toggleStatus'])->name('mentors.toggle');
-        Route::resource('mentors', MentorController::class);
+            // Mentors
+            Route::get('/mentors/toggle-status/{mentor}', [MentorController::class, 'toggleStatus'])->name('mentors.toggle');
+            Route::resource('mentors', MentorController::class);
 
-        // Harassment Reports
-        Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
-        Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
+            // Harassment Reports
+            Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
+            Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
+        });
     });
 
     // fallback for auth redirecting to get started

@@ -82,12 +82,14 @@ export interface HarassmentReport {
 
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://192.168.254.205:8000/api',
+  baseURL: __DEV__ ? 'http://192.168.200.205:8000/api' : 'https://your-production-api.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 15000,
+  timeout: 10000,
+  transformRequest: [(data) => JSON.stringify(data)],
+  validateStatus: (status) => status >= 200 && status < 300,
 });
 
 // Request interceptor to add auth token

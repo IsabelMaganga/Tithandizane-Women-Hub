@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MentorStoreRequest;
 use App\Models\Mentor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class MentorController extends Controller
 {
@@ -16,49 +19,49 @@ class MentorController extends Controller
 
     public function create()
     {
-        return view('admin.addmentor', [
-            'adminName' => auth()->user()->name,
-            'adminEmail' => auth()->user()->email
-        ]);
+        return view('admin.mentors.add_mentor');
     }
 
-    public function store(Request $request)
+    public function store(MentorStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:mentors',
-            'phone' => 'nullable|string|max:20',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'bio' => 'required|string',
-            'expertise' => 'required|array|min:1',
-            'status' => 'required|in:active,pending,inactive',
-            'availability' => 'nullable|string',
-        ]);
-
-        // Map expertise array to area_of_support
-        $areaOfSupport = 'both';
-        if (count($request->expertise) === 1) {
-            $areaOfSupport = $request->expertise[0];
+        try {
+            $data = $request->validated();
+            
+            // Hash the password
+            $data['password'] = Hash::make($data['password']);
+            
+            // Handle expertise as JSON
+            $data['expertise'] = json_encode($data['expertise']);
+            
+            // Handle photo upload
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('mentor-photos', 'public');
+                $data['photo'] = $photoPath;
+            }
+            
+            // Handle boolean checkboxes (they don't send value when unchecked)
+            $data['notify_welcome'] = $request->has('notify_welcome');
+            $data['notify_training'] = $request->has('notify_training');
+            
+            // Create the mentor
+            $mentor = Mentor::create($data);
+            
+            // Send welcome email if requested
+            if ($data['notify_welcome']) {
+                // You can implement email sending here
+                // Mail::to($mentor->email)->send(new MentorWelcomeMail($mentor));
+            }
+            
+            return redirect()
+                ->route('admin.mentors.index')
+                ->with('success', 'Mentor created successfully!');
+                
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create mentor: ' . $e->getMessage());
         }
-
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'bio' => $request->bio,
-            'area_of_support' => $areaOfSupport,
-            'status' => $request->status,
-        ];
-
-        // Handle photo upload
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('mentors', 'public');
-        }
-
-        Mentor::create($data);
-
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor created successfully.');
     }
 
     public function show(Mentor $mentor)
@@ -73,39 +76,53 @@ class MentorController extends Controller
 
     public function update(Request $request, Mentor $mentor)
     {
+        // Similar validation as store but with unique email exception
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:mentors,email,' . $mentor->id,
-            'expertise' => 'required|array',
-            'availability' => 'nullable|string',
-            'status' => 'required|in:active,pending,inactive'
+            'expertise' => 'required|array|min:1',
+            'bio' => 'required|string|max:500',
+            'status' => 'required|in:pending,active,inactive',
         ]);
-
-        $mentor->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'expertise' => $request->expertise,
-            'availability' => $request->availability,
-            'status' => $request->status
-        ]);
-
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor updated successfully.');
+        
+        $data = $request->all();
+        
+        if ($request->hasFile('photo')) {
+            // Delete old photo
+            if ($mentor->photo && Storage::disk('public')->exists($mentor->photo)) {
+                Storage::disk('public')->delete($mentor->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('mentor-photos', 'public');
+        }
+        
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        } else {
+            unset($data['password']);
+        }
+        
+        $data['expertise'] = json_encode($data['expertise']);
+        $data['notify_welcome'] = $request->has('notify_welcome');
+        $data['notify_training'] = $request->has('notify_training');
+        
+        $mentor->update($data);
+        
+        return redirect()
+            ->route('admin.mentors.index')
+            ->with('success', 'Mentor updated successfully!');
     }
 
     public function destroy(Mentor $mentor)
     {
+        // Delete photo if exists
+        if ($mentor->photo && Storage::disk('public')->exists($mentor->photo)) {
+            Storage::disk('public')->delete($mentor->photo);
+        }
+        
         $mentor->delete();
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor deleted successfully.');
-    }
-
-    public function toggleStatus(Mentor $mentor)
-    {
-        $newStatus = $mentor->status === 'active' ? 'inactive' : 'active';
-        $mentor->update(['status' => $newStatus]);
-
-        return redirect()->back()
-            ->with('success', "Mentor status changed to {$newStatus}.");
+        
+        return redirect()
+            ->route('admin.mentors.index')
+            ->with('success', 'Mentor deleted successfully!');
     }
 }
