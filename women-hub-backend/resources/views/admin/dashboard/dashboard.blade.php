@@ -63,8 +63,8 @@
 
 <div class="flex h-screen overflow-hidden">
     <!-- ================= LEFT SIDEBAR - Deep Blue Dominant ================= -->
-    <div class="w-64 flex flex-col shadow-xl" style="background: #3B59A8; border-right: 1px solid #2C4A8C;">
-        <div class="p-6 border-b" style="border-color: #2C4A8C;">
+      <div class="w-64 flex flex-col shadow-xl" style="background: #874179; border-right: 1px solid #6d3661;">
+       <div class="p-6 border-b" style="border-color: #6d3661;">
             <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
             <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
         </div>
@@ -105,7 +105,7 @@
         </nav>
 
         <!-- Admin user card with Deep Blue tones -->
-        <div class="p-5 m-3 rounded-xl mt-2" style="background: #2C4A8C; border: 1px solid #5CB8E4;">
+        <div class="p-5 m-3 rounded-xl mt-2" style="background: #6d3661; border: 1px solid #af5c9c;">
             <div class="flex items-center">
                 <img src="https://ui-avatars.com/api/?name=Admin+User&background=5CB8E4&color=fff&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white" id="adminAvatarImg">
                 <div class="ml-3">
@@ -118,7 +118,8 @@
 
     <!-- ================= MAIN CONTENT ================= -->
     <div class="flex-1 overflow-y-auto custom-scroll" style="background: #F8FAFE;">
-        <!-- Top welcome bar with Deep Blue accent -->
+        
+        <!-- Top welcome bar  -->
         <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-sm shadow-sm border-b" style="border-color: #E2E8F0;">
             <div class="flex justify-between items-center px-8 py-5 flex-wrap gap-3">
                 <div>
@@ -187,7 +188,7 @@
                         <div class="p-5 border-b border-gray-100 flex flex-wrap justify-between items-center" style="background: linear-gradient(90deg, #F0F4FF 0%, #FFFFFF 100%);">
                             <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-hands-helping mr-2" style="color: #3B59A8;"></i>Mentor Directory</h3>
                             {{-- ADD MENTOR BUTTON LINKED TO Addmentor.blade.php --}}
-                            <a href="{{ route('admin.mentors.create') }}" id="addMentorBtn" class="transition px-5 py-2 rounded-xl text-sm shadow-sm flex items-center gap-2" style="background: #3B59A8; color: white;">
+                            <a href="{{ route('admin.mentors.create') }}" id="addMentorBtn" class="transition px-5 py-2 rounded-xl text-sm shadow-sm flex items-center gap-2" style="background: #874179; color: white;">
                                 <i class="fas fa-plus-circle"></i> Add New Mentor
                             </a>
                         </div>
@@ -208,7 +209,7 @@
                                 <tbody id="mentorsTableBody" class="divide-y divide-gray-100"></tbody>
                             </table>
                         </div>
-                        <div class="p-4 text-center border-t"><a href="#" class="font-medium hover:underline" id="viewAllMentorsLink" style="color: #3B59A8;">View all mentors →</a></div>
+                        <div class="p-4 text-center border-t"><a href="#" class="font-medium hover:underline" id="viewAllMentorsLink" style="color: #874179;">View all mentors →</a></div>
                     </div>
                 </div>
 
@@ -221,7 +222,7 @@
                             <span class="text-xs px-2.5 py-1 rounded-full font-semibold" style="background: #F3E5F5; color: #9C27B0;" id="reportsCountBadge">0 new</span>
                         </div>
                         <div id="reportsListContainer" class="divide-y divide-gray-100 max-h-64 overflow-y-auto"></div>
-                        <div class="p-3 border-t text-center"><a href="#" class="text-sm font-medium hover:underline" id="viewAllReportsLink" style="color: #3B59A8;">Review all reports →</a></div>
+                        <div class="p-3 border-t text-center"><a href="#" class="text-sm font-medium hover:underline" id="viewAllReportsLink" style="color: #874179;">Review all reports →</a></div>
                     </div>
 
                     <!-- New Mentors This Week -->
@@ -234,11 +235,13 @@
                     </div>
 
                     <!-- Quick Actions + mini chart preview with Deep Blue and Bright Blue gradient -->
-                    <div class="rounded-2xl shadow-lg p-6 text-white empower-card">
+                         <div class="rounded-2xl shadow-lg p-6 text-white empower-card">
                         <div class="flex items-center gap-3"><i class="fas fa-chalkboard fa-fw text-3xl" style="color: #FFFFFF;"></i><h3 class="text-xl font-bold">Empower a session</h3></div>
                         <p class="text-sm mt-2 opacity-90">Organize next mentor training or community circle</p>
-                        <button class="mt-5 w-full bg-white text-#3B59A8 font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2" id="scheduleTrainingBtn"><i class="fas fa-calendar-alt"></i> Schedule Training</button>
-                        <div class="mt-5 pt-2 border-t border-white/30 text-xs text-center opacity-80">✨ 45+ active community members this month</div>
+                        <!-- Schedule button with matching purple style -->
+                        <button class="mt-5 w-full bg-white text-[#874179] font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 shadow-md" id="scheduleTrainingBtn"><i class="fas fa-calendar-alt"></i> Schedule Training</button>
+                        <div class="mt-5 pt-2 border-t border-white/30 text-xs text-center opacity-80"> 45+ active community members this month</div>
+
                     </div>
                 </div>
             </div>

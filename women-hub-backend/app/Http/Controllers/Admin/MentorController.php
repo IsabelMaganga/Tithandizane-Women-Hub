@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MentorStoreRequest;
 use App\Models\Mentor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,7 +20,13 @@ class MentorController extends Controller
 
     public function create()
     {
-        return view('admin.mentors.add_mentor');
+        // Get the currently authenticated admin user
+        $adminUser = Auth::guard('admin')->user();
+        $adminName = $adminUser ? $adminUser->name : 'Admin User';
+        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.org';
+        
+        // Pass admin data to the view
+        return view('admin.addmentors.addmentor', compact('adminName', 'adminEmail'));
     }
 
     public function store(MentorStoreRequest $request)

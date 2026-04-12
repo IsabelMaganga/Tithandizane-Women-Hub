@@ -69,7 +69,8 @@ class DashboardController extends Controller
             // Prepare recent activity data
             $recentActivity = $this->getRecentActivity();
 
-            return view('dashboard', compact(
+            // Updated view path from 'dashboard' to 'admin.dashboard.dashboard'
+            return view('admin.dashboard.dashboard', compact(
                 'stats',
                 'recentReports',
                 'recentMentors',
@@ -97,8 +98,8 @@ class DashboardController extends Controller
             // Handle errors gracefully
             \Log::error('Dashboard error: ' . $e->getMessage());
             
-            // Return dashboard with empty data
-            return view('dashboard', [
+            // Updated view path from 'dashboard' to 'admin.dashboard.dashboard'
+            return view('admin.dashboard.dashboard', [
                 'stats' => ['mentors' => 0, 'reports' => 0, 'admins' => 0],
                 'recentReports' => collect([]),
                 'recentMentors' => collect([]),

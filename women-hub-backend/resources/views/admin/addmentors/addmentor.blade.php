@@ -7,19 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Color Palette Variables */
+        /* Color Palette Variables - Elegant Purple Theme */
         :root {
-            --deep-blue: #3B59A8;
-            --bright-blue: #5CB8E4;
+            --deep-purple: #6B21A8;
+            --medium-purple: #9333EA;
+            --bright-purple: #A855F7;
+            --light-purple: #C084FC;
+            --soft-lavender: #E9D5FF;
             --purple-magenta: #9C27B0;
             --vibrant-green: #4CAF50;
             --lime-green: #8BC34A;
+            --dark-purple: #581C87;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--deep-blue) !important;
-            ring: 2px solid var(--bright-blue);
+            border-color: var(--deep-purple) !important;
+            ring: 2px solid var(--light-purple);
         }
 
         .form-section {
@@ -63,9 +67,9 @@
         }
 
         .expertise-checkbox:checked + .expertise-label {
-            border-color: var(--deep-blue);
-            background: #E8EAF6;
-            color: var(--deep-blue);
+            border-color: var(--deep-purple);
+            background: var(--soft-lavender);
+            color: var(--deep-purple);
         }
 
         /* Tab navigation */
@@ -73,8 +77,8 @@
         .tab-content.active { display: block; }
         .tab-button { transition: all 0.3s ease; }
         .tab-button.active {
-            border-bottom: 3px solid var(--deep-blue);
-            color: var(--deep-blue);
+            border-bottom: 3px solid var(--deep-purple);
+            color: var(--deep-purple);
         }
 
         /* Password strength meter */
@@ -88,41 +92,57 @@
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--soft-lavender);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--deep-purple);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-purple);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
 <div class="flex min-h-screen">
 
-    <!-- Sidebar - Deep Blue Dominant -->
-    <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: var(--deep-blue);">
-        <div class="p-6 border-b" style="border-color: #2C4A8C;">
+    <!-- Sidebar - Deep Purple Dominant -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: linear-gradient(135deg, var(--deep-purple) 0%, var(--medium-purple) 100%);">
+        <div class="p-6 border-b" style="border-color: var(--dark-purple);">
             <h1 class="text-2xl font-bold tracking-tight">Tithandizane</h1>
             <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
         </div>
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
                 <i class="fas fa-home w-5 mr-3"></i><span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.mentors.index') }}" class="flex items-center px-4 py-3 rounded-lg font-medium shadow-sm" style="background: #2C4A8C; color: white;">
+            <a href="{{ route('admin.mentors.index') }}" class="flex items-center px-4 py-3 rounded-lg font-medium shadow-sm" style="background: rgba(255,255,255,0.15); color: white;">
                 <i class="fas fa-chalkboard-teacher w-5 mr-3"></i><span>Mentors</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
-                <i class="fas fa-flag w-5 mr-3" style="color: var(--purple-magenta);"></i><span>Harassment Reports</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
+                <i class="fas fa-flag w-5 mr-3" style="color: var(--light-purple);"></i><span>Harassment Reports</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
                 <i class="fas fa-book-open w-5 mr-3" style="color: var(--vibrant-green);"></i><span>Guidance Content</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
-                <i class="fas fa-users w-5 mr-3" style="color: var(--bright-blue);"></i><span>Users</span>
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
+                <i class="fas fa-users w-5 mr-3" style="color: var(--bright-purple);"></i><span>Users</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors" style="color: #E2E8F0; hover:bg-#2C4A8C;">
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
                 <i class="fas fa-cog w-5 mr-3" style="color: var(--lime-green);"></i><span>Settings</span>
             </a>
         </nav>
         <!-- Sidebar footer — real admin credentials -->
-        <div class="p-6 border-t mt-auto" style="border-color: #2C4A8C;">
+        <div class="p-6 border-t mt-auto" style="border-color: var(--dark-purple);">
             <div class="flex items-center">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=5CB8E4&color=fff&size=128"
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=A855F7&color=fff&size=128"
                      class="w-11 h-11 rounded-full ring-2 ring-white/30" alt="{{ $adminName }}">
                 <div class="ml-3 min-w-0">
                     <p class="text-sm font-medium truncate">{{ $adminName }}</p>
@@ -154,7 +174,7 @@
                             <p class="text-sm font-medium text-gray-900">{{ $adminName }}</p>
                             <p class="text-xs text-gray-500">{{ $adminEmail }}</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=5CB8E4&color=fff&size=128"
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=A855F7&color=fff&size=128"
                              class="w-10 h-10 rounded-full" alt="{{ $adminName }}">
                     </div>
                 </div>
@@ -167,63 +187,47 @@
             <!-- Breadcrumb -->
             <nav class="mb-8 text-sm" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: var(--deep-blue);">
+                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: var(--deep-purple);">
                         <i class="fas fa-home mr-1.5 text-xs"></i> Dashboard
                     </a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: var(--deep-blue);">Mentors</a></li>
+                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: var(--deep-purple);">Mentors</a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
                     <li class="text-gray-500 font-medium">Add New Mentor</li>
                 </ol>
             </nav>
 
             <!--adding to desplay session-->
-            <!-- Add at the top of the form to display session messages -->
-@if(session('success'))
-    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-        {{ session('success') }}
-    </div>
-@endif
+            @if(session('success'))
+                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-@if(session('error'))
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-        {{ session('error') }}
-    </div>
-@endif
-
-<!-- Update the form opening tag to include files and error handling -->
-<form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
-    @csrf
-    
-    <!-- Add field for photo upload -->
-    <div>
-        <label for="photo" class="block text-sm font-semibold text-gray-900 mb-2">Profile Photo</label>
-        <input type="file" name="photo" id="photo" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-        @error('photo')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-    </div>
-
-
+            @if(session('error'))
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <!-- Form Card -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
                 <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
                     @csrf
 
-                    <!-- Header — Deep Blue gradient -->
-                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #E8EAF6 0%, #D6E4F0 50%, #E8EAF6 100%); border-color: #C5CAE9;">
+                    <!-- Header — Purple gradient -->
+                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #F3E8FF 100%); border-color: #D8B4FE;">
                         <div class="flex items-start justify-between">
                             <div>
-                                <h2 class="text-2xl font-bold" style="color: var(--deep-blue);">Mentor Registration</h2>
+                                <h2 class="text-2xl font-bold" style="color: var(--deep-purple);">Mentor Registration</h2>
                                 <p class="mt-2 text-sm text-gray-700">
                                     Complete the form below to add a new mentor to the platform.
                                     All fields marked with <span class="text-red-500 font-semibold">*</span> are required.
                                 </p>
                             </div>
                             <div class="hidden sm:block">
-                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: var(--deep-blue);">
-                                    <i class="fas fa-info-circle text-sm" style="color: var(--deep-blue);"></i>
+                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: var(--deep-purple);">
+                                    <i class="fas fa-info-circle text-sm" style="color: var(--deep-purple);"></i>
                                     <span class="text-sm font-medium text-gray-700">
                                         Step <span id="currentStep">1</span> of <span id="totalSteps">3</span>
                                     </span>
@@ -235,7 +239,7 @@
                     <!-- Tab Navigation -->
                     <div class="hidden md:block px-6 md:px-8 bg-gray-50 border-b border-gray-200">
                         <div class="flex space-x-8">
-                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: var(--deep-blue); color: var(--deep-blue);">
+                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: var(--deep-purple); color: var(--deep-purple);">
                                 <i class="fas fa-user mr-2"></i> Basic Info
                             </button>
                             <button type="button" class="tab-button py-4 px-1 font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900" data-tab="professional">
@@ -259,7 +263,7 @@
                                         <label class="block text-sm font-semibold text-gray-900 mb-4">Profile Photo</label>
                                         <div class="relative">
                                             <div id="photo-preview"
-                                                 class="w-full aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shadow-inner transition-all hover:border-blue-400 hover:from-blue-50 hover:to-blue-100">
+                                                 class="w-full aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shadow-inner transition-all hover:border-purple-400 hover:from-purple-50 hover:to-purple-100">
                                                 <div class="text-center">
                                                     <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
                                                     <p class="text-xs text-gray-500">Click to upload</p>
@@ -271,7 +275,7 @@
                                         </div>
                                         <p class="mt-3 text-xs text-gray-600 text-center">
                                             <i class="fas fa-check-circle mr-1" style="color: var(--vibrant-green);"></i> PNG, JPG
-                                            <br><i class="fas fa-info-circle mr-1" style="color: var(--deep-blue);"></i> Max 2MB
+                                            <br><i class="fas fa-info-circle mr-1" style="color: var(--deep-purple);"></i> Max 2MB
                                         </p>
                                     </div>
                                 </div>
@@ -284,7 +288,7 @@
                                             <label for="name" class="block text-sm font-semibold text-gray-900 mb-2">Full Name <span class="text-red-500">*</span></label>
                                             <input type="text" name="name" id="name" required value="{{ old('name') }}"
                                                    placeholder="e.g., Jane Smith"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('name') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('name') border-red-400 @enderror">
                                             @error('name')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Email -->
@@ -292,7 +296,7 @@
                                             <label for="email" class="block text-sm font-semibold text-gray-900 mb-2">Email Address <span class="text-red-500">*</span></label>
                                             <input type="email" name="email" id="email" required value="{{ old('email') }}"
                                                    placeholder="jane.smith@example.com"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('email') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('email') border-red-400 @enderror">
                                             @error('email')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Phone -->
@@ -300,7 +304,7 @@
                                             <label for="phone" class="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
                                             <input type="tel" name="phone" id="phone" value="{{ old('phone') }}"
                                                    placeholder="+265 99 123 4567"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('phone') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('phone') border-red-400 @enderror">
                                             @error('phone')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Location -->
@@ -308,7 +312,7 @@
                                             <label for="location" class="block text-sm font-semibold text-gray-900 mb-2">Location</label>
                                             <input type="text" name="location" id="location" value="{{ old('location') }}"
                                                    placeholder="e.g., Lilongwe, Malawi"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
                                         </div>
                                     </div>
 
@@ -325,7 +329,7 @@
                                                 <div class="relative">
                                                     <input type="password" name="password" id="password" required
                                                            placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('password') border-red-400 @enderror">
+                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('password') border-red-400 @enderror">
                                                     <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password">
                                                         <i class="fas fa-eye text-sm"></i>
                                                     </button>
@@ -348,7 +352,7 @@
                                                 <div class="relative">
                                                     <input type="password" name="password_confirmation" id="password_confirmation" required
                                                            placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
                                                     <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password_confirmation">
                                                         <i class="fas fa-eye text-sm"></i>
                                                     </button>
@@ -395,8 +399,8 @@
                                             <input type="checkbox" name="expertise[]" value="{{ $option }}"
                                                    @if(in_array($option, old('expertise', []))) checked @endif
                                                    class="expertise-checkbox">
-                                            <span class="expertise-label group-hover:border-blue-400">
-                                                <i class="fas fa-check text-blue-600 mr-2 hidden"></i>
+                                            <span class="expertise-label group-hover:border-purple-400">
+                                                <i class="fas fa-check text-purple-600 mr-2 hidden"></i>
                                                 {{ $option }}
                                             </span>
                                         </label>
@@ -410,9 +414,9 @@
                                     <label for="bio" class="block text-sm font-semibold text-gray-900 mb-2">Professional Bio <span class="text-red-500">*</span></label>
                                     <textarea name="bio" id="bio" rows="5" required
                                               placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
                                     <div class="mt-2 flex justify-between items-center">
-                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: var(--deep-blue);"></i> 2–4 sentences recommended</p>
+                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: var(--deep-purple);"></i> 2–4 sentences recommended</p>
                                         <span id="bio-count" class="text-xs text-gray-500">0 / 500 characters</span>
                                     </div>
                                     @error('bio')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
@@ -423,7 +427,7 @@
                                     <div>
                                         <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
                                         <select name="status" id="status"
-                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
                                             <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending Approval</option>
                                             <option value="active"  {{ old('status') == 'active'  ? 'selected' : '' }}>Active</option>
                                             <option value="inactive"{{ old('status') == 'inactive'? 'selected' : '' }}>Inactive</option>
@@ -434,8 +438,8 @@
                                         <input type="text" name="availability" id="availability"
                                                placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
                                                value="{{ old('availability') }}"
-                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all @error('availability') border-red-400 @enderror">
-                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: var(--deep-blue);"></i> Specify mentor's working hours and days</p>
+                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('availability') border-red-400 @enderror">
+                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: var(--deep-purple);"></i> Specify mentor's working hours and days</p>
                                         @error('availability')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                     </div>
                                 </div>
@@ -453,7 +457,7 @@
                                     <!-- Social Profiles Container with validation -->
                                     <div class="space-y-4" id="socialProfilesContainer">
                                         <!-- LinkedIn -->
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all">
+                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-linkedin text-2xl text-blue-700"></i>
                                             </div>
@@ -461,7 +465,7 @@
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <!-- Twitter -->
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-sky-50 hover:border-sky-200 transition-all">
+                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-twitter text-2xl text-sky-500"></i>
                                             </div>
@@ -483,7 +487,7 @@
                                         <i class="fas fa-exclamation-circle mr-1"></i> Please provide at least one social or professional profile link.
                                     </div>
                                     
-                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: var(--deep-blue);"></i> You can provide one or more profile links. At least one is required.</p>
+                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: var(--deep-purple);"></i> You can provide one or more profile links. At least one is required.</p>
                                 </div>
 
                                 <!-- Additional Notes -->
@@ -491,26 +495,26 @@
                                     <label for="notes" class="block text-sm font-semibold text-gray-900 mb-2">Additional Notes (Internal)</label>
                                     <textarea name="notes" id="notes" rows="4"
                                               placeholder="Add any internal notes about this mentor, e.g., special training needs, recommendations..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">{{ old('notes') }}</textarea>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">{{ old('notes') }}</textarea>
                                     <p class="mt-2 text-xs text-gray-600"><i class="fas fa-lock mr-1 text-gray-500"></i> These notes are visible only to admin</p>
                                 </div>
 
                                 <!-- Notification Preferences -->
-                                <div class="p-4 rounded-lg" style="background: #E8EAF6; border: 1px solid #C5CAE9;">
+                                <div class="p-4 rounded-lg" style="background: var(--soft-lavender); border: 1px solid #D8B4FE;">
                                     <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
-                                        <i class="fas fa-bell mr-2" style="color: var(--deep-blue);"></i> Notification Preferences
+                                        <i class="fas fa-bell mr-2" style="color: var(--deep-purple);"></i> Notification Preferences
                                     </h4>
                                     <div class="space-y-3">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_welcome" value="1"
                                                    @if(old('notify_welcome')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-200" style="color: var(--deep-blue);">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-purple-200" style="color: var(--deep-purple);">
                                             <span class="ml-2 text-sm text-gray-700">Send welcome email to mentor</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_training" value="1"
                                                    @if(old('notify_training')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-200" style="color: var(--deep-blue);">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-purple-200" style="color: var(--deep-purple);">
                                             <span class="ml-2 text-sm text-gray-700">Notify about upcoming training sessions</span>
                                         </label>
                                     </div>
@@ -533,11 +537,11 @@
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <button type="button" id="nextBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-blue); hover:background: #2C4A8C;">
+                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-purple); hover:background: var(--dark-purple);">
                                 Next <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                             <button type="submit" id="submitBtn"
-                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-blue), var(--bright-blue)); hover:opacity-90;">
+                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-purple), var(--bright-purple)); hover:opacity-90;">
                                 <i class="fas fa-check mr-2"></i> Create Mentor
                             </button>
                         </div>
@@ -546,11 +550,11 @@
                     <!-- Mobile Submit -->
                     <div class="sm:hidden px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
                         <button type="button" id="mobileNextBtn"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-blue); hover:background: #2C4A8C;">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-purple); hover:background: var(--dark-purple);">
                             Continue <i class="fas fa-arrow-right ml-2"></i>
                         </button>
                         <button type="submit"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-blue), var(--bright-blue));">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-purple), var(--bright-purple));">
                             <i class="fas fa-check mr-2"></i> Create Mentor
                         </button>
                     </div>
@@ -586,14 +590,14 @@
     function showTab(name) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-button').forEach(b => {
-            b.classList.remove('active', 'border-blue-600', 'text-gray-900');
+            b.classList.remove('active', 'border-purple-600', 'text-gray-900');
             b.classList.add('border-transparent', 'text-gray-600');
         });
         document.getElementById(name).classList.add('active');
         const activeBtn = document.querySelector(`[data-tab="${name}"]`);
         activeBtn.classList.add('active');
-        activeBtn.style.borderColor = '#3B59A8';
-        activeBtn.style.color = '#3B59A8';
+        activeBtn.style.borderColor = '#6B21A8';
+        activeBtn.style.color = '#6B21A8';
         currentTab = name;
         const stepMap = { basic: 1, professional: 2, additional: 3 };
         document.getElementById('currentStep').textContent = stepMap[name];
