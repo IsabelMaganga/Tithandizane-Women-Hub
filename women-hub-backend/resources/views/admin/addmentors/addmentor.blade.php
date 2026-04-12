@@ -7,23 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Color Palette Variables - Elegant Purple Theme */
+        /* Color Palette Variables - Matching Dashboard Purple Theme (from get-started) */
         :root {
-            --deep-purple: #6B21A8;
-            --medium-purple: #9333EA;
-            --bright-purple: #A855F7;
-            --light-purple: #C084FC;
-            --soft-lavender: #E9D5FF;
-            --purple-magenta: #9C27B0;
+            --purple-primary: #874179;      /* Main purple from get-started sidebar */
+            --purple-dark: #6d3661;         /* Darker shade for borders/hover */
+            --purple-light: #af5c9c;        /* Lighter purple for accents */
+            --purple-soft: #F3E6F1;         /* Soft lavender background */
+            --purple-gradient-start: #874179;
+            --purple-gradient-end: #af5c9c;
             --vibrant-green: #4CAF50;
             --lime-green: #8BC34A;
-            --dark-purple: #581C87;
+            --bright-blue: #5CB8E4;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--deep-purple) !important;
-            ring: 2px solid var(--light-purple);
+            border-color: var(--purple-primary) !important;
+            ring: 2px solid var(--purple-light);
         }
 
         .form-section {
@@ -67,9 +67,9 @@
         }
 
         .expertise-checkbox:checked + .expertise-label {
-            border-color: var(--deep-purple);
-            background: var(--soft-lavender);
-            color: var(--deep-purple);
+            border-color: var(--purple-primary);
+            background: var(--purple-soft);
+            color: var(--purple-primary);
         }
 
         /* Tab navigation */
@@ -77,8 +77,8 @@
         .tab-content.active { display: block; }
         .tab-button { transition: all 0.3s ease; }
         .tab-button.active {
-            border-bottom: 3px solid var(--deep-purple);
-            color: var(--deep-purple);
+            border-bottom: 3px solid var(--purple-primary);
+            color: var(--purple-primary);
         }
 
         /* Password strength meter */
@@ -88,74 +88,93 @@
             transition: all 0.3s ease;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Custom scrollbar */
+        /* Custom scrollbar - matching dashboard */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--soft-lavender);
+            background: var(--purple-soft);
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--deep-purple);
+            background: var(--purple-primary);
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--dark-purple);
+            background: var(--purple-dark);
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
 <div class="flex min-h-screen">
 
-    <!-- Sidebar - Deep Purple Dominant -->
-    <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: linear-gradient(135deg, var(--deep-purple) 0%, var(--medium-purple) 100%);">
-        <div class="p-6 border-b" style="border-color: var(--dark-purple);">
-            <h1 class="text-2xl font-bold tracking-tight">Tithandizane</h1>
-            <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
-        </div>
-        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
-                <i class="fas fa-home w-5 mr-3"></i><span>Dashboard</span>
-            </a>
-            <a href="{{ route('admin.mentors.index') }}" class="flex items-center px-4 py-3 rounded-lg font-medium shadow-sm" style="background: rgba(255,255,255,0.15); color: white;">
-                <i class="fas fa-chalkboard-teacher w-5 mr-3"></i><span>Mentors</span>
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
-                <i class="fas fa-flag w-5 mr-3" style="color: var(--light-purple);"></i><span>Harassment Reports</span>
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
-                <i class="fas fa-book-open w-5 mr-3" style="color: var(--vibrant-green);"></i><span>Guidance Content</span>
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
-                <i class="fas fa-users w-5 mr-3" style="color: var(--bright-purple);"></i><span>Users</span>
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg transition-colors hover:bg-white/10" style="color: #E2E8F0;">
-                <i class="fas fa-cog w-5 mr-3" style="color: var(--lime-green);"></i><span>Settings</span>
-            </a>
-        </nav>
-        <!-- Sidebar footer — real admin credentials -->
-        <div class="p-6 border-t mt-auto" style="border-color: var(--dark-purple);">
-            <div class="flex items-center">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=A855F7&color=fff&size=128"
-                     class="w-11 h-11 rounded-full ring-2 ring-white/30" alt="{{ $adminName }}">
-                <div class="ml-3 min-w-0">
-                    <p class="text-sm font-medium truncate">{{ $adminName }}</p>
-                    <p class="text-xs text-white/70 truncate">{{ $adminEmail }}</p>
-                </div>
+   <!-- Sidebar - Purple matching dashboard (exactly from get-started) -->
+<aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: #874179; border-right: 1px solid #6d3661;">
+    <div class="p-6 border-b" style="border-color: #6d3661;">
+        <div class="flex items-center gap-3">
+            <!-- Round Logo -->
+            <img src="{{ asset('images/logo.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
+                <p class="text-xs opacity-90 text-white">Women Hub</p>
             </div>
         </div>
-    </aside>
+    </div>
+    <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+        <!-- Dashboard Link -->
+        <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
+            <i class="fas fa-home w-5 mr-3" style="color: #FFFFFF;"></i>
+            <span>Dashboard</span>
+        </a>
+        <!-- Mentors Link (Active) -->
+        <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="background: #6d3661; color: #FFFFFF;">
+            <i class="fas fa-chalkboard-user w-5 mr-3" style="color: #9C27B0;"></i>
+            <span class="font-medium">Mentors</span>
+        </a>
+        <!-- Harassment Reports -->
+        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
+            <i class="fas fa-flag w-5 mr-3" style="color: #8BC34A;"></i>
+            <span>Harassment Reports</span>
+        </a>
+        <!-- Guidance Content -->
+        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
+            <i class="fas fa-book-open w-5 mr-3" style="color: #4CAF50;"></i>
+            <span>Guidance Content</span>
+        </a>
+        <!-- Users -->
+        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
+            <i class="fas fa-user-circle w-5 mr-3" style="color: #5CB8E4;"></i>
+            <span>Users</span>
+        </a>
+        <!-- Settings -->
+        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
+            <i class="fas fa-cog w-5 mr-3" style="color: #8BC34A;"></i>
+            <span>Settings</span>
+        </a>
+        <!-- Logout -->
+        <div class="pt-8 mt-auto">
+            <button type="button" onclick="handleLogout()" class="w-full flex items-center px-4 py-3 rounded-lg transition hover:bg-rose-800/50 text-stone-200 hover:text-white">
+                <i class="fas fa-sign-out-alt w-5 mr-3"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </nav>
+    <!-- Sidebar footer — admin user card with purple tones -->
+    <div class="p-5 m-3 rounded-xl mt-auto" style="background: #6d3661; border: 1px solid #af5c9c;">
+        <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName ?? 'Admin User') }}&background=af5c9c&color=fff&size=40" class="w-10 h-10 rounded-full border-2 border-white" alt="{{ $adminName ?? 'Admin' }}">
+            <div class="ml-3 min-w-0">
+                <p class="text-sm font-semibold text-white truncate">{{ $adminName ?? 'Admin User' }}</p>
+                <p class="text-xs text-white/70 truncate">{{ $adminEmail ?? 'admin@tithandizane.org' }}</p>
+            </div>
+        </div>
+    </div>
+</aside>
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col lg:ml-72 xl:ml-80">
 
-        <!-- Topbar — real admin credentials -->
+        <!-- Topbar — with purple accent -->
         <header class="bg-white border-b shadow-sm sticky top-0 z-10" style="border-color: #E2E8F0;">
             <div class="px-6 py-4 flex items-center justify-between">
                 <div>
@@ -163,19 +182,18 @@
                     <p class="text-sm text-gray-600 mt-0.5">Create and configure a professional mentor profile</p>
                 </div>
                 <div class="flex items-center space-x-5">
-                    <button type="button" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <button type="button" class="text-gray-500 hover:text-[#874179] transition-colors">
                         <i class="fas fa-bell text-xl"></i>
                     </button>
-                    <button type="button" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <button type="button" class="text-gray-500 hover:text-[#874179] transition-colors">
                         <i class="fas fa-envelope text-xl"></i>
                     </button>
                     <div class="hidden sm:flex items-center space-x-3 pl-4 border-l" style="border-color: #E2E8F0;">
                         <div class="text-right">
-                            <p class="text-sm font-medium text-gray-900">{{ $adminName }}</p>
-                            <p class="text-xs text-gray-500">{{ $adminEmail }}</p>
+                            <p class="text-sm font-medium text-gray-900">{{ $adminName ?? 'Admin User' }}</p>
+                            <p class="text-xs text-gray-500">{{ $adminEmail ?? 'admin@tithandizane.org' }}</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=A855F7&color=fff&size=128"
-                             class="w-10 h-10 rounded-full" alt="{{ $adminName }}">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName ?? 'Admin User') }}&background=af5c9c&color=fff&size=48" class="w-10 h-10 rounded-full border-2 border-[#874179]" alt="{{ $adminName ?? 'Admin' }}">
                     </div>
                 </div>
             </div>
@@ -184,20 +202,20 @@
         <!-- Page Content -->
         <main class="flex-1 overflow-y-auto p-6 lg:p-8">
 
-            <!-- Breadcrumb -->
+            <!-- Breadcrumb with purple -->
             <nav class="mb-8 text-sm" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: var(--deep-purple);">
+                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: #874179;">
                         <i class="fas fa-home mr-1.5 text-xs"></i> Dashboard
                     </a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: var(--deep-purple);">Mentors</a></li>
+                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: #874179;">Mentors</a></li>
                     <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
                     <li class="text-gray-500 font-medium">Add New Mentor</li>
                 </ol>
             </nav>
 
-            <!--adding to desplay session-->
+            <!-- Session Messages -->
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -215,19 +233,19 @@
                 <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
                     @csrf
 
-                    <!-- Header — Purple gradient -->
-                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #F3E8FF 100%); border-color: #D8B4FE;">
+                    <!-- Header — Purple gradient matching get-started -->
+                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #F9F0F7 0%, #F3E6F1 100%); border-color: #E9D5FF;">
                         <div class="flex items-start justify-between">
                             <div>
-                                <h2 class="text-2xl font-bold" style="color: var(--deep-purple);">Mentor Registration</h2>
+                                <h2 class="text-2xl font-bold" style="color: #874179;">Mentor Registration</h2>
                                 <p class="mt-2 text-sm text-gray-700">
                                     Complete the form below to add a new mentor to the platform.
                                     All fields marked with <span class="text-red-500 font-semibold">*</span> are required.
                                 </p>
                             </div>
                             <div class="hidden sm:block">
-                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: var(--deep-purple);">
-                                    <i class="fas fa-info-circle text-sm" style="color: var(--deep-purple);"></i>
+                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: #874179;">
+                                    <i class="fas fa-info-circle text-sm" style="color: #874179;"></i>
                                     <span class="text-sm font-medium text-gray-700">
                                         Step <span id="currentStep">1</span> of <span id="totalSteps">3</span>
                                     </span>
@@ -236,10 +254,10 @@
                         </div>
                     </div>
 
-                    <!-- Tab Navigation -->
+                    <!-- Tab Navigation with purple active state -->
                     <div class="hidden md:block px-6 md:px-8 bg-gray-50 border-b border-gray-200">
                         <div class="flex space-x-8">
-                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: var(--deep-purple); color: var(--deep-purple);">
+                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: #874179; color: #874179;">
                                 <i class="fas fa-user mr-2"></i> Basic Info
                             </button>
                             <button type="button" class="tab-button py-4 px-1 font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900" data-tab="professional">
@@ -263,7 +281,7 @@
                                         <label class="block text-sm font-semibold text-gray-900 mb-4">Profile Photo</label>
                                         <div class="relative">
                                             <div id="photo-preview"
-                                                 class="w-full aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shadow-inner transition-all hover:border-purple-400 hover:from-purple-50 hover:to-purple-100">
+                                                 class="w-full aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shadow-inner transition-all hover:border-[#874179] hover:from-purple-50 hover:to-purple-100">
                                                 <div class="text-center">
                                                     <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
                                                     <p class="text-xs text-gray-500">Click to upload</p>
@@ -275,7 +293,7 @@
                                         </div>
                                         <p class="mt-3 text-xs text-gray-600 text-center">
                                             <i class="fas fa-check-circle mr-1" style="color: var(--vibrant-green);"></i> PNG, JPG
-                                            <br><i class="fas fa-info-circle mr-1" style="color: var(--deep-purple);"></i> Max 2MB
+                                            <br><i class="fas fa-info-circle mr-1" style="color: #874179;"></i> Max 2MB
                                         </p>
                                     </div>
                                 </div>
@@ -288,7 +306,7 @@
                                             <label for="name" class="block text-sm font-semibold text-gray-900 mb-2">Full Name <span class="text-red-500">*</span></label>
                                             <input type="text" name="name" id="name" required value="{{ old('name') }}"
                                                    placeholder="e.g., Jane Smith"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('name') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('name') border-red-400 @enderror">
                                             @error('name')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Email -->
@@ -296,7 +314,7 @@
                                             <label for="email" class="block text-sm font-semibold text-gray-900 mb-2">Email Address <span class="text-red-500">*</span></label>
                                             <input type="email" name="email" id="email" required value="{{ old('email') }}"
                                                    placeholder="jane.smith@example.com"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('email') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('email') border-red-400 @enderror">
                                             @error('email')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Phone -->
@@ -304,7 +322,7 @@
                                             <label for="phone" class="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
                                             <input type="tel" name="phone" id="phone" value="{{ old('phone') }}"
                                                    placeholder="+265 99 123 4567"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('phone') border-red-400 @enderror">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('phone') border-red-400 @enderror">
                                             @error('phone')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                         </div>
                                         <!-- Location -->
@@ -312,7 +330,7 @@
                                             <label for="location" class="block text-sm font-semibold text-gray-900 mb-2">Location</label>
                                             <input type="text" name="location" id="location" value="{{ old('location') }}"
                                                    placeholder="e.g., Lilongwe, Malawi"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                         </div>
                                     </div>
 
@@ -320,7 +338,7 @@
                                     <div class="pt-6 border-t border-gray-200">
                                         <h4 class="text-sm font-semibold text-gray-900 mb-1">Account Credentials</h4>
                                         <p class="text-xs text-gray-500 mb-4">
-                                            Password must be at least 12 characters and include uppercase letters, lowercase letters, numbers, and special characters (e.g. <span class="font-mono">!@#$%^&*</span>).
+                                            Password must be at least 12 characters and include uppercase letters, lowercase letters, numbers, and special characters.
                                         </p>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <!-- Password -->
@@ -329,7 +347,7 @@
                                                 <div class="relative">
                                                     <input type="password" name="password" id="password" required
                                                            placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('password') border-red-400 @enderror">
+                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('password') border-red-400 @enderror">
                                                     <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password">
                                                         <i class="fas fa-eye text-sm"></i>
                                                     </button>
@@ -352,7 +370,7 @@
                                                 <div class="relative">
                                                     <input type="password" name="password_confirmation" id="password_confirmation" required
                                                            placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
+                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                                     <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password_confirmation">
                                                         <i class="fas fa-eye text-sm"></i>
                                                     </button>
@@ -399,8 +417,8 @@
                                             <input type="checkbox" name="expertise[]" value="{{ $option }}"
                                                    @if(in_array($option, old('expertise', []))) checked @endif
                                                    class="expertise-checkbox">
-                                            <span class="expertise-label group-hover:border-purple-400">
-                                                <i class="fas fa-check text-purple-600 mr-2 hidden"></i>
+                                            <span class="expertise-label group-hover:border-[#874179]">
+                                                <i class="fas fa-check text-[#874179] mr-2 hidden"></i>
                                                 {{ $option }}
                                             </span>
                                         </label>
@@ -414,9 +432,9 @@
                                     <label for="bio" class="block text-sm font-semibold text-gray-900 mb-2">Professional Bio <span class="text-red-500">*</span></label>
                                     <textarea name="bio" id="bio" rows="5" required
                                               placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
                                     <div class="mt-2 flex justify-between items-center">
-                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: var(--deep-purple);"></i> 2–4 sentences recommended</p>
+                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: #874179;"></i> 2–4 sentences recommended</p>
                                         <span id="bio-count" class="text-xs text-gray-500">0 / 500 characters</span>
                                     </div>
                                     @error('bio')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
@@ -427,7 +445,7 @@
                                     <div>
                                         <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
                                         <select name="status" id="status"
-                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
+                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                             <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending Approval</option>
                                             <option value="active"  {{ old('status') == 'active'  ? 'selected' : '' }}>Active</option>
                                             <option value="inactive"{{ old('status') == 'inactive'? 'selected' : '' }}>Inactive</option>
@@ -438,8 +456,8 @@
                                         <input type="text" name="availability" id="availability"
                                                placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
                                                value="{{ old('availability') }}"
-                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all @error('availability') border-red-400 @enderror">
-                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: var(--deep-purple);"></i> Specify mentor's working hours and days</p>
+                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('availability') border-red-400 @enderror">
+                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: #874179;"></i> Specify mentor's working hours and days</p>
                                         @error('availability')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                     </div>
                                 </div>
@@ -454,10 +472,9 @@
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Social & Professional Profiles</h3>
                                     <p class="text-sm text-gray-600 mb-4">Please provide at least one professional profile link below. <span class="text-red-500">*</span></p>
                                     
-                                    <!-- Social Profiles Container with validation -->
                                     <div class="space-y-4" id="socialProfilesContainer">
                                         <!-- LinkedIn -->
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
+                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-linkedin text-2xl text-blue-700"></i>
                                             </div>
@@ -465,7 +482,7 @@
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <!-- Twitter -->
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
+                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-twitter text-2xl text-sky-500"></i>
                                             </div>
@@ -473,21 +490,20 @@
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <!-- Website -->
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-all">
+                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-globe text-2xl" style="color: var(--purple-magenta);"></i>
+                                                <i class="fas fa-globe text-2xl" style="color: #874179;"></i>
                                             </div>
                                             <input type="url" name="website_url" id="website_url" placeholder="https://yourwebsite.com" value="{{ old('website_url') }}"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                     </div>
                                     
-                                    <!-- Error message for social profiles -->
                                     <div id="socialProfilesError" class="mt-2 text-sm text-red-600 hidden flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i> Please provide at least one social or professional profile link.
                                     </div>
                                     
-                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: var(--deep-purple);"></i> You can provide one or more profile links. At least one is required.</p>
+                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: #874179;"></i> You can provide one or more profile links. At least one is required.</p>
                                 </div>
 
                                 <!-- Additional Notes -->
@@ -495,26 +511,26 @@
                                     <label for="notes" class="block text-sm font-semibold text-gray-900 mb-2">Additional Notes (Internal)</label>
                                     <textarea name="notes" id="notes" rows="4"
                                               placeholder="Add any internal notes about this mentor, e.g., special training needs, recommendations..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">{{ old('notes') }}</textarea>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">{{ old('notes') }}</textarea>
                                     <p class="mt-2 text-xs text-gray-600"><i class="fas fa-lock mr-1 text-gray-500"></i> These notes are visible only to admin</p>
                                 </div>
 
-                                <!-- Notification Preferences -->
-                                <div class="p-4 rounded-lg" style="background: var(--soft-lavender); border: 1px solid #D8B4FE;">
+                                <!-- Notification Preferences with purple -->
+                                <div class="p-4 rounded-lg" style="background: #F9F0F7; border: 1px solid #E9D5FF;">
                                     <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
-                                        <i class="fas fa-bell mr-2" style="color: var(--deep-purple);"></i> Notification Preferences
+                                        <i class="fas fa-bell mr-2" style="color: #874179;"></i> Notification Preferences
                                     </h4>
                                     <div class="space-y-3">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_welcome" value="1"
                                                    @if(old('notify_welcome')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-purple-200" style="color: var(--deep-purple);">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]" style="color: #874179;">
                                             <span class="ml-2 text-sm text-gray-700">Send welcome email to mentor</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" name="notify_training" value="1"
                                                    @if(old('notify_training')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-purple-200" style="color: var(--deep-purple);">
+                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]" style="color: #874179;">
                                             <span class="ml-2 text-sm text-gray-700">Notify about upcoming training sessions</span>
                                         </label>
                                     </div>
@@ -523,7 +539,7 @@
                         </div>
                     </div>
 
-                    <!-- Form Actions -->
+                    <!-- Form Actions with purple buttons -->
                     <div class="px-6 md:px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between gap-4">
                         <div class="flex gap-3">
                             <a href="{{ route('admin.mentors.index') }}"
@@ -537,11 +553,11 @@
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <button type="button" id="nextBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-purple); hover:background: var(--dark-purple);">
+                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: #874179; hover:background: #6d3661;">
                                 Next <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                             <button type="submit" id="submitBtn"
-                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-purple), var(--bright-purple)); hover:opacity-90;">
+                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c); hover:opacity-90;">
                                 <i class="fas fa-check mr-2"></i> Create Mentor
                             </button>
                         </div>
@@ -550,11 +566,11 @@
                     <!-- Mobile Submit -->
                     <div class="sm:hidden px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
                         <button type="button" id="mobileNextBtn"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: var(--deep-purple); hover:background: var(--dark-purple);">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: #874179;">
                             Continue <i class="fas fa-arrow-right ml-2"></i>
                         </button>
                         <button type="submit"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, var(--deep-purple), var(--bright-purple));">
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c);">
                             <i class="fas fa-check mr-2"></i> Create Mentor
                         </button>
                     </div>
@@ -565,7 +581,13 @@
 </div>
 
 <script>
-    // ── Photo Preview ─────────────────────────────────────────────────────────
+    // Logout handler
+    window.handleLogout = function() {
+        alert("✅ Logged out successfully.");
+        window.location.href = "{{ route('admin.login') }}";
+    };
+
+    // Photo Preview
     document.getElementById('photo')?.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -579,7 +601,7 @@
         reader.readAsDataURL(file);
     });
 
-    // ── Tab Navigation ────────────────────────────────────────────────────────
+    // Tab Navigation
     let currentTab = 'basic';
     const tabs = ['basic', 'professional', 'additional'];
 
@@ -596,8 +618,8 @@
         document.getElementById(name).classList.add('active');
         const activeBtn = document.querySelector(`[data-tab="${name}"]`);
         activeBtn.classList.add('active');
-        activeBtn.style.borderColor = '#6B21A8';
-        activeBtn.style.color = '#6B21A8';
+        activeBtn.style.borderColor = '#874179';
+        activeBtn.style.color = '#874179';
         currentTab = name;
         const stepMap = { basic: 1, professional: 2, additional: 3 };
         document.getElementById('currentStep').textContent = stepMap[name];
@@ -610,9 +632,9 @@
         const nextBtn   = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
 
-        prevBtn?.classList.toggle('hidden', idx === 0);
-        nextBtn?.classList.toggle('hidden', idx === tabs.length - 1);
-        submitBtn?.classList.toggle('hidden', idx !== tabs.length - 1);
+        if (prevBtn) prevBtn.classList.toggle('hidden', idx === 0);
+        if (nextBtn) nextBtn.classList.toggle('hidden', idx === tabs.length - 1);
+        if (submitBtn) submitBtn.classList.toggle('hidden', idx !== tabs.length - 1);
     }
 
     document.getElementById('nextBtn')?.addEventListener('click', () => {
@@ -628,7 +650,7 @@
         if (idx < tabs.length - 1) { showTab(tabs[idx + 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     });
 
-    // ── Password: Show/Hide Toggle ────────────────────────────────────────────
+    // Password Show/Hide Toggle
     document.querySelectorAll('.toggle-pw').forEach(btn => {
         btn.addEventListener('click', () => {
             const input = document.getElementById(btn.dataset.target);
@@ -643,7 +665,7 @@
         });
     });
 
-    // ── Password: Strength Meter + Requirements ───────────────────────────────
+    // Password Strength Meter
     const passwordInput = document.getElementById('password');
     const confirmInput  = document.getElementById('password_confirmation');
     const matchEl       = document.getElementById('password-match');
@@ -669,7 +691,6 @@
     passwordInput?.addEventListener('input', function () {
         const val = this.value;
 
-        // Requirements checklist
         Object.values(reqs).forEach(({ el, test }) => {
             const pass = test(val);
             el.classList.toggle('text-green-600', pass);
@@ -677,45 +698,49 @@
             el.querySelector('i').className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
         });
 
-        // Score
         const score = Object.values(reqs).filter(({ test }) => test(val)).length;
         bars.forEach((bar, i) => {
-            bar.className = `strength-bar flex-1 ${i < score ? strengthConfig[score - 1].color : 'bg-gray-200'}`;
+            if (bar) bar.className = `strength-bar flex-1 ${i < score ? strengthConfig[score - 1].color : 'bg-gray-200'}`;
         });
         if (val.length === 0) {
-            strengthLabel.textContent = '';
+            if (strengthLabel) strengthLabel.textContent = '';
         } else {
             const cfg = strengthConfig[score - 1] || strengthConfig[0];
-            strengthLabel.textContent = cfg.label;
-            strengthLabel.className   = `text-xs font-medium ${cfg.labelClass}`;
+            if (strengthLabel) {
+                strengthLabel.textContent = cfg.label;
+                strengthLabel.className   = `text-xs font-medium ${cfg.labelClass}`;
+            }
         }
-
         checkPasswordMatch();
     });
 
     function checkPasswordMatch() {
-        if (!confirmInput.value) { matchEl.innerHTML = ''; return; }
+        if (!confirmInput || !confirmInput.value) { if(matchEl) matchEl.innerHTML = ''; return; }
         if (passwordInput.value === confirmInput.value) {
-            matchEl.innerHTML   = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
-            matchEl.className   = 'mt-2 text-xs text-green-600';
+            if(matchEl) {
+                matchEl.innerHTML   = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
+                matchEl.className   = 'mt-2 text-xs text-green-600';
+            }
         } else {
-            matchEl.innerHTML   = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
-            matchEl.className   = 'mt-2 text-xs text-red-600';
+            if(matchEl) {
+                matchEl.innerHTML   = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
+                matchEl.className   = 'mt-2 text-xs text-red-600';
+            }
         }
     }
     confirmInput?.addEventListener('input', checkPasswordMatch);
 
-    // ── Bio character counter ─────────────────────────────────────────────────
+    // Bio character counter
     const bioField  = document.getElementById('bio');
     const bioCount  = document.getElementById('bio-count');
-    if (bioField) {
+    if (bioField && bioCount) {
         bioField.addEventListener('input', () => {
             bioCount.textContent = `${bioField.value.length} / 500 characters`;
         });
         if (bioField.value) bioCount.textContent = `${bioField.value.length} / 500 characters`;
     }
 
-    // ── Expertise checkbox icon toggle ────────────────────────────────────────
+    // Expertise checkbox icon toggle
     document.querySelectorAll('.expertise-checkbox').forEach(cb => {
         const icon = cb.nextElementSibling?.querySelector('i');
         const toggle = () => icon?.classList.toggle('hidden', !cb.checked);
@@ -723,7 +748,7 @@
         toggle();
     });
 
-    // ── Social Profiles Validation Function ───────────────────────────────────
+    // Social Profiles Validation
     function validateSocialProfiles() {
         const linkedin = document.getElementById('linkedin_url')?.value.trim();
         const twitter = document.getElementById('twitter_url')?.value.trim();
@@ -739,11 +764,9 @@
                 errorEl.classList.add('hidden');
             }
         }
-        
         return hasAtLeastOne;
     }
     
-    // Add real-time validation for social profiles
     const linkedinInput = document.getElementById('linkedin_url');
     const twitterInput = document.getElementById('twitter_url');
     const websiteInput = document.getElementById('website_url');
@@ -751,8 +774,8 @@
     if (linkedinInput) linkedinInput.addEventListener('input', validateSocialProfiles);
     if (twitterInput) twitterInput.addEventListener('input', validateSocialProfiles);
     if (websiteInput) websiteInput.addEventListener('input', validateSocialProfiles);
-    
-    // ── Form validation ───────────────────────────────────────────────────────
+
+    // Form validation
     document.querySelector('form')?.addEventListener('submit', function (e) {
         const name     = document.getElementById('name')?.value.trim();
         const email    = document.getElementById('email')?.value.trim();
@@ -760,8 +783,6 @@
         const confirm  = confirmInput?.value;
         const expertise= document.querySelectorAll('input[name="expertise[]"]:checked').length;
         const bio      = bioField?.value.trim();
-        
-        // Check social profiles validation
         const hasSocialProfile = validateSocialProfiles();
 
         if (!name || !email || !password || !confirm || !expertise || !bio) {
@@ -777,7 +798,6 @@
             e.preventDefault(); return;
         }
 
-        // Enforce strong password client-side
         const allPass = Object.values(reqs).every(({ test }) => test(password));
         if (!allPass) {
             alert('Password does not meet strength requirements. Please use at least 12 characters with uppercase, lowercase, numbers, and a special character.');
@@ -785,10 +805,8 @@
         }
     });
 
-    // Initialise button visibility
+    // Initialize
     updateNavButtons();
-    
-    // Run initial social profiles validation to show error if needed (for old values)
     setTimeout(validateSocialProfiles, 100);
 </script>
 </body>

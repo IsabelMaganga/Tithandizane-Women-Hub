@@ -65,6 +65,10 @@
     <!-- ================= LEFT SIDEBAR - Deep Blue Dominant ================= -->
       <div class="w-64 flex flex-col shadow-xl" style="background: #874179; border-right: 1px solid #6d3661;">
        <div class="p-6 border-b" style="border-color: #6d3661;">
+        <div class="flex items-center gap-3">
+            <!-- Round Logo -->
+            <img src="{{ asset('images/logo.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
+            <div>
             <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
             <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
         </div>
