@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Mentor – Tithandizane Women Hub</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Color Palette Variables - Matching Dashboard Purple Theme (from get-started) */
+        /* Color Palette Variables - Matching Dashboard Purple Theme */
         :root {
-            --purple-primary: #874179;      /* Main purple from get-started sidebar */
-            --purple-dark: #6d3661;         /* Darker shade for borders/hover */
-            --purple-light: #af5c9c;        /* Lighter purple for accents */
-            --purple-soft: #F3E6F1;         /* Soft lavender background */
+            --purple-primary: #874179;
+            --purple-dark: #6d3661;
+            --purple-light: #af5c9c;
+            --purple-soft: #F3E6F1;
             --purple-gradient-start: #874179;
             --purple-gradient-end: #af5c9c;
             --vibrant-green: #4CAF50;
@@ -23,7 +24,6 @@
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--purple-primary) !important;
-            ring: 2px solid var(--purple-light);
         }
 
         .form-section {
@@ -51,7 +51,6 @@
             cursor: pointer;
         }
 
-        /* Expertise checkboxes */
         .expertise-checkbox { display: none; }
 
         .expertise-label {
@@ -72,7 +71,6 @@
             color: var(--purple-primary);
         }
 
-        /* Tab navigation */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .tab-button { transition: all 0.3s ease; }
@@ -81,14 +79,12 @@
             color: var(--purple-primary);
         }
 
-        /* Password strength meter */
         .strength-bar {
             height: 4px;
             border-radius: 2px;
             transition: all 0.3s ease;
         }
 
-        /* Custom scrollbar - matching dashboard */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -103,17 +99,46 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--purple-dark);
         }
+        
+        /* Toast notification styles */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            font-size: 14px;
+            transform: translateX(-50%);
+        }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
 <div class="flex min-h-screen">
 
-   <!-- Sidebar - Purple matching dashboard (exactly from get-started) -->
+   <!-- Sidebar -->
 <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: #874179; border-right: 1px solid #6d3661;">
     <div class="p-6 border-b" style="border-color: #6d3661;">
         <div class="flex items-center gap-3">
-            <!-- Round Logo -->
-            <img src="{{ asset('images/logo.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
+            <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
                 <p class="text-xs opacity-90 text-white">Women Hub</p>
@@ -121,37 +146,30 @@
         </div>
     </div>
     <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-        <!-- Dashboard Link -->
         <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
             <i class="fas fa-home w-5 mr-3" style="color: #FFFFFF;"></i>
             <span>Dashboard</span>
         </a>
-        <!-- Mentors Link (Active) -->
         <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="background: #6d3661; color: #FFFFFF;">
             <i class="fas fa-chalkboard-user w-5 mr-3" style="color: #9C27B0;"></i>
             <span class="font-medium">Mentors</span>
         </a>
-        <!-- Harassment Reports -->
         <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
             <i class="fas fa-flag w-5 mr-3" style="color: #8BC34A;"></i>
             <span>Harassment Reports</span>
         </a>
-        <!-- Guidance Content -->
         <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
             <i class="fas fa-book-open w-5 mr-3" style="color: #4CAF50;"></i>
             <span>Guidance Content</span>
         </a>
-        <!-- Users -->
         <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
             <i class="fas fa-user-circle w-5 mr-3" style="color: #5CB8E4;"></i>
             <span>Users</span>
         </a>
-        <!-- Settings -->
         <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
             <i class="fas fa-cog w-5 mr-3" style="color: #8BC34A;"></i>
             <span>Settings</span>
         </a>
-        <!-- Logout -->
         <div class="pt-8 mt-auto">
             <button type="button" onclick="handleLogout()" class="w-full flex items-center px-4 py-3 rounded-lg transition hover:bg-rose-800/50 text-stone-200 hover:text-white">
                 <i class="fas fa-sign-out-alt w-5 mr-3"></i>
@@ -159,7 +177,6 @@
             </button>
         </div>
     </nav>
-    <!-- Sidebar footer — admin user card with purple tones -->
     <div class="p-5 m-3 rounded-xl mt-auto" style="background: #6d3661; border: 1px solid #af5c9c;">
         <div class="flex items-center">
             <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName ?? 'Admin User') }}&background=af5c9c&color=fff&size=40" class="w-10 h-10 rounded-full border-2 border-white" alt="{{ $adminName ?? 'Admin' }}">
@@ -174,7 +191,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col lg:ml-72 xl:ml-80">
 
-        <!-- Topbar — with purple accent -->
+        <!-- Topbar -->
         <header class="bg-white border-b shadow-sm sticky top-0 z-10" style="border-color: #E2E8F0;">
             <div class="px-6 py-4 flex items-center justify-between">
                 <div>
@@ -202,7 +219,7 @@
         <!-- Page Content -->
         <main class="flex-1 overflow-y-auto p-6 lg:p-8">
 
-            <!-- Breadcrumb with purple -->
+            <!-- Breadcrumb -->
             <nav class="mb-8 text-sm" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2 text-gray-600">
                     <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: #874179;">
@@ -216,24 +233,25 @@
             </nav>
 
             <!-- Session Messages -->
-            @if(session('success'))
-                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                    {{ session('error') }}
+            <div id="alertContainer"></div>
+            
+            <!-- Display validation errors -->
+            @if ($errors->any())
+                <div class="mb-4 p-4 rounded-lg bg-red-100 border-red-400 text-red-700 border">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
             <!-- Form Card -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
-                <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data" id="mentorForm" class="divide-y divide-gray-100">
+                <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <!-- Header — Purple gradient matching get-started -->
+                    <!-- Header -->
                     <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #F9F0F7 0%, #F3E6F1 100%); border-color: #E9D5FF;">
                         <div class="flex items-start justify-between">
                             <div>
@@ -254,7 +272,7 @@
                         </div>
                     </div>
 
-                    <!-- Tab Navigation with purple active state -->
+                    <!-- Tab Navigation -->
                     <div class="hidden md:block px-6 md:px-8 bg-gray-50 border-b border-gray-200">
                         <div class="flex space-x-8">
                             <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: #874179; color: #874179;">
@@ -301,34 +319,27 @@
                                 <!-- Basic Fields -->
                                 <div class="lg:col-span-3 space-y-6">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <!-- Full Name -->
                                         <div>
                                             <label for="name" class="block text-sm font-semibold text-gray-900 mb-2">Full Name <span class="text-red-500">*</span></label>
-                                            <input type="text" name="name" id="name" required value="{{ old('name') }}"
+                                            <input type="text" name="name" id="name" required
                                                    placeholder="e.g., Jane Smith"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('name') border-red-400 @enderror">
-                                            @error('name')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                         </div>
-                                        <!-- Email -->
                                         <div>
                                             <label for="email" class="block text-sm font-semibold text-gray-900 mb-2">Email Address <span class="text-red-500">*</span></label>
-                                            <input type="email" name="email" id="email" required value="{{ old('email') }}"
+                                            <input type="email" name="email" id="email" required
                                                    placeholder="jane.smith@example.com"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('email') border-red-400 @enderror">
-                                            @error('email')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                         </div>
-                                        <!-- Phone -->
                                         <div>
                                             <label for="phone" class="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
-                                            <input type="tel" name="phone" id="phone" value="{{ old('phone') }}"
+                                            <input type="tel" name="phone" id="phone"
                                                    placeholder="+265 99 123 4567"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('phone') border-red-400 @enderror">
-                                            @error('phone')<p class="mt-2 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                         </div>
-                                        <!-- Location -->
                                         <div>
                                             <label for="location" class="block text-sm font-semibold text-gray-900 mb-2">Location</label>
-                                            <input type="text" name="location" id="location" value="{{ old('location') }}"
+                                            <input type="text" name="location" id="location"
                                                    placeholder="e.g., Lilongwe, Malawi"
                                                    class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                         </div>
@@ -341,18 +352,16 @@
                                             Password must be at least 12 characters and include uppercase letters, lowercase letters, numbers, and special characters.
                                         </p>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <!-- Password -->
                                             <div>
                                                 <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">Password <span class="text-red-500">*</span></label>
                                                 <div class="relative">
                                                     <input type="password" name="password" id="password" required
                                                            placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('password') border-red-400 @enderror">
+                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                                     <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password">
                                                         <i class="fas fa-eye text-sm"></i>
                                                     </button>
                                                 </div>
-                                                <!-- Strength meter -->
                                                 <div class="mt-2 space-y-1">
                                                     <div class="flex gap-1">
                                                         <div class="strength-bar flex-1 bg-gray-200" id="bar1"></div>
@@ -362,9 +371,7 @@
                                                     </div>
                                                     <p id="strength-label" class="text-xs text-gray-500"></p>
                                                 </div>
-                                                @error('password')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                             </div>
-                                            <!-- Confirm Password -->
                                             <div>
                                                 <label for="password_confirmation" class="block text-sm font-semibold text-gray-900 mb-2">Confirm Password <span class="text-red-500">*</span></label>
                                                 <div class="relative">
@@ -378,12 +385,11 @@
                                                 <div id="password-match" class="mt-2 text-xs text-gray-500"></div>
                                             </div>
                                         </div>
-                                        <!-- Requirements checklist -->
                                         <div class="mt-4 grid grid-cols-2 gap-1 text-xs" id="pw-reqs">
-                                            <span id="req-length"  class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> 12+ characters</span>
-                                            <span id="req-upper"   class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Uppercase letter</span>
-                                            <span id="req-lower"   class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Lowercase letter</span>
-                                            <span id="req-number"  class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Number</span>
+                                            <span id="req-length" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> 12+ characters</span>
+                                            <span id="req-upper" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Uppercase letter</span>
+                                            <span id="req-lower" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Lowercase letter</span>
+                                            <span id="req-number" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Number</span>
                                             <span id="req-special" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Special character</span>
                                         </div>
                                     </div>
@@ -394,7 +400,6 @@
                         <!-- TAB 2: PROFESSIONAL INFO -->
                         <div id="professional" class="tab-content form-section">
                             <div class="space-y-8">
-                                <!-- Areas of Expertise -->
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-900 mb-4">Areas of Expertise <span class="text-red-500">*</span></label>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -415,7 +420,6 @@
                                         @foreach($expertiseOptions as $option)
                                         <label class="flex items-center cursor-pointer group">
                                             <input type="checkbox" name="expertise[]" value="{{ $option }}"
-                                                   @if(in_array($option, old('expertise', []))) checked @endif
                                                    class="expertise-checkbox">
                                             <span class="expertise-label group-hover:border-[#874179]">
                                                 <i class="fas fa-check text-[#874179] mr-2 hidden"></i>
@@ -424,41 +428,34 @@
                                         </label>
                                         @endforeach
                                     </div>
-                                    @error('expertise')<p class="mt-2 text-sm text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                 </div>
 
-                                <!-- Professional Bio -->
                                 <div>
                                     <label for="bio" class="block text-sm font-semibold text-gray-900 mb-2">Professional Bio <span class="text-red-500">*</span></label>
                                     <textarea name="bio" id="bio" rows="5" required
                                               placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('bio') border-red-400 @enderror">{{ old('bio') }}</textarea>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"></textarea>
                                     <div class="mt-2 flex justify-between items-center">
                                         <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: #874179;"></i> 2–4 sentences recommended</p>
                                         <span id="bio-count" class="text-xs text-gray-500">0 / 500 characters</span>
                                     </div>
-                                    @error('bio')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
                                 </div>
 
-                                <!-- Status + Availability -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
                                         <select name="status" id="status"
                                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                            <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending Approval</option>
-                                            <option value="active"  {{ old('status') == 'active'  ? 'selected' : '' }}>Active</option>
-                                            <option value="inactive"{{ old('status') == 'inactive'? 'selected' : '' }}>Inactive</option>
+                                            <option value="active">Active</option>
+                                            <option value="pending">Pending Approval</option>
+                                            <option value="inactive">Inactive</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label for="availability" class="block text-sm font-semibold text-gray-900 mb-2">Availability & Schedule</label>
                                         <input type="text" name="availability" id="availability"
                                                placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
-                                               value="{{ old('availability') }}"
-                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all @error('availability') border-red-400 @enderror">
-                                        <p class="mt-2 text-xs text-gray-600"><i class="fas fa-clock mr-1" style="color: #874179;"></i> Specify mentor's working hours and days</p>
-                                        @error('availability')<p class="mt-1 text-sm text-red-600 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>@enderror
+                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                     </div>
                                 </div>
                             </div>
@@ -467,70 +464,51 @@
                         <!-- TAB 3: ADDITIONAL INFO -->
                         <div id="additional" class="tab-content form-section">
                             <div class="space-y-8">
-                                <!-- Social Profiles -->
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Social & Professional Profiles</h3>
-                                    <p class="text-sm text-gray-600 mb-4">Please provide at least one professional profile link below. <span class="text-red-500">*</span></p>
-                                    
                                     <div class="space-y-4" id="socialProfilesContainer">
-                                        <!-- LinkedIn -->
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-linkedin text-2xl text-blue-700"></i>
                                             </div>
-                                            <input type="url" name="linkedin_url" id="linkedin_url" placeholder="https://linkedin.com/in/..." value="{{ old('linkedin_url') }}"
+                                            <input type="url" name="linkedin_url" id="linkedin_url" placeholder="https://linkedin.com/in/..."
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
-                                        <!-- Twitter -->
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-twitter text-2xl text-sky-500"></i>
                                             </div>
-                                            <input type="url" name="twitter_url" id="twitter_url" placeholder="https://twitter.com/..." value="{{ old('twitter_url') }}"
+                                            <input type="url" name="twitter_url" id="twitter_url" placeholder="https://twitter.com/..."
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
-                                        <!-- Website -->
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fas fa-globe text-2xl" style="color: #874179;"></i>
                                             </div>
-                                            <input type="url" name="website_url" id="website_url" placeholder="https://yourwebsite.com" value="{{ old('website_url') }}"
+                                            <input type="url" name="website_url" id="website_url" placeholder="https://yourwebsite.com"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                     </div>
-                                    
-                                    <div id="socialProfilesError" class="mt-2 text-sm text-red-600 hidden flex items-center">
-                                        <i class="fas fa-exclamation-circle mr-1"></i> Please provide at least one social or professional profile link.
-                                    </div>
-                                    
-                                    <p class="mt-3 text-xs text-gray-600"><i class="fas fa-info-circle mr-1" style="color: #874179;"></i> You can provide one or more profile links. At least one is required.</p>
                                 </div>
 
-                                <!-- Additional Notes -->
                                 <div>
                                     <label for="notes" class="block text-sm font-semibold text-gray-900 mb-2">Additional Notes (Internal)</label>
                                     <textarea name="notes" id="notes" rows="4"
                                               placeholder="Add any internal notes about this mentor, e.g., special training needs, recommendations..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">{{ old('notes') }}</textarea>
-                                    <p class="mt-2 text-xs text-gray-600"><i class="fas fa-lock mr-1 text-gray-500"></i> These notes are visible only to admin</p>
+                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"></textarea>
                                 </div>
 
-                                <!-- Notification Preferences with purple -->
                                 <div class="p-4 rounded-lg" style="background: #F9F0F7; border: 1px solid #E9D5FF;">
                                     <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
                                         <i class="fas fa-bell mr-2" style="color: #874179;"></i> Notification Preferences
                                     </h4>
                                     <div class="space-y-3">
                                         <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="notify_welcome" value="1"
-                                                   @if(old('notify_welcome')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]" style="color: #874179;">
+                                            <input type="checkbox" name="notify_welcome" value="1" class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]">
                                             <span class="ml-2 text-sm text-gray-700">Send welcome email to mentor</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="notify_training" value="1"
-                                                   @if(old('notify_training')) checked @endif
-                                                   class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]" style="color: #874179;">
+                                            <input type="checkbox" name="notify_training" value="1" class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]">
                                             <span class="ml-2 text-sm text-gray-700">Notify about upcoming training sessions</span>
                                         </label>
                                     </div>
@@ -539,7 +517,7 @@
                         </div>
                     </div>
 
-                    <!-- Form Actions with purple buttons -->
+                    <!-- Form Actions -->
                     <div class="px-6 md:px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between gap-4">
                         <div class="flex gap-3">
                             <a href="{{ route('admin.mentors.index') }}"
@@ -553,17 +531,16 @@
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <button type="button" id="nextBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: #874179; hover:background: #6d3661;">
+                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: #874179;">
                                 Next <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                             <button type="submit" id="submitBtn"
-                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c); hover:opacity-90;">
+                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c);">
                                 <i class="fas fa-check mr-2"></i> Create Mentor
                             </button>
                         </div>
                     </div>
 
-                    <!-- Mobile Submit -->
                     <div class="sm:hidden px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
                         <button type="button" id="mobileNextBtn"
                                 class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: #874179;">
@@ -581,18 +558,33 @@
 </div>
 
 <script>
+    // Toast notification
+    function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        toast.style.backgroundColor = isError ? '#dc2626' : '#10b981';
+        document.body.appendChild(toast);
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
     // Logout handler
     window.handleLogout = function() {
-        alert("✅ Logged out successfully.");
-        window.location.href = "{{ route('admin.login') }}";
+        showToast("✅ Logged out successfully.");
+        setTimeout(() => {
+            window.location.href = "{{ route('admin.login') }}";
+        }, 1000);
     };
 
     // Photo Preview
     document.getElementById('photo')?.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
-        if (file.size > 2 * 1024 * 1024)    { alert('File size must be less than 2MB'); return; }
+        if (!file.type.startsWith('image/')) { showToast('Please select an image file', true); return; }
+        if (file.size > 2 * 1024 * 1024) { showToast('File size must be less than 2MB', true); return; }
         const reader = new FileReader();
         reader.onload = ev => {
             document.getElementById('photo-preview').innerHTML =
@@ -628,8 +620,8 @@
 
     function updateNavButtons() {
         const idx = tabs.indexOf(currentTab);
-        const prevBtn   = document.getElementById('prevBtn');
-        const nextBtn   = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
 
         if (prevBtn) prevBtn.classList.toggle('hidden', idx === 0);
@@ -654,7 +646,7 @@
     document.querySelectorAll('.toggle-pw').forEach(btn => {
         btn.addEventListener('click', () => {
             const input = document.getElementById(btn.dataset.target);
-            const icon  = btn.querySelector('i');
+            const icon = btn.querySelector('i');
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -667,25 +659,25 @@
 
     // Password Strength Meter
     const passwordInput = document.getElementById('password');
-    const confirmInput  = document.getElementById('password_confirmation');
-    const matchEl       = document.getElementById('password-match');
-    const bars          = [1,2,3,4].map(n => document.getElementById(`bar${n}`));
+    const confirmInput = document.getElementById('password_confirmation');
+    const matchEl = document.getElementById('password-match');
+    const bars = [1,2,3,4].map(n => document.getElementById(`bar${n}`));
     const strengthLabel = document.getElementById('strength-label');
 
     const reqs = {
-        length:  { el: document.getElementById('req-length'),  test: v => v.length >= 12 },
-        upper:   { el: document.getElementById('req-upper'),   test: v => /[A-Z]/.test(v) },
-        lower:   { el: document.getElementById('req-lower'),   test: v => /[a-z]/.test(v) },
-        number:  { el: document.getElementById('req-number'),  test: v => /[0-9]/.test(v) },
+        length: { el: document.getElementById('req-length'), test: v => v.length >= 12 },
+        upper: { el: document.getElementById('req-upper'), test: v => /[A-Z]/.test(v) },
+        lower: { el: document.getElementById('req-lower'), test: v => /[a-z]/.test(v) },
+        number: { el: document.getElementById('req-number'), test: v => /[0-9]/.test(v) },
         special: { el: document.getElementById('req-special'), test: v => /[^A-Za-z0-9]/.test(v) },
     };
 
     const strengthConfig = [
-        { color: 'bg-red-500',    label: 'Weak',      labelClass: 'text-red-600'    },
-        { color: 'bg-orange-400', label: 'Fair',      labelClass: 'text-orange-500' },
-        { color: 'bg-yellow-400', label: 'Good',      labelClass: 'text-yellow-600' },
-        { color: 'bg-green-500',  label: 'Strong',    labelClass: 'text-green-600'  },
-        { color: 'bg-emerald-600',label: 'Very Strong', labelClass: 'text-emerald-700' },
+        { color: 'bg-red-500', label: 'Weak', labelClass: 'text-red-600' },
+        { color: 'bg-orange-400', label: 'Fair', labelClass: 'text-orange-500' },
+        { color: 'bg-yellow-400', label: 'Good', labelClass: 'text-yellow-600' },
+        { color: 'bg-green-500', label: 'Strong', labelClass: 'text-green-600' },
+        { color: 'bg-emerald-600', label: 'Very Strong', labelClass: 'text-emerald-700' },
     ];
 
     passwordInput?.addEventListener('input', function () {
@@ -708,7 +700,7 @@
             const cfg = strengthConfig[score - 1] || strengthConfig[0];
             if (strengthLabel) {
                 strengthLabel.textContent = cfg.label;
-                strengthLabel.className   = `text-xs font-medium ${cfg.labelClass}`;
+                strengthLabel.className = `text-xs font-medium ${cfg.labelClass}`;
             }
         }
         checkPasswordMatch();
@@ -718,26 +710,25 @@
         if (!confirmInput || !confirmInput.value) { if(matchEl) matchEl.innerHTML = ''; return; }
         if (passwordInput.value === confirmInput.value) {
             if(matchEl) {
-                matchEl.innerHTML   = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
-                matchEl.className   = 'mt-2 text-xs text-green-600';
+                matchEl.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
+                matchEl.className = 'mt-2 text-xs text-green-600';
             }
         } else {
             if(matchEl) {
-                matchEl.innerHTML   = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
-                matchEl.className   = 'mt-2 text-xs text-red-600';
+                matchEl.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
+                matchEl.className = 'mt-2 text-xs text-red-600';
             }
         }
     }
     confirmInput?.addEventListener('input', checkPasswordMatch);
 
     // Bio character counter
-    const bioField  = document.getElementById('bio');
-    const bioCount  = document.getElementById('bio-count');
+    const bioField = document.getElementById('bio');
+    const bioCount = document.getElementById('bio-count');
     if (bioField && bioCount) {
         bioField.addEventListener('input', () => {
             bioCount.textContent = `${bioField.value.length} / 500 characters`;
         });
-        if (bioField.value) bioCount.textContent = `${bioField.value.length} / 500 characters`;
     }
 
     // Expertise checkbox icon toggle
@@ -748,66 +739,8 @@
         toggle();
     });
 
-    // Social Profiles Validation
-    function validateSocialProfiles() {
-        const linkedin = document.getElementById('linkedin_url')?.value.trim();
-        const twitter = document.getElementById('twitter_url')?.value.trim();
-        const website = document.getElementById('website_url')?.value.trim();
-        const errorEl = document.getElementById('socialProfilesError');
-        
-        const hasAtLeastOne = linkedin !== '' || twitter !== '' || website !== '';
-        
-        if (errorEl) {
-            if (!hasAtLeastOne) {
-                errorEl.classList.remove('hidden');
-            } else {
-                errorEl.classList.add('hidden');
-            }
-        }
-        return hasAtLeastOne;
-    }
-    
-    const linkedinInput = document.getElementById('linkedin_url');
-    const twitterInput = document.getElementById('twitter_url');
-    const websiteInput = document.getElementById('website_url');
-    
-    if (linkedinInput) linkedinInput.addEventListener('input', validateSocialProfiles);
-    if (twitterInput) twitterInput.addEventListener('input', validateSocialProfiles);
-    if (websiteInput) websiteInput.addEventListener('input', validateSocialProfiles);
-
-    // Form validation
-    document.querySelector('form')?.addEventListener('submit', function (e) {
-        const name     = document.getElementById('name')?.value.trim();
-        const email    = document.getElementById('email')?.value.trim();
-        const password = passwordInput?.value;
-        const confirm  = confirmInput?.value;
-        const expertise= document.querySelectorAll('input[name="expertise[]"]:checked').length;
-        const bio      = bioField?.value.trim();
-        const hasSocialProfile = validateSocialProfiles();
-
-        if (!name || !email || !password || !confirm || !expertise || !bio) {
-            alert('Please fill in all required fields.');
-            e.preventDefault(); return;
-        }
-        if (password !== confirm) {
-            alert("Passwords don't match. Please check.");
-            e.preventDefault(); return;
-        }
-        if (!hasSocialProfile) {
-            alert('Please provide at least one social or professional profile link (LinkedIn, Twitter, or Website).');
-            e.preventDefault(); return;
-        }
-
-        const allPass = Object.values(reqs).every(({ test }) => test(password));
-        if (!allPass) {
-            alert('Password does not meet strength requirements. Please use at least 12 characters with uppercase, lowercase, numbers, and a special character.');
-            e.preventDefault(); return;
-        }
-    });
-
     // Initialize
     updateNavButtons();
-    setTimeout(validateSocialProfiles, 100);
 </script>
 </body>
 </html>

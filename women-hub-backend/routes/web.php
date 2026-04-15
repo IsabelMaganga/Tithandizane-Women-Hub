@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 //home page
 Route::get('/', fn() => view('welcome'))->name('welcome');
 
+// CSS test route (no authentication required)
+Route::get('/test-css', fn() => view('test-css'))->name('test.css');
+
 // get started route - UPDATED to use correct path
 Route::get('/get-started', fn() => view('admin.home.get-started'))->name('get.started');
 

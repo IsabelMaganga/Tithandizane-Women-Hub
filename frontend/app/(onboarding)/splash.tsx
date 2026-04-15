@@ -41,61 +41,49 @@ export default function Splash() {
   }));
 
   return (
-    <>
-
-
-    <Animated.View style={logoStyle}>
-        <Image
-      source={require('../../assets/images/shape.png')}
-      style={{ width:"136", height: "141" }}
-    />
-      </Animated.View>
     <SafeAreaView className="flex-1 flex-col bg-white py-0 mt-2">
 
       <View className="flex-1 items-center">
         {/* Logo */}
-      <Image
-      source={require('../../assets/images/welcome.png')}
-      style={{zIndex: 0, width: "341", height: "235" }}
-      />
+        <Animated.View style={logoStyle}>
+          <Image
+            source={require('../../assets/images/welcome.png')}
+            style={{ width: 341, height: 235 }}
+          />
+        </Animated.View>
 
+        <Animated.View style={logoStyle}>
+          <Text className="text-black text-3xl px-4 font-semibold text-center">
+            Welcome to
+          </Text>
+        </Animated.View>
 
-      <Animated.View style={logoStyle}>
-        <Text className="text-black text-3xl  px-4font-semibold text-center">
-          welcome to
-        </Text>
-      </Animated.View>
+        {/* Subtitle */}
+        <Animated.View style={textStyle}>
+          <Text className="text-black mt-4 text-4xl text-center">
+            Tithandizane Women Hub
+          </Text>
+        </Animated.View>
 
-      {/* Subtitle */}
-      <Animated.View style={textStyle}>
-        <Text className="text-black mt-4 text-4xl text-center">
-          Tithandizane Womem Hub
-        </Text>
-      </Animated.View>
-
-      <Animated.View style={textStyle}>
-        <Text className="text-black mt-4 px-8 text-center text-sm">
-          Giving women and girls the support,
-      knowledge and protection
-                  they deserve
-        </Text>
-      </Animated.View>
+        <Animated.View style={textStyle}>
+          <Text className="text-black mt-4 px-8 text-center text-sm">
+            Giving women and girls the support,
+            knowledge and protection
+            they deserve
+          </Text>
+        </Animated.View>
       </View>
 
       {/* Button */}
       <Animated.View style={buttonStyle} className="mb-16">
-
-      <MyButton
+        <MyButton
           title="Get Started"
           style={{ width: "80%" }}
+          textStyle={{ color: "white" }}
           onPress={() => router.push("/(auth)/login")}
           disabled={false}
         />
-
       </Animated.View>
-
     </SafeAreaView>
-
-    </>
   );
 }
