@@ -62,7 +62,7 @@
 <body class="font-sans antialiased">
 
 <div class="flex h-screen overflow-hidden">
-    <!-- ================= LEFT SIDEBAR ================= -->
+    
     <div class="w-64 flex flex-col shadow-xl" style="background: #874179; border-right: 1px solid #6d3661;">
         <div class="p-6 border-b" style="border-color: #6d3661;">
             <div class="flex items-center gap-3">
@@ -125,15 +125,15 @@
         </div>
     </div>
 
-    <!-- ================= MAIN CONTENT ================= -->
+    
     <div class="flex-1 overflow-y-auto custom-scroll" style="background: #F8FAFE;">
         
         <!-- Top welcome bar -->
         <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-sm shadow-sm border-b" style="border-color: #E2E8F0;">
             <div class="flex justify-between items-center px-8 py-5 flex-wrap gap-3">
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight text-gray-900" id="welcomeMessage">Welcome back, {{ Auth::guard('admin')->user()->name ?? 'Admin' }} 🌸</h2>
-                    <p class="text-sm mt-1 text-gray-700">Empowering women through mentorship & safety — Here's your live snapshot</p>
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900" id="welcomeMessage">Welcome back, {{ Auth::guard('admin')->user()->name ?? 'Admin' }} </h2>
+                    <p class="text-sm mt-1 text-gray-700">Empowering women through mentorship & safety Here's your live snapshot</p>
                 </div>
                 <div class="flex items-center gap-5">
                     <div class="relative">
@@ -540,7 +540,7 @@
         });
     }
     
-    // Initialize dashboard when page loads
+    
     document.addEventListener('DOMContentLoaded', function() {
         initDashboard();
     });

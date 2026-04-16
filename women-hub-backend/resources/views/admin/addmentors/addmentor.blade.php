@@ -129,6 +129,105 @@
             from {bottom: 30px; opacity: 1;}
             to {bottom: 0; opacity: 0;}
         }
+        
+        /* Custom select for multiple days */
+        select[multiple] {
+            background-image: none;
+        }
+        select[multiple] option {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        select[multiple] option:checked {
+            background: var(--purple-primary) linear-gradient(0deg, var(--purple-primary) 0%, var(--purple-primary) 100%);
+            color: white;
+        }
+        
+        /* Success Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .success-modal {
+            background: white;
+            border-radius: 1.5rem;
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            text-align: center;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .checkmark-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #874179, #af5c9c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .checkmark {
+            font-size: 3rem;
+            color: white;
+        }
+        .success-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #874179, #af5c9c);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(135, 65, 121, 0.3);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
@@ -246,9 +345,16 @@
                 </div>
             @endif
 
+            <!-- Success Message -->
+            @if(session('success'))
+                <div class="mb-4 p-4 rounded-lg bg-green-100 border-green-400 text-green-700 border">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <!-- Form Card -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
-                <form action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="mentorForm" action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Header -->
@@ -289,7 +395,6 @@
 
                     <!-- Form Content -->
                     <div class="p-6 md:p-8 space-y-8">
-
                         <!-- TAB 1: BASIC INFO -->
                         <div id="basic" class="tab-content form-section active">
                             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -400,6 +505,7 @@
                         <!-- TAB 2: PROFESSIONAL INFO -->
                         <div id="professional" class="tab-content form-section">
                             <div class="space-y-8">
+                                <!-- Areas of Expertise -->
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-900 mb-4">Areas of Expertise <span class="text-red-500">*</span></label>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -430,6 +536,7 @@
                                     </div>
                                 </div>
 
+                                <!-- Professional Bio -->
                                 <div>
                                     <label for="bio" class="block text-sm font-semibold text-gray-900 mb-2">Professional Bio <span class="text-red-500">*</span></label>
                                     <textarea name="bio" id="bio" rows="5" required
@@ -441,21 +548,58 @@
                                     </div>
                                 </div>
 
+                                <!-- Status and Availability Description -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
                                         <select name="status" id="status"
                                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
                                             <option value="active">Active</option>
-                                            <option value="pending">Pending Approval</option>
+                                            <option value="pending" selected>Pending Approval</option>
                                             <option value="inactive">Inactive</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label for="availability" class="block text-sm font-semibold text-gray-900 mb-2">Availability & Schedule</label>
+                                        <label for="availability" class="block text-sm font-semibold text-gray-900 mb-2">Availability Description</label>
                                         <input type="text" name="availability" id="availability"
                                                placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
+                                    </div>
+                                </div>
+
+                                <!-- Detailed Schedule -->
+                                <div class="border-t border-gray-200 pt-6">
+                                    <h3 class="text-md font-semibold text-gray-900 mb-2">Detailed Schedule (Optional)</h3>
+                                    <p class="text-xs text-gray-500 mb-4">Set specific days and times for mentoring sessions</p>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">Available Days</label>
+                                            <select name="available_days[]" multiple 
+                                                    class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"
+                                                    size="7">
+                                                <option value="monday">Monday</option>
+                                                <option value="tuesday">Tuesday</option>
+                                                <option value="wednesday">Wednesday</option>
+                                                <option value="thursday">Thursday</option>
+                                                <option value="friday">Friday</option>
+                                                <option value="saturday">Saturday</option>
+                                                <option value="sunday">Sunday</option>
+                                            </select>
+                                            <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple days</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="available_time_start" class="block text-sm font-semibold text-gray-900 mb-2">Start Time</label>
+                                            <input type="time" name="available_time_start" id="available_time_start"
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="available_time_end" class="block text-sm font-semibold text-gray-900 mb-2">End Time</label>
+                                            <input type="time" name="available_time_end" id="available_time_end"
+                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -464,33 +608,35 @@
                         <!-- TAB 3: ADDITIONAL INFO -->
                         <div id="additional" class="tab-content form-section">
                             <div class="space-y-8">
+                                <!-- Social & Professional Profiles -->
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Social & Professional Profiles</h3>
-                                    <div class="space-y-4" id="socialProfilesContainer">
+                                    <div class="space-y-4">
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-linkedin text-2xl text-blue-700"></i>
                                             </div>
-                                            <input type="url" name="linkedin_url" id="linkedin_url" placeholder="https://linkedin.com/in/..."
+                                            <input type="url" name="linkedin_url" placeholder="https://linkedin.com/in/..."
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fab fa-twitter text-2xl text-sky-500"></i>
                                             </div>
-                                            <input type="url" name="twitter_url" id="twitter_url" placeholder="https://twitter.com/..."
+                                            <input type="url" name="twitter_url" placeholder="https://twitter.com/..."
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                         <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
                                             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                                                 <i class="fas fa-globe text-2xl" style="color: #874179;"></i>
                                             </div>
-                                            <input type="url" name="website_url" id="website_url" placeholder="https://yourwebsite.com"
+                                            <input type="url" name="website_url" placeholder="https://yourwebsite.com"
                                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Additional Notes -->
                                 <div>
                                     <label for="notes" class="block text-sm font-semibold text-gray-900 mb-2">Additional Notes (Internal)</label>
                                     <textarea name="notes" id="notes" rows="4"
@@ -498,6 +644,7 @@
                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"></textarea>
                                 </div>
 
+                                <!-- Notification Preferences -->
                                 <div class="p-4 rounded-lg" style="background: #F9F0F7; border: 1px solid #E9D5FF;">
                                     <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
                                         <i class="fas fa-bell mr-2" style="color: #874179;"></i> Notification Preferences
@@ -557,7 +704,28 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="successModal" class="modal-overlay">
+    <div class="success-modal">
+        <div class="checkmark-circle">
+            <i class="fas fa-check checkmark"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Mentor Created Successfully!</h2>
+        <p class="text-gray-600 mb-6">The mentor profile has been created and is now available in the system.</p>
+        <div class="success-buttons">
+            <button onclick="addAnotherMentor()" class="btn-secondary">
+                <i class="fas fa-plus-circle"></i> Add Another Mentor
+            </button>
+            <button onclick="viewMentor()" class="btn-primary">
+                <i class="fas fa-eye"></i> View Mentor
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    let lastCreatedMentorId = null;
+    
     // Toast notification
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -737,6 +905,148 @@
         const toggle = () => icon?.classList.toggle('hidden', !cb.checked);
         cb.addEventListener('change', toggle);
         toggle();
+    });
+
+    // Show success modal and store mentor ID
+    function showSuccessModal(mentorId) {
+        lastCreatedMentorId = mentorId;
+        const modal = document.getElementById('successModal');
+        modal.classList.add('active');
+        
+        // Optional: Play success sound
+        // new Audio('/sounds/success.mp3').play();
+    }
+    
+    // Add another mentor - reset form
+    window.addAnotherMentor = function() {
+        const modal = document.getElementById('successModal');
+        modal.classList.remove('active');
+        
+        // Reset form
+        document.getElementById('mentorForm').reset();
+        
+        // Reset photo preview
+        document.getElementById('photo-preview').innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
+                <p class="text-xs text-gray-500">Click to upload</p>
+            </div>
+        `;
+        
+        // Reset password strength indicators
+        bars.forEach(bar => {
+            if (bar) bar.className = 'strength-bar flex-1 bg-gray-200';
+        });
+        if (strengthLabel) strengthLabel.textContent = '';
+        
+        // Reset password match indicator
+        if (matchEl) matchEl.innerHTML = '';
+        
+        // Reset bio counter
+        if (bioCount) bioCount.textContent = '0 / 500 characters';
+        
+        // Uncheck all expertise checkboxes
+        document.querySelectorAll('.expertise-checkbox').forEach(cb => {
+            cb.checked = false;
+            const icon = cb.nextElementSibling?.querySelector('i');
+            if (icon) icon.classList.add('hidden');
+        });
+        
+        // Reset tabs to first tab
+        showTab('basic');
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        showToast('Ready to add another mentor!');
+    };
+    
+    // View the created mentor
+    window.viewMentor = function() {
+        if (lastCreatedMentorId) {
+            window.location.href = `/admin/mentors/${lastCreatedMentorId}`;
+        } else {
+            window.location.href = "{{ route('admin.mentors.index') }}";
+        }
+    };
+    
+    // Handle form submission with AJAX to show modal
+    document.getElementById('mentorForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        console.log('Form submission started');
+        
+        // Basic validation
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('password_confirmation').value;
+        const email = document.getElementById('email').value;
+        const name = document.getElementById('name').value;
+        const expertiseChecked = document.querySelectorAll('input[name="expertise[]"]:checked');
+        const bio = document.getElementById('bio').value;
+        
+        if (name.length === 0 || email.length === 0 || password.length < 12 || 
+            password !== passwordConfirm || expertiseChecked.length === 0 || bio.length === 0) {
+            showToast('Please fill in all required fields correctly', true);
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        const mobileSubmitBtn = document.querySelector('.sm\\:hidden button[type="submit"]');
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
+        }
+        
+        if (mobileSubmitBtn) {
+            mobileSubmitBtn.disabled = true;
+            mobileSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
+        }
+        
+        try {
+            const formData = new FormData(this);
+            
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                lastCreatedMentorId = data.mentor?.id;
+                showSuccessModal(lastCreatedMentorId);
+                showToast('Mentor created successfully!');
+            } else {
+                showToast(data.message || 'Failed to create mentor', true);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('An error occurred. Please try again.', true);
+        } finally {
+            // Reset button state
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+            }
+            if (mobileSubmitBtn) {
+                mobileSubmitBtn.disabled = false;
+                mobileSubmitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+            }
+        }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('successModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
     });
 
     // Initialize

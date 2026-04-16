@@ -90,6 +90,67 @@
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(2px);
         }
+
+        /* Stats Card Animations */
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+        .stat-card:active {
+            transform: translateY(0);
+        }
+        
+        /* Pulse animation for numbers when they change */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .number-update {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        /* ===== Enhanced Progress Circle ===== */
+        .progress-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--color) 0%,
+                var(--color) calc(var(--value) * 1%),
+                #E5E7EB calc(var(--value) * 1%)
+            );
+            transition: background 0.8s ease-in-out;
+        }
+
+        .progress-inner {
+            position: absolute;
+            inset: 10px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .progress-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -187,52 +248,73 @@
         </div>
 
         <div class="p-8">
-            <!-- Stats Cards Row -->
+            <!-- Stats Cards Row with Enhanced Progress Circles -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8" style="border-left-color: #8BC34A;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium uppercase text-gray-500">Total Mentors</p>
-                            <p class="text-3xl font-extrabold text-gray-800" id="statTotalMentors">0</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-50">
-                            <i class="fas fa-chalkboard-user text-xl" style="color: #8BC34A;"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8" style="border-left-color: #5CB8E4;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium uppercase text-gray-500">Active Mentors</p>
-                            <p class="text-3xl font-extrabold text-gray-800" id="statActiveMentors">0</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50">
-                            <i class="fas fa-user-check text-xl" style="color: #5CB8E4;"></i>
+
+                <!-- Total Mentors -->
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-lg text-center">
+                    <p class="text-sm font-medium uppercase text-gray-500 mb-4">Total Mentors</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-circle" id="circleTotal" style="--value: 0; --color: #22c55e;"></div>
+                        
+                        <div class="progress-inner">
+                            <i class="fas fa-users progress-icon text-green-500"></i>
+                            <span class="text-lg font-bold text-gray-800" id="statTotalMentors">0%</span>
                         </div>
                     </div>
+
+                    <p class="text-xs text-gray-500 mt-3">All mentors</p>
                 </div>
-                <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8" style="border-left-color: #9C27B0;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium uppercase text-gray-500">Pending Approval</p>
-                            <p class="text-3xl font-extrabold text-gray-800" id="statPendingMentors">0</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center bg-purple-50">
-                            <i class="fas fa-clock text-xl" style="color: #9C27B0;"></i>
+
+                <!-- Active Mentors -->
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-lg text-center">
+                    <p class="text-sm font-medium uppercase text-gray-500 mb-4">Active</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-circle" id="circleActive" style="--value: 0; --color: #3b82f6;"></div>
+                        
+                        <div class="progress-inner">
+                            <i class="fas fa-chart-line progress-icon text-blue-500"></i>
+                            <span class="text-lg font-bold text-gray-800" id="statActiveMentors">0%</span>
                         </div>
                     </div>
+
+                    <p class="text-xs text-gray-500 mt-3">Currently available</p>
                 </div>
-                <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8" style="border-left-color: #874179;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium uppercase text-gray-500">Inactive</p>
-                            <p class="text-3xl font-extrabold text-gray-800" id="statInactiveMentors">0</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center bg-pink-50">
-                            <i class="fas fa-user-slash text-xl" style="color: #874179;"></i>
+
+                <!-- Pending Approval -->
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-lg text-center">
+                    <p class="text-sm font-medium uppercase text-gray-500 mb-4">Pending</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-circle" id="circlePending" style="--value: 0; --color: #a855f7;"></div>
+                        
+                        <div class="progress-inner">
+                            <i class="fas fa-hourglass-half progress-icon text-purple-500"></i>
+                            <span class="text-lg font-bold text-gray-800" id="statPendingMentors">0%</span>
                         </div>
                     </div>
+
+                    <p class="text-xs text-gray-500 mt-3">Awaiting review</p>
                 </div>
+
+                <!-- Inactive Mentors -->
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-lg text-center">
+                    <p class="text-sm font-medium uppercase text-gray-500 mb-4">Inactive</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-circle" id="circleInactive" style="--value: 0; --color: #ec4899;"></div>
+                        
+                        <div class="progress-inner">
+                            <i class="fas fa-ban progress-icon text-pink-500"></i>
+                            <span class="text-lg font-bold text-gray-800" id="statInactiveMentors">0%</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-500 mt-3">Temporarily unavailable</p>
+                </div>
+
             </div>
 
             <!-- Main Mentor List Card -->
@@ -345,7 +427,6 @@
 <script>
     // Toast notification helper
     function showToast(message, type = 'success') {
-        const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
@@ -355,6 +436,27 @@
         setTimeout(() => {
             toast.remove();
         }, 3000);
+    }
+
+    // Animate number function with percentage support
+    function animateNumber(element, start, end, duration = 500, isPercent = false) {
+        if (!element) return;
+
+        let current = start;
+        const increment = (end - start) / (duration / 16);
+
+        const timer = setInterval(() => {
+            current += increment;
+
+            if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                clearInterval(timer);
+                element.textContent = isPercent ? end + '%' : end;
+                element.classList.add('number-update');
+                setTimeout(() => element.classList.remove('number-update'), 300);
+            } else {
+                element.textContent = isPercent ? Math.round(current) + '%' : Math.round(current);
+            }
+        }, 16);
     }
 
     // State variables
@@ -367,12 +469,14 @@
     // Fetch mentors with filters
     async function fetchMentors() {
         const tbody = document.getElementById('mentorsTableBody');
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-500">
-            <div class="flex flex-col items-center gap-3">
-                <i class="fas fa-spinner fa-spin text-3xl" style="color: #874179;"></i>
-                <p>Loading mentors...</p>
-            </div>
-        </td></tr>`;
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-500">
+                <div class="flex flex-col items-center gap-3">
+                    <i class="fas fa-spinner fa-spin text-3xl" style="color: #874179;"></i>
+                    <p>Loading mentors...</p>
+                </div>
+            </td></tr>`;
+        }
         
         try {
             const params = new URLSearchParams({
@@ -386,19 +490,43 @@
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             });
             
             const data = await response.json();
             
             if (data.success !== false) {
-                // Update stats if available
+                // Update stats with enhanced circles
                 if (data.stats) {
-                    document.getElementById('statTotalMentors').innerText = data.stats.total || 0;
-                    document.getElementById('statActiveMentors').innerText = data.stats.active || 0;
-                    document.getElementById('statPendingMentors').innerText = data.stats.pending || 0;
-                    document.getElementById('statInactiveMentors').innerText = data.stats.inactive || 0;
+                    const total = data.stats.total || 0;
+                    const active = data.stats.active || 0;
+                    const pending = data.stats.pending || 0;
+                    const inactive = data.stats.inactive || 0;
+
+                    // Convert to percentages
+                    const activePercent = total ? Math.round((active / total) * 100) : 0;
+                    const pendingPercent = total ? Math.round((pending / total) * 100) : 0;
+                    const inactivePercent = total ? Math.round((inactive / total) * 100) : 0;
+
+                    // Animate numbers (percent style)
+                    animateNumber(document.getElementById('statTotalMentors'), 0, 100, 600, true);
+                    animateNumber(document.getElementById('statActiveMentors'), 0, activePercent, 600, true);
+                    animateNumber(document.getElementById('statPendingMentors'), 0, pendingPercent, 600, true);
+                    animateNumber(document.getElementById('statInactiveMentors'), 0, inactivePercent, 600, true);
+
+                    // Animate circles with delay for smooth effect
+                    setTimeout(() => {
+                        const circleTotal = document.getElementById('circleTotal');
+                        const circleActive = document.getElementById('circleActive');
+                        const circlePending = document.getElementById('circlePending');
+                        const circleInactive = document.getElementById('circleInactive');
+                        
+                        if (circleTotal) circleTotal.style.setProperty('--value', 100);
+                        if (circleActive) circleActive.style.setProperty('--value', activePercent);
+                        if (circlePending) circlePending.style.setProperty('--value', pendingPercent);
+                        if (circleInactive) circleInactive.style.setProperty('--value', inactivePercent);
+                    }, 100);
                 }
                 
                 renderMentorsTable(data.mentors || []);
@@ -408,18 +536,22 @@
             }
         } catch (error) {
             console.error('Error fetching mentors:', error);
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-500">
-                <i class="fas fa-exclamation-circle text-3xl mb-2 block"></i>
-                Error loading mentors. Please refresh the page.
-            </td></tr>`;
+            const tbody = document.getElementById('mentorsTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-500">
+                    <i class="fas fa-exclamation-circle text-3xl mb-2 block"></i>
+                    Error loading mentors. Please refresh the page.
+                </td></tr>`;
+            }
         }
     }
     
     function renderMentorsTable(mentors) {
         const tbody = document.getElementById('mentorsTableBody');
+        if (!tbody) return;
         
         if (!mentors || mentors.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-500">
+            tbody.innerHTML = `<td><td colspan="7" class="text-center py-12 text-gray-500">
                 <i class="fas fa-users-slash text-3xl mb-2 block" style="color: #874179;"></i>
                 No mentors found matching your criteria.
             </td></tr>`;
@@ -504,19 +636,29 @@
                 const mentorId = btn.dataset.id;
                 const mentorName = btn.dataset.name;
                 deleteMentorId = mentorId;
-                document.getElementById('deleteModalMessage').innerHTML = `Are you sure you want to delete <strong>${escapeHtml(mentorName)}</strong>? This action cannot be undone.`;
-                document.getElementById('deleteModal').classList.remove('hidden');
-                document.getElementById('deleteModal').classList.add('flex');
+                const modalMessage = document.getElementById('deleteModalMessage');
+                if (modalMessage) {
+                    modalMessage.innerHTML = `Are you sure you want to delete <strong>${escapeHtml(mentorName)}</strong>? This action cannot be undone.`;
+                }
+                const deleteModal = document.getElementById('deleteModal');
+                if (deleteModal) {
+                    deleteModal.classList.remove('hidden');
+                    deleteModal.classList.add('flex');
+                }
             });
         });
     }
     
     function renderPagination(data) {
-        const { current_page, last_page, total, per_page, from, to } = data;
+        const { current_page, last_page, total, from, to } = data;
         const paginationInfo = document.getElementById('paginationInfo');
         const paginationContainer = document.getElementById('paginationButtons');
         
-        paginationInfo.innerHTML = `Showing ${from || 0} to ${to || 0} of ${total || 0} results`;
+        if (paginationInfo) {
+            paginationInfo.innerHTML = `Showing ${from || 0} to ${to || 0} of ${total || 0} results`;
+        }
+        
+        if (!paginationContainer) return;
         
         if (last_page <= 1) {
             paginationContainer.innerHTML = '';
@@ -593,7 +735,7 @@
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             });
             
@@ -618,14 +760,16 @@
         // Search input debounce
         let searchTimeout;
         const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                currentSearch = e.target.value;
-                currentPage = 1;
-                fetchMentors();
-            }, 300);
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearch = e.target.value;
+                    currentPage = 1;
+                    fetchMentors();
+                }, 300);
+            });
+        }
         
         // Status filters
         const filterBtns = document.querySelectorAll('.status-filter');
@@ -645,11 +789,13 @@
         
         // Per page select
         const perPageSelect = document.getElementById('perPageSelect');
-        perPageSelect.addEventListener('change', (e) => {
-            currentPerPage = parseInt(e.target.value);
-            currentPage = 1;
-            fetchMentors();
-        });
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', (e) => {
+                currentPerPage = parseInt(e.target.value);
+                currentPage = 1;
+                fetchMentors();
+            });
+        }
         
         // Modal handlers
         const deleteModal = document.getElementById('deleteModal');
@@ -658,19 +804,23 @@
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         
         function closeModal() {
-            deleteModal.classList.add('hidden');
-            deleteModal.classList.remove('flex');
+            if (deleteModal) {
+                deleteModal.classList.add('hidden');
+                deleteModal.classList.remove('flex');
+            }
             deleteMentorId = null;
         }
         
-        modalOverlay?.addEventListener('click', closeModal);
-        cancelDeleteBtn?.addEventListener('click', closeModal);
-        confirmDeleteBtn?.addEventListener('click', () => {
-            if (deleteMentorId) {
-                deleteMentor(deleteMentorId);
-                closeModal();
-            }
-        });
+        if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+        if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeModal);
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (deleteMentorId) {
+                    deleteMentor(deleteMentorId);
+                    closeModal();
+                }
+            });
+        }
         
         // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
