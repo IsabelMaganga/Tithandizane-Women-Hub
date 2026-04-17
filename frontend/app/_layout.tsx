@@ -49,7 +49,7 @@ function Navigation() {
     const inAuthGroup = segments[0] === "(auth)";
     const inOnboardingGroup = segments[0] === "(onboarding)";
     const inProtectedRoute = segments[0] === "(protected)";
-    const isMentorRoute = segments[1] === "(mentor)";
+    //const isMentorRoute = segments[1] === "(mentor)";
 
     // --- CASE A: ONBOARDING ---
     if (firstLaunch && !inOnboardingGroup) {

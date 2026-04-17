@@ -98,7 +98,7 @@ export interface HarassmentReport {
 
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: __DEV__ ? 'http://192.168.200.205:8000/api' : 'https://your-production-api.com/api',
+  baseURL: __DEV__ ? 'http://192.168.1.100:8000/api' : 'https://your-production-api.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
