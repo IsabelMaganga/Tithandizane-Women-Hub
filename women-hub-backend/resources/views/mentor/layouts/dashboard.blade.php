@@ -15,7 +15,9 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    @vite(['resources/js/app.js'])
+    
+    {{-- Comment out Vite to fix the manifest error --}}
+    {{-- @vite(['resources/js/app.js']) --}}
 
     <style>
         /* Custom scrollbar styles */
@@ -127,10 +129,10 @@
                             <span class="ml-0 capitalize">guidance content</span>
                         </a>
 
-                        <i id="showIcon" class="fas fa-chevron-down arrow-rotate mr-4 cursor-pointer transition-all"></i>
+                        <i id="showIconGuidance" class="fas fa-chevron-down arrow-rotate mr-4 cursor-pointer transition-all"></i>
                      </div>
 
-                    <div id="sub-list" class=" text-[12px]">
+                    <div id="sub-list-guidance" class=" text-[12px]">
                         <a href="{{ route('mentor.hygiene')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="hygiene">
                             <i class="fa-solid fa-pump-medical w-5"></i>
                             <span class="ml-3">hygiene</span>
@@ -147,10 +149,10 @@
 
                 </div>
 
-                {{-- calender --}}
-                <a  href="{{ route('mentor.calender')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item">
+                {{-- calendar --}}
+                <a  href="{{ route('mentor.calendar')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item">
                     <i class="fa-regular fa-calendar w-5"></i>
-                    <span class="ml-3">Calender</span>
+                    <span class="ml-3">Calendar</span>
                 </a>
 
                 {{-- report --}}
@@ -186,16 +188,6 @@
                     @csrf
                 </form>
             </div>
-
-            {{-- <div class="py-5 px-2 wrap-break-word border-t border-gray-800">
-                <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName) }}&background=0D8F81&color=fff" class="w-10 h-10 rounded-full">
-                    <div class="ml-3">
-                        <p class="text-sm font-medium">{{ $mentorName }}</p>
-                        <p class="text-xs text-gray-400">{{ $mentorEmail }}</p>
-                    </div>
-                </div>
-            </div> --}}
         </div>
 
         <!-- Main Content -->
@@ -213,10 +205,7 @@
                             <p id="notifCount" class=" absolute right-0 -top-2 text-[11px] text-white">
                                 @if ($unreadCount > 0)
                                     {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                                @else
-
                                 @endif
-
                             </p>
                         </div>
 
@@ -304,73 +293,70 @@
     </div>
 
     <script>
+        // Fix: Use different IDs for different dropdowns to avoid conflicts
+        // Chat dropdown
+        const showIcon = document.getElementById('showIcon');
+        const subList = document.getElementById('sub-list');
+        
+        if (showIcon && subList) {
+            showIcon.addEventListener('click', function() {
+                subList.classList.toggle('show');
+                showIcon.classList.toggle('arrow-rotate');
+            });
+        }
+        
+        // Guidance dropdown
+        const showIconGuidance = document.getElementById('showIconGuidance');
+        const subListGuidance = document.getElementById('sub-list-guidance');
+        
+        if (showIconGuidance && subListGuidance) {
+            showIconGuidance.addEventListener('click', function() {
+                subListGuidance.classList.toggle('show');
+                showIconGuidance.classList.toggle('arrow-rotate');
+            });
+        }
 
         //  Navigation active state management
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
             const currentPage = window.location.pathname.split('/').pop() || 'dashboard';
 
-            // Function to set active nav item
-            // function setActiveNavItem(activeItem) {
-            //     navItems.forEach(item => {
-            //         item.classList.remove('bg-blue-600', 'border-l-4', 'border-blue-400');
-            //         item.classList.add('text-gray-300');
-            //     });
-
-            //     activeItem.classList.remove('text-gray-300');
-            //     activeItem.classList.add('bg-blue-600', 'border-l-4', 'border-blue-400');
-            // }
-
             // Set active based on current page
-            // navItems.forEach(item => {
-            //     const page = item.getAttribute('data-page');
-            //     if (page === currentPage) {
-            //         setActiveNavItem(item);
-            //     }
-
-            //     // Add click handler
-            //     item.addEventListener('click', function(e) {
-            //         e.preventDefault();
-            //         // setActiveNavItem(this);
-
-            //         const page = this.getAttribute('data-page');
-            //     });
-            // });
+            navItems.forEach(item => {
+                const page = item.getAttribute('data-page');
+                if (page === currentPage) {
+                    item.classList.add('bg-gray-800');
+                }
+            });
         });
 
-        // random notifications
-        notificationSideBar = document.getElementById('notificationSideBar');
-        closeBtn = document.getElementById('close');
-        closeNotif = document.getElementById('closeNotif');
+        // notifications
+        const notificationSideBar = document.getElementById('notificationSideBar');
+        const closeNotif = document.getElementById('closeNotif');
+        const bellIcon = document.querySelector('.fa-bell');
 
-        document.querySelector('.fa-bell ').addEventListener('click', function() {
+        if (bellIcon) {
+            bellIcon.addEventListener('click', function() {
+                if (notificationSideBar) {
+                    notificationSideBar.classList.remove('notificationHide');
+                    notificationSideBar.classList.add('notificationShow');
+                }
+            });
+        }
 
-            notificationSideBar.classList.remove('notificationHide');
-            notificationSideBar.classList.add('notificationShow');
-        });
-
-        closeNotif.addEventListener('click', function() {
-            notificationSideBar.classList.remove('notificationShow');
-            notificationSideBar.classList.add('notificationHide');
-        });
-
-
-        // dropDownList logic for chat tab
-        const showIcon = document.getElementById('showIcon');
-        const subList = document.getElementById('sub-list');
-
-        showIcon.addEventListener('click', function() {
-            subList.classList.toggle('show');
-            showIcon.classList.toggle('arrow-rotate');
-        });
-
+        if (closeNotif) {
+            closeNotif.addEventListener('click', function() {
+                if (notificationSideBar) {
+                    notificationSideBar.classList.remove('notificationShow');
+                    notificationSideBar.classList.add('notificationHide');
+                }
+            });
+        }
 
         // chat request broadcast channel
-        const userId = {{ auth()->id() }};
-        // console.log(userId);
+        const userId = {{ auth()->id() ?? 0 }};
 
         document.addEventListener('DOMContentLoaded', function() {
-
             if (window.Echo) {
                 console.log("Echo loaded");
 
@@ -378,41 +364,32 @@
                     .notification((notification) => {
                         console.log('New notification:', notification);
 
-                    // increase badge
-                    const countEl = document.getElementById('notifCount');
-                    if (countEl) {
-                        const count = parseInt(countEl.innerText) || 0;
-                        countEl.innerText = count + 1;
-                    }
+                        // increase badge
+                        const countEl = document.getElementById('notifCount');
+                        if (countEl) {
+                            const count = parseInt(countEl.innerText) || 0;
+                            countEl.innerText = count + 1;
+                        }
 
-                    // Show popup
-                    const container = document.getElementById('notificationPopUp');
-                    const div = document.createElement('div');
-                    div.className = ' bg-white shadow p-3 rounded border-l-4 border-blue-500'
-
-                    div.innerHTML = `
-                        <p class= " font-bold"> ${notification.name} </p>
-                        <p class= " font-bold text-sm text-gray-500">${notification.message} </p>
-                    `;
-
-                    container.appendChild(div);
-
-                    setTimeout(() => {
-                        div.remove();
-                    }, 5000);
-
-                    location.reload();
-                });
-
-
+                        // Show popup
+                        const container = document.getElementById('notificationPopUp');
+                        if (container) {
+                            const div = document.createElement('div');
+                            div.className = ' bg-white shadow p-3 rounded border-l-4 border-blue-500';
+                            div.innerHTML = `
+                                <p class="font-bold">${notification.name || 'Notification'}</p>
+                                <p class="text-sm text-gray-500">${notification.message || 'You have a new notification'}</p>
+                            `;
+                            container.appendChild(div);
+                            setTimeout(() => {
+                                div.remove();
+                            }, 5000);
+                        }
+                    });
             } else {
-                console.log("Echo is not loaded");
+                console.log("Echo is not loaded or configured");
             }
-
         });
-
-
-
     </script>
 
     @stack('scripts')

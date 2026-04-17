@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
-use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
@@ -24,26 +20,34 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-
-        if (Auth::guard('mentor')->attempt([ ...$credentials, 'role' => 'mentor'])) {
+        // Attempt to login using the mentor guard
+        // REMOVED the 'role' => 'mentor' condition since mentors table doesn't have a role column
+        if (Auth::guard('mentor')->attempt($credentials)) {
             $request->session()->regenerate();
-
+            
             $mentor = Auth::guard('mentor')->user();
-            $mentor->notify(new WelcomeNotification($mentor));
-
-            return redirect()->intended(route('mentor.dashboard'))->with('success', 'Welcome back ' . $credentials['email']);
+            
+            // Check if mentor is active
+            if ($mentor->status !== 'active') {
+                Auth::guard('mentor')->logout();
+                return back()->withErrors([
+                    'email' => 'Your account is ' . $mentor->status . '. Please contact administrator.',
+                ])->onlyInput('email');
+            }
+            
+            return redirect()->intended(route('mentor.dashboard'))
+                ->with('success', 'Welcome back, ' . $mentor->name . '!');
         }
 
-         // check if user exist but with wrong role
-        $user = \App\Models\User::where('email', $credentials['email'])->first();
-
-        if ($user && !$user->isMentor()) {
+        // Check if mentor exists with this email
+        $mentor = \App\Models\Mentor::where('email', $credentials['email'])->first();
+        
+        if (!$mentor) {
             return back()->withErrors([
-                'email' => 'This account does not have mentor privileges.',
-            ]);
+                'email' => 'No account found with this email address.',
+            ])->onlyInput('email');
         }
-
-
+        
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
@@ -56,27 +60,23 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('mentor.login')->with('success', 'logout successfully.');
+        return redirect()->route('mentor.login')->with('success', 'Logged out successfully.');
     }
 
-     public function logoutAllSessions(Request $request)
-     {
+    public function logoutAllSessions(Request $request)
+    {
         try {
-            DB::table('sessions')->where('user_id', Auth::id())->delete();
-
+            // Logout from all sessions
             Auth::guard('mentor')->logout();
+            
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('mentor.login')->with('success', 'logout successfully.');
-
+            return redirect()->route('mentor.login')->with('success', 'Logged out from all devices successfully.');
         } catch (\Exception $e) {
-            // Log error with more details for debugging
-            Log::error("logout failed for user ID: " . ($user->id ?? 'unknown') . " | Error: " . $e->getMessage());
-
             return back()->withErrors([
                 'error' => 'Something went wrong. Please try again.'
-            ])->withInput();
+            ]);
         }
     }
 }

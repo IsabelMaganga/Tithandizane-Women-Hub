@@ -126,8 +126,8 @@
             to {bottom: 30px; opacity: 1;}
         }
         @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+            from {bottom: 30px; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
         }
         
         /* Custom select for multiple days */
@@ -209,6 +209,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
+            border: none;
         }
         .btn-primary:hover {
             transform: translateY(-2px);
@@ -224,6 +226,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
+            border: none;
         }
         .btn-secondary:hover {
             background: #e5e7eb;
@@ -716,8 +720,8 @@
             <button onclick="addAnotherMentor()" class="btn-secondary">
                 <i class="fas fa-plus-circle"></i> Add Another Mentor
             </button>
-            <button onclick="viewMentor()" class="btn-primary">
-                <i class="fas fa-eye"></i> View Mentor
+            <button onclick="viewMentors()" class="btn-primary">
+                <i class="fas fa-eye"></i> View Mentors
             </button>
         </div>
     </div>
@@ -728,14 +732,23 @@
     
     // Toast notification
     function showToast(message, isError = false) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast');
+        existingToasts.forEach(toast => toast.remove());
+        
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
         toast.style.backgroundColor = isError ? '#dc2626' : '#10b981';
         document.body.appendChild(toast);
+        
+        // Force reflow
+        toast.offsetHeight;
+        
         toast.classList.add('show');
         setTimeout(() => {
-            toast.remove();
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
@@ -747,42 +760,65 @@
         }, 1000);
     };
 
-    // Photo Preview
-    document.getElementById('photo')?.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) { showToast('Please select an image file', true); return; }
-        if (file.size > 2 * 1024 * 1024) { showToast('File size must be less than 2MB', true); return; }
-        const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('photo-preview').innerHTML =
-                `<img src="${ev.target.result}" alt="Preview" class="w-full h-full object-cover">`;
-        };
-        reader.readAsDataURL(file);
-    });
+    // Photo Preview - with null check
+    const photoInput = document.getElementById('photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { 
+                showToast('Please select an image file', true); 
+                return; 
+            }
+            if (file.size > 2 * 1024 * 1024) { 
+                showToast('File size must be less than 2MB', true); 
+                return; 
+            }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const preview = document.getElementById('photo-preview');
+                if (preview) {
+                    preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" class="w-full h-full object-cover">`;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
     // Tab Navigation
     let currentTab = 'basic';
     const tabs = ['basic', 'professional', 'additional'];
 
-    document.querySelectorAll('.tab-button').forEach(btn =>
-        btn.addEventListener('click', () => showTab(btn.dataset.tab))
-    );
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    });
 
     function showTab(name) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-button').forEach(b => {
-            b.classList.remove('active', 'border-purple-600', 'text-gray-900');
-            b.classList.add('border-transparent', 'text-gray-600');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(t => t.classList.remove('active'));
+        
+        const tabBtns = document.querySelectorAll('.tab-button');
+        tabBtns.forEach(b => {
+            b.classList.remove('active');
+            b.style.borderColor = 'transparent';
+            b.style.color = '#6b7280';
         });
-        document.getElementById(name).classList.add('active');
+        
+        const activeContent = document.getElementById(name);
+        if (activeContent) activeContent.classList.add('active');
+        
         const activeBtn = document.querySelector(`[data-tab="${name}"]`);
-        activeBtn.classList.add('active');
-        activeBtn.style.borderColor = '#874179';
-        activeBtn.style.color = '#874179';
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+            activeBtn.style.borderColor = '#874179';
+            activeBtn.style.color = '#874179';
+        }
+        
         currentTab = name;
         const stepMap = { basic: 1, professional: 2, additional: 3 };
-        document.getElementById('currentStep').textContent = stepMap[name];
+        const currentStepSpan = document.getElementById('currentStep');
+        if (currentStepSpan) currentStepSpan.textContent = stepMap[name];
         updateNavButtons();
     }
 
@@ -792,35 +828,80 @@
         const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
 
-        if (prevBtn) prevBtn.classList.toggle('hidden', idx === 0);
-        if (nextBtn) nextBtn.classList.toggle('hidden', idx === tabs.length - 1);
-        if (submitBtn) submitBtn.classList.toggle('hidden', idx !== tabs.length - 1);
+        if (prevBtn) {
+            if (idx === 0) {
+                prevBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+            }
+        }
+        
+        if (nextBtn) {
+            if (idx === tabs.length - 1) {
+                nextBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+            }
+        }
+        
+        if (submitBtn) {
+            if (idx === tabs.length - 1) {
+                submitBtn.classList.remove('hidden');
+            } else {
+                submitBtn.classList.add('hidden');
+            }
+        }
     }
 
-    document.getElementById('nextBtn')?.addEventListener('click', () => {
-        const idx = tabs.indexOf(currentTab);
-        if (idx < tabs.length - 1) { showTab(tabs[idx + 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    });
-    document.getElementById('prevBtn')?.addEventListener('click', () => {
-        const idx = tabs.indexOf(currentTab);
-        if (idx > 0) { showTab(tabs[idx - 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    });
-    document.getElementById('mobileNextBtn')?.addEventListener('click', () => {
-        const idx = tabs.indexOf(currentTab);
-        if (idx < tabs.length - 1) { showTab(tabs[idx + 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    });
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const idx = tabs.indexOf(currentTab);
+            if (idx < tabs.length - 1) { 
+                showTab(tabs[idx + 1]); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        });
+    }
+    
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const idx = tabs.indexOf(currentTab);
+            if (idx > 0) { 
+                showTab(tabs[idx - 1]); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        });
+    }
+    
+    const mobileNextBtn = document.getElementById('mobileNextBtn');
+    if (mobileNextBtn) {
+        mobileNextBtn.addEventListener('click', () => {
+            const idx = tabs.indexOf(currentTab);
+            if (idx < tabs.length - 1) { 
+                showTab(tabs[idx + 1]); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        });
+    }
 
     // Password Show/Hide Toggle
-    document.querySelectorAll('.toggle-pw').forEach(btn => {
+    const toggleButtons = document.querySelectorAll('.toggle-pw');
+    toggleButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const input = document.getElementById(btn.dataset.target);
             const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
         });
     });
@@ -848,47 +929,60 @@
         { color: 'bg-emerald-600', label: 'Very Strong', labelClass: 'text-emerald-700' },
     ];
 
-    passwordInput?.addEventListener('input', function () {
-        const val = this.value;
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function () {
+            const val = this.value;
 
-        Object.values(reqs).forEach(({ el, test }) => {
-            const pass = test(val);
-            el.classList.toggle('text-green-600', pass);
-            el.classList.toggle('text-gray-400', !pass);
-            el.querySelector('i').className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
-        });
+            Object.values(reqs).forEach(({ el, test }) => {
+                if (el) {
+                    const pass = test(val);
+                    el.classList.toggle('text-green-600', pass);
+                    el.classList.toggle('text-gray-400', !pass);
+                    const icon = el.querySelector('i');
+                    if (icon) {
+                        icon.className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
+                    }
+                }
+            });
 
-        const score = Object.values(reqs).filter(({ test }) => test(val)).length;
-        bars.forEach((bar, i) => {
-            if (bar) bar.className = `strength-bar flex-1 ${i < score ? strengthConfig[score - 1].color : 'bg-gray-200'}`;
-        });
-        if (val.length === 0) {
-            if (strengthLabel) strengthLabel.textContent = '';
-        } else {
-            const cfg = strengthConfig[score - 1] || strengthConfig[0];
+            const score = Object.values(reqs).filter(({ test }) => test(val)).length;
+            bars.forEach((bar, i) => {
+                if (bar) {
+                    bar.className = `strength-bar flex-1 ${i < score ? strengthConfig[score - 1].color : 'bg-gray-200'}`;
+                }
+            });
+            
             if (strengthLabel) {
-                strengthLabel.textContent = cfg.label;
-                strengthLabel.className = `text-xs font-medium ${cfg.labelClass}`;
+                if (val.length === 0) {
+                    strengthLabel.textContent = '';
+                } else {
+                    const cfg = strengthConfig[score - 1] || strengthConfig[0];
+                    strengthLabel.textContent = cfg.label;
+                    strengthLabel.className = `text-xs font-medium ${cfg.labelClass}`;
+                }
             }
-        }
-        checkPasswordMatch();
-    });
+            checkPasswordMatch();
+        });
+    }
 
     function checkPasswordMatch() {
-        if (!confirmInput || !confirmInput.value) { if(matchEl) matchEl.innerHTML = ''; return; }
-        if (passwordInput.value === confirmInput.value) {
-            if(matchEl) {
-                matchEl.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
-                matchEl.className = 'mt-2 text-xs text-green-600';
-            }
+        if (!matchEl) return;
+        if (!confirmInput || !confirmInput.value) { 
+            matchEl.innerHTML = ''; 
+            return; 
+        }
+        if (passwordInput && passwordInput.value === confirmInput.value) {
+            matchEl.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
+            matchEl.className = 'mt-2 text-xs text-green-600';
         } else {
-            if(matchEl) {
-                matchEl.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
-                matchEl.className = 'mt-2 text-xs text-red-600';
-            }
+            matchEl.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
+            matchEl.className = 'mt-2 text-xs text-red-600';
         }
     }
-    confirmInput?.addEventListener('input', checkPasswordMatch);
+    
+    if (confirmInput) {
+        confirmInput.addEventListener('input', checkPasswordMatch);
+    }
 
     // Bio character counter
     const bioField = document.getElementById('bio');
@@ -900,9 +994,18 @@
     }
 
     // Expertise checkbox icon toggle
-    document.querySelectorAll('.expertise-checkbox').forEach(cb => {
+    const expertiseCheckboxes = document.querySelectorAll('.expertise-checkbox');
+    expertiseCheckboxes.forEach(cb => {
         const icon = cb.nextElementSibling?.querySelector('i');
-        const toggle = () => icon?.classList.toggle('hidden', !cb.checked);
+        const toggle = () => {
+            if (icon) {
+                if (cb.checked) {
+                    icon.classList.remove('hidden');
+                } else {
+                    icon.classList.add('hidden');
+                }
+            }
+        };
         cb.addEventListener('change', toggle);
         toggle();
     });
@@ -911,27 +1014,33 @@
     function showSuccessModal(mentorId) {
         lastCreatedMentorId = mentorId;
         const modal = document.getElementById('successModal');
-        modal.classList.add('active');
-        
-        // Optional: Play success sound
-        // new Audio('/sounds/success.mp3').play();
+        if (modal) {
+            modal.classList.add('active');
+        }
     }
     
     // Add another mentor - reset form
     window.addAnotherMentor = function() {
         const modal = document.getElementById('successModal');
-        modal.classList.remove('active');
+        if (modal) {
+            modal.classList.remove('active');
+        }
         
-        // Reset form
-        document.getElementById('mentorForm').reset();
+        const form = document.getElementById('mentorForm');
+        if (form) {
+            form.reset();
+        }
         
         // Reset photo preview
-        document.getElementById('photo-preview').innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
-                <p class="text-xs text-gray-500">Click to upload</p>
-            </div>
-        `;
+        const photoPreview = document.getElementById('photo-preview');
+        if (photoPreview) {
+            photoPreview.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
+                    <p class="text-xs text-gray-500">Click to upload</p>
+                </div>
+            `;
+        }
         
         // Reset password strength indicators
         bars.forEach(bar => {
@@ -946,7 +1055,7 @@
         if (bioCount) bioCount.textContent = '0 / 500 characters';
         
         // Uncheck all expertise checkboxes
-        document.querySelectorAll('.expertise-checkbox').forEach(cb => {
+        expertiseCheckboxes.forEach(cb => {
             cb.checked = false;
             const icon = cb.nextElementSibling?.querySelector('i');
             if (icon) icon.classList.add('hidden');
@@ -961,93 +1070,93 @@
         showToast('Ready to add another mentor!');
     };
     
-    // View the created mentor
-    window.viewMentor = function() {
-        if (lastCreatedMentorId) {
-            window.location.href = `/admin/mentors/${lastCreatedMentorId}`;
-        } else {
-            window.location.href = "{{ route('admin.mentors.index') }}";
-        }
+    // View mentors - redirect to index page
+    window.viewMentors = function() {
+        window.location.href = "{{ route('admin.mentors.index') }}";
     };
     
     // Handle form submission with AJAX to show modal
-    document.getElementById('mentorForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        console.log('Form submission started');
-        
-        // Basic validation
-        const password = document.getElementById('password').value;
-        const passwordConfirm = document.getElementById('password_confirmation').value;
-        const email = document.getElementById('email').value;
-        const name = document.getElementById('name').value;
-        const expertiseChecked = document.querySelectorAll('input[name="expertise[]"]:checked');
-        const bio = document.getElementById('bio').value;
-        
-        if (name.length === 0 || email.length === 0 || password.length < 12 || 
-            password !== passwordConfirm || expertiseChecked.length === 0 || bio.length === 0) {
-            showToast('Please fill in all required fields correctly', true);
-            return false;
-        }
-        
-        // Show loading state
-        const submitBtn = document.getElementById('submitBtn');
-        const mobileSubmitBtn = document.querySelector('.sm\\:hidden button[type="submit"]');
-        
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
-        }
-        
-        if (mobileSubmitBtn) {
-            mobileSubmitBtn.disabled = true;
-            mobileSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
-        }
-        
-        try {
-            const formData = new FormData(this);
+    const mentorForm = document.getElementById('mentorForm');
+    if (mentorForm) {
+        mentorForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+            // Basic validation
+            const name = document.getElementById('name')?.value || '';
+            const email = document.getElementById('email')?.value || '';
+            const password = document.getElementById('password')?.value || '';
+            const passwordConfirm = document.getElementById('password_confirmation')?.value || '';
+            const expertiseChecked = document.querySelectorAll('input[name="expertise[]"]:checked');
+            const bio = document.getElementById('bio')?.value || '';
             
-            const data = await response.json();
-            
-            if (data.success) {
-                lastCreatedMentorId = data.mentor?.id;
-                showSuccessModal(lastCreatedMentorId);
-                showToast('Mentor created successfully!');
-            } else {
-                showToast(data.message || 'Failed to create mentor', true);
+            if (name.length === 0 || email.length === 0 || password.length < 12 || 
+                password !== passwordConfirm || expertiseChecked.length === 0 || bio.length === 0) {
+                showToast('Please fill in all required fields correctly', true);
+                return false;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showToast('An error occurred. Please try again.', true);
-        } finally {
-            // Reset button state
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const mobileSubmitBtn = document.querySelector('.sm\\:hidden button[type="submit"]');
+            
             if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
             }
+            
             if (mobileSubmitBtn) {
-                mobileSubmitBtn.disabled = false;
-                mobileSubmitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+                mobileSubmitBtn.disabled = true;
+                mobileSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
             }
-        }
-    });
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    lastCreatedMentorId = data.mentor?.id;
+                    showSuccessModal(lastCreatedMentorId);
+                    showToast('Mentor created successfully!');
+                } else {
+                    showToast(data.message || 'Failed to create mentor', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', true);
+            } finally {
+                // Reset button state
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+                }
+                if (mobileSubmitBtn) {
+                    mobileSubmitBtn.disabled = false;
+                    mobileSubmitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
+                }
+            }
+        });
+    }
 
     // Close modal when clicking outside
-    document.getElementById('successModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.classList.remove('active');
-        }
-    });
+    const successModal = document.getElementById('successModal');
+    if (successModal) {
+        successModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    }
 
     // Initialize
     updateNavButtons();

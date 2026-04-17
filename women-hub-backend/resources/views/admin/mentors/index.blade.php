@@ -54,7 +54,6 @@
         .toast {
             visibility: hidden;
             min-width: 250px;
-            margin-left: -125px;
             background-color: #333;
             color: #fff;
             text-align: center;
@@ -150,6 +149,13 @@
             font-size: 18px;
             margin-bottom: 2px;
             opacity: 0.7;
+        }
+        
+        /* Button styles */
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -333,11 +339,9 @@
                             <input type="text" id="searchInput" placeholder="Search by name, email, or expertise..." 
                                    class="pl-11 pr-4 py-2.5 w-full sm:w-80 rounded-xl border border-gray-200 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] bg-white transition-all">
                         </div>
-                        <form method="GET" action="{{ route('admin.mentors.create') }}" style="display: inline;">
-                            <button type="submit" class="px-5 py-2.5 rounded-xl text-white flex items-center gap-2 transition shadow-md hover:shadow-lg" style="background: #874179;">
-                                <i class="fas fa-plus-circle"></i> Add New Mentor
-                            </button>
-                        </form>
+                        <a href="{{ route('admin.mentors.create') }}" class="px-5 py-2.5 rounded-xl text-white flex items-center gap-2 transition shadow-md hover:shadow-lg" style="background: #874179;">
+                            <i class="fas fa-plus-circle"></i> Add New Mentor
+                        </a>
                     </div>
                 </div>
 
@@ -421,20 +425,26 @@
     </div>
 </div>
 
-<!-- Toast Container -->
-<div id="toastContainer"></div>
-
 <script>
     // Toast notification helper
     function showToast(message, type = 'success') {
+        // Remove existing toasts
+        const existingToasts = document.querySelectorAll('.toast');
+        existingToasts.forEach(toast => toast.remove());
+        
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
         toast.style.backgroundColor = type === 'error' ? '#dc2626' : '#10b981';
         document.body.appendChild(toast);
+        
+        // Force reflow
+        toast.offsetHeight;
+        
         toast.classList.add('show');
         setTimeout(() => {
-            toast.remove();
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
@@ -494,6 +504,10 @@
                 }
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.success !== false) {
@@ -541,6 +555,8 @@
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-500">
                     <i class="fas fa-exclamation-circle text-3xl mb-2 block"></i>
                     Error loading mentors. Please refresh the page.
+                    <br>
+                    <small class="text-gray-400">${error.message}</small>
                 </td></tr>`;
             }
         }
@@ -551,7 +567,7 @@
         if (!tbody) return;
         
         if (!mentors || mentors.length === 0) {
-            tbody.innerHTML = `<td><td colspan="7" class="text-center py-12 text-gray-500">
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-500">
                 <i class="fas fa-users-slash text-3xl mb-2 block" style="color: #874179;"></i>
                 No mentors found matching your criteria.
             </td></tr>`;
@@ -583,7 +599,7 @@
             const joinDate = new Date(mentor.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             
             return `
-                <tr class="hover:bg-gray-50 transition group">
+                <tr class="hover:bg-gray-50 transition group" data-mentor-id="${mentor.id}">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <img src="${photoUrl}" class="w-10 h-10 rounded-full object-cover border border-gray-200" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff&size=40'">
@@ -613,10 +629,10 @@
                     <td class="px-6 py-4 text-sm text-gray-500">${joinDate}</td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="/admin/mentors/${mentor.id}" class="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition" title="View">
+                            <a href="/admin/mentors/${mentor.id}" class="view-mentor-btn p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition" data-id="${mentor.id}" title="View">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="/admin/mentors/${mentor.id}/edit" class="p-2 rounded-lg text-amber-600 hover:bg-amber-50 transition" title="Edit">
+                            <a href="/admin/mentors/${mentor.id}/edit" class="edit-mentor-btn p-2 rounded-lg text-amber-600 hover:bg-amber-50 transition" data-id="${mentor.id}" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <button class="delete-mentor-btn p-2 rounded-lg text-red-600 hover:bg-red-50 transition" data-id="${mentor.id}" data-name="${escapeHtml(mentor.name)}" title="Delete">
@@ -628,6 +644,28 @@
             `;
         }).join('');
         
+        // Attach view button handlers (optional - they already have href)
+        document.querySelectorAll('.view-mentor-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Allow default anchor behavior
+                const mentorId = btn.dataset.id;
+                if (mentorId) {
+                    window.location.href = `/admin/mentors/${mentorId}`;
+                }
+            });
+        });
+        
+        // Attach edit button handlers (optional - they already have href)
+        document.querySelectorAll('.edit-mentor-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Allow default anchor behavior
+                const mentorId = btn.dataset.id;
+                if (mentorId) {
+                    window.location.href = `/admin/mentors/${mentorId}/edit`;
+                }
+            });
+        });
+        
         // Attach delete button handlers
         document.querySelectorAll('.delete-mentor-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -635,15 +673,17 @@
                 e.stopPropagation();
                 const mentorId = btn.dataset.id;
                 const mentorName = btn.dataset.name;
-                deleteMentorId = mentorId;
-                const modalMessage = document.getElementById('deleteModalMessage');
-                if (modalMessage) {
-                    modalMessage.innerHTML = `Are you sure you want to delete <strong>${escapeHtml(mentorName)}</strong>? This action cannot be undone.`;
-                }
-                const deleteModal = document.getElementById('deleteModal');
-                if (deleteModal) {
-                    deleteModal.classList.remove('hidden');
-                    deleteModal.classList.add('flex');
+                if (mentorId) {
+                    deleteMentorId = mentorId;
+                    const modalMessage = document.getElementById('deleteModalMessage');
+                    if (modalMessage) {
+                        modalMessage.innerHTML = `Are you sure you want to delete <strong>${escapeHtml(mentorName)}</strong>? This action cannot be undone.`;
+                    }
+                    const deleteModal = document.getElementById('deleteModal');
+                    if (deleteModal) {
+                        deleteModal.classList.remove('hidden');
+                        deleteModal.classList.add('flex');
+                    }
                 }
             });
         });
@@ -706,7 +746,7 @@
         
         // Attach pagination event listeners
         document.querySelectorAll('.pagination-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
                 const page = parseInt(btn.dataset.page);
                 if (page && !isNaN(page) && page !== current_page && page >= 1 && page <= last_page) {
                     currentPage = page;
@@ -724,32 +764,54 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
     }
     
     // Delete mentor function
     async function deleteMentor(id) {
+        if (!id) {
+            showToast('Invalid mentor ID', 'error');
+            return;
+        }
+        
+        // Show loading state on delete button
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const originalText = confirmBtn?.innerHTML || 'Delete';
+        if (confirmBtn) {
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Deleting...';
+            confirmBtn.disabled = true;
+        }
+        
         try {
             const response = await fetch(`/admin/mentors/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             });
             
             const data = await response.json();
             
-            if (response.ok) {
+            if (response.ok && data.success) {
                 showToast('Mentor deleted successfully!', 'success');
-                fetchMentors(); // Refresh the list
+                // Refresh the list
+                await fetchMentors();
             } else {
                 showToast(data.message || 'Failed to delete mentor', 'error');
             }
         } catch (error) {
             console.error('Error deleting mentor:', error);
             showToast('An error occurred while deleting the mentor', 'error');
+        } finally {
+            if (confirmBtn) {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
         }
     }
     
@@ -814,9 +876,9 @@
         if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
         if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeModal);
         if (confirmDeleteBtn) {
-            confirmDeleteBtn.addEventListener('click', () => {
+            confirmDeleteBtn.addEventListener('click', async () => {
                 if (deleteMentorId) {
-                    deleteMentor(deleteMentorId);
+                    await deleteMentor(deleteMentorId);
                     closeModal();
                 }
             });
@@ -828,23 +890,6 @@
                 closeModal();
             }
         });
-        
-        // Update pending reports badge if needed
-        fetch('/admin/reports', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.reports) {
-                const pendingCount = data.reports.filter(r => r.status === 'new' || r.status === 'in_review').length;
-                const badge = document.getElementById('pendingReportsBadge');
-                if (badge) badge.innerText = pendingCount;
-            }
-        })
-        .catch(() => {});
     });
 </script>
 </body>
