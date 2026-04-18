@@ -7,11 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 class HarassmentReport extends Model
 {
     protected $fillable = [
-        'reference_number', 'reporter_name', 'reporter_contact',
-        'is_anonymous', 'incident_type', 'incident_date',
-        'incident_location', 'description', 'perpetrator_info',
-        'status', 'admin_notes', 'assigned_to',
-    ];
+    'user_id', // Add this
+    'incident_type', 
+    'description', 
+    'incident_location',
+    'incident_date', 
+    'perpetrator_info',
+    'is_anonymous',
+    'status', 
+    'admin_notes', 
+    'assigned_to',
+];
+
+// Add the user relationship
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 
     protected $casts = [
         'is_anonymous'  => 'boolean',
