@@ -354,7 +354,9 @@ export const submitHarassmentReport = async (data: {
   title: string;
   description: string;
   location?: string;
-  date?:string;
+  incident_date?: string;
+  perpetrator_info?: string;
+  is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports', data);
