@@ -35,7 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
     Route::get('/general-guides', [ContentController::class, 'generalGuides']);
     Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
-    Route::get('/mentors', [MentorController::class, 'getActiveMentors']); // Updated to use MentorController
+    Route::get('/mentors', [MentorshipController::class, 'mentors']); // Updated to use MentorController
 
     // Anonymous harassment report
     Route::post('/harassment-reports/anonymous', [HarassmentController::class, 'store']);

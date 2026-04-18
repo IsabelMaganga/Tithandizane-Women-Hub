@@ -18,7 +18,7 @@ class DashboardController extends Controller
         try {
             // Get dashboard statistics with error handling
             $stats = [
-                'mentors' => Mentor::count(),
+                'role','mentor' => User::count(),
                 'reports' => Harassmentreport::count(),
                 'admins' => Admin::count(),
             ];

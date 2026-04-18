@@ -12,8 +12,8 @@ class MentorshipController extends Controller
 {
     public function mentors(Request $request)
     {
-        $mentors = \App\Models\Mentor::where('status', 'active')
-            ->select('id', 'name', 'email', 'bio', 'area_of_support', 'available_days', 'available_time_from', 'available_time_to', 'photo')
+        $mentors = \App\Models\User::where('role','mentor')->where('status', 'active')
+            ->select('id', 'name', 'email', 'bio', 'expertise_area', 'available_days', 'available_time_from', 'available_time_to', 'photo')
             ->get();
 
         // Transform to match frontend expectations

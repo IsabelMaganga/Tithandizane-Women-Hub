@@ -17,6 +17,7 @@ class Mentor extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
         'phone',
         'location',
         'photo',

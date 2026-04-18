@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User; // Using the User model
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -20,31 +21,35 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Attempt to login using the mentor guard
-        // REMOVED the 'role' => 'mentor' condition since mentors table doesn't have a role column
-        if (Auth::guard('mentor')->attempt($credentials)) {
+        // If your User model has a 'role' column, it's safer to include it here
+        // to prevent Students from logging into the Mentor dashboard.
+        $loginCredentials = array_merge($credentials, ['role' => 'mentor']);
+
+        if (Auth::guard('mentor')->attempt($loginCredentials)) {
             $request->session()->regenerate();
             
-            $mentor = Auth::guard('mentor')->user();
+            $user = Auth::guard('mentor')->user();
             
-            // Check if mentor is active
-            if ($mentor->status !== 'active') {
+            // Check if user is active
+            if ($user->status !== 'active') {
                 Auth::guard('mentor')->logout();
                 return back()->withErrors([
-                    'email' => 'Your account is ' . $mentor->status . '. Please contact administrator.',
+                    'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
                 ])->onlyInput('email');
             }
             
             return redirect()->intended(route('mentor.dashboard'))
-                ->with('success', 'Welcome back, ' . $mentor->name . '!');
+                ->with('success', 'Welcome back, ' . $user->name . '!');
         }
 
-        // Check if mentor exists with this email
-        $mentor = \App\Models\Mentor::where('email', $credentials['email'])->first();
+        // Logic for specific error messaging
+        $userExists = User::where('email', $credentials['email'])
+            ->where('role', 'mentor')
+            ->exists();
         
-        if (!$mentor) {
+        if (!$userExists) {
             return back()->withErrors([
-                'email' => 'No account found with this email address.',
+                'email' => 'No mentor account found with this email address.',
             ])->onlyInput('email');
         }
         
@@ -66,13 +71,14 @@ class AuthController extends Controller
     public function logoutAllSessions(Request $request)
     {
         try {
-            // Logout from all sessions
+            // Note: This only logs out the current session. 
+            // To truly logout ALL devices, you would use Auth::logoutOtherDevices($password)
             Auth::guard('mentor')->logout();
             
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('mentor.login')->with('success', 'Logged out from all devices successfully.');
+            return redirect()->route('mentor.login')->with('success', 'Logged out successfully.');
         } catch (\Exception $e) {
             return back()->withErrors([
                 'error' => 'Something went wrong. Please try again.'

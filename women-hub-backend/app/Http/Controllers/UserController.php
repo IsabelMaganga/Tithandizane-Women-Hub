@@ -9,21 +9,23 @@ class UserController extends Controller
 {
     // Fetch a single user by ID
     public function getUser($id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'bio'=>$bio->bio,
-            'expert_area' => $expertise_area->expertise_area,
-            'phone'=> $user->phone,
-            'is_admin' => $user->role === 'admin',
-            'is_mentor' => $user->role === 'mentor',
-            
-        ]);
-    }
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'phone' => $user->phone,
+        'photo_url' => $user->photo ? asset('storage/' . $user->photo) : asset('images/default-avatar.png'),
+        'bio' => $user->bio,
+        'expertise_area' => $user->expertise,
+        'location' => $user->location,
+        'role' => $user->role,
+        'is_admin' => $user->isAdmin(),
+        'is_mentor' => $user->isMentor(),
+    ]);
+}
 
     // Fetch all users (optionally excluding admins and mentors)
     public function getAllUsers()

@@ -98,7 +98,7 @@ export interface HarassmentReport {
 
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: __DEV__ ? 'http://192.168.1.100:8000/api' : 'https://your-production-api.com/api',
+  baseURL: __DEV__ ? 'http://192.168.1.101:8000/api/v1' : 'https://your-production-api.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -354,6 +354,7 @@ export const submitHarassmentReport = async (data: {
   title: string;
   description: string;
   location?: string;
+  date?:string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports', data);
@@ -369,6 +370,7 @@ export const submitHarassmentReportAnonymously = async (data: {
   title: string;
   description: string;
   location?: string;
+  date?:string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports/anonymous', data);

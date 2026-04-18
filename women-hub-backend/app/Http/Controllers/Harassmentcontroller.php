@@ -10,13 +10,13 @@ class HarassmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'incident_type' => 'required|string',
-            'description' => 'required|string|min:20',
-            'location' => 'nullable|string',
-            'incident_date' => 'nullable|date|before_or_equal:today',
-            'perpetrator_info' => 'nullable|string',
-            'is_anonymous' => 'boolean',
-        ]);
+        'incident_type'    => 'required|string',
+        'description'      => 'required|string|min:20',
+        'location'         => 'nullable|string', // Incoming from Mobile
+        'incident_date'    => 'nullable|date|before_or_equal:today',
+        'perpetrator_info' => 'nullable|string',
+        'is_anonymous'     => 'boolean',
+                ]);
 
         $report = HarassmentReport::create([
             ...$validated,

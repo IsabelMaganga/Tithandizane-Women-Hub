@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\User;
+use App\Models\Mentor;
 use App\Models\HygieneArticle;
 use App\Models\GeneralGuide;
 use App\Models\EmergencyContact;
@@ -14,11 +16,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin
-        User::create([
+        Admin::create([
             'name' => 'Admin User',
             'email' => 'admin@tithandizane.mw',
+            'role'=>'admin',
             'password' => Hash::make('admin123'),
-            'role' => 'admin',
         ]);
 
         // user
