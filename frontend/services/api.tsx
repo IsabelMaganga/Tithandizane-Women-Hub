@@ -351,9 +351,9 @@ export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
 
 // Submit harassment report (authenticated)
 export const submitHarassmentReport = async (data: {
-  title: string;
+  incident_type: string;
   description: string;
-  location?: string;
+  incident_location?: string;
   incident_date?: string;
   perpetrator_info?: string;
   is_anonymous?: string;
@@ -368,11 +368,13 @@ export const submitHarassmentReport = async (data: {
 };
 
 // Submit anonymous harassment report
-export const submitHarassmentReportAnonymously = async (data: {
-  title: string;
+export const submitHarassmentReportAnonymously = async (data:  {
+  incident_type: string;
   description: string;
   location?: string;
-  date?:string;
+  incident_date?: string;
+  perpetrator_info?: string;
+  is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports/anonymous', data);

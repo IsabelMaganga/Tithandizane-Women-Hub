@@ -37,7 +37,7 @@ class MentorshipController extends Controller
     public function request(Request $request)
     {
         $validated = $request->validate([
-            'mentor_id' => 'required|exists:mentors,id',
+            'mentor_id' => 'required|exists:users,id',
             'topic' => 'required|string|max:255',
             'message' => 'nullable|string|max:1000',
         ]);
