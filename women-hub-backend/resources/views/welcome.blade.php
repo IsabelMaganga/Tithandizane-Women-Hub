@@ -30,7 +30,7 @@
     </head>
     <body class=" text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
         <img src="{{ asset('images/shape (1).png')}}" class=" -z-10 object-cover w-40 absolute top-0 left-0" alt="">
-        <img src="{{ asset('images/shape (1).png')}}" class=" -z-10 object-cover w-40 absolute bottom-0 rotate-180 right-0" alt="">
+        <img src="{{ asset('images/shape (1).png')}}" class=" -z-10 object-cover w-40 absolute bottom-0 -rotate-180 right-0" alt="">
 
         <div class="flex relative items-center justify-center  w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
 

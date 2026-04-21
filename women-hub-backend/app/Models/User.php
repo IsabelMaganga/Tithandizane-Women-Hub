@@ -12,11 +12,13 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'bio',
-        'expertise_area', 'is_available', 'available_days',
-        'available_time_start', 'available_time_end',
+        'expertise_area', 'is_available', 'available_days','profile_picture',
+        'available_time_start', 'available_time_end', 'last_password_updated_at'
     ];
 
     protected $hidden = ['password', 'remember_token'];
+
+    protected $dates = ['last_password_updated_at'];
 
     protected $casts = [
         'available_days' => 'array',

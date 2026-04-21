@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\mentor;
 
-use App\Http\Controllers\Controller;
-use App\Models\EmergencyContact;
-use App\Models\GeneralGuide;
-use App\Models\HygieneArticle;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\{Auth, Hash, Log, Storage};
+use App\Http\Controllers\Controller;
+use App\Models\{EmergencyContact, GeneralGuide, HygieneArticle, User};
+use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
 
     // showCalender controller
     public function showCalender(){
+
+        // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -29,28 +28,20 @@ class SecurityController extends Controller
         return view('mentor.calender.index', compact(
             'mentorName',
             'mentorEmail',
-        ));
-
-    }
-
-    // reports controller
-    public function showReports(){
-
-        // Get current admin user info
-        $mentorUser = Auth::guard('mentor')->user();
-        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
-        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
-
-
-        return view('mentor.report.index', compact(
-            'mentorName',
-            'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // showAppointments controller
     public function showAppointments(){
+
+        // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -61,12 +52,20 @@ class SecurityController extends Controller
         return view('mentor.appointments.index', compact(
             'mentorName',
             'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // chat tab controller
     public function showChat(){
+
+         // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -77,12 +76,20 @@ class SecurityController extends Controller
         return view('mentor.chat.index', compact(
             'mentorName',
             'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // chat tab controller
     public function showChatGroups(){
+
+         // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -93,11 +100,19 @@ class SecurityController extends Controller
         return view('mentor.chat.groups', compact(
             'mentorName',
             'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     public function showGroupForm(){
+
+         // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -108,12 +123,20 @@ class SecurityController extends Controller
         return view('mentor.chat.create-group', compact(
             'mentorName',
             'mentorEmail',
+             'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // profile tab controller
     public function showMyProfile(){
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -132,13 +155,21 @@ class SecurityController extends Controller
             'mentorUser',
             'mentorBio',
             'mentorCreatedAt',
-            'mentorAvailable'
+            'mentorAvailable',
+             'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // guidance controllers
     public function showGuidance(){
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -148,12 +179,20 @@ class SecurityController extends Controller
 
         return view('mentor.guidance.index', compact(
             'mentorName',
-            'mentorEmail'
+            'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     public function showHygiene(){
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -167,12 +206,21 @@ class SecurityController extends Controller
             'mentorEmail',
             'mentorUser',
             'hygiene',
-            'hygieneCreatedAt'
+            'hygieneCreatedAt',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     public function showEmergency(){
+
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -185,12 +233,21 @@ class SecurityController extends Controller
             'mentorName',
             'mentorEmail',
             'mentorUser',
-            'contact'
+            'contact',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     public function showGeneral(){
+
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -205,13 +262,22 @@ class SecurityController extends Controller
             'mentorEmail',
             'mentorUser',
             'general',
-            'generalCreatedAt'
+            'generalCreatedAt',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     // settings related controllers below
     public function showSettings(){
+
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -221,12 +287,21 @@ class SecurityController extends Controller
 
         return view('mentor.settings.index', compact(
             'mentorName',
-            'mentorEmail'
+            'mentorEmail',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
 
     public function showProfile(){
+
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
@@ -245,7 +320,10 @@ class SecurityController extends Controller
             'mentorUser',
             'mentorBio',
             'mentorCreatedAt',
-            'mentorAvailable'
+            'mentorAvailable',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }
@@ -253,7 +331,12 @@ class SecurityController extends Controller
     public function updateProfile(Request $request, User $user){
         try {
             // Get current mentor user info
-            $user = Auth::guard('mentor')->user();
+            $user = Auth::guard('usersl')->user();
+
+
+            if (!$user) {
+                return back()->withErrors(['error' => 'No mentor is logged in.']);
+            }
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -278,7 +361,8 @@ class SecurityController extends Controller
             // Update user with validated data
             $user->update($validated);
 
-            return redirect()->route('mentor.showProfile')
+
+            return view('mentor.showProfile', compact('user'))
                 ->with('success', 'Profile updated successfully.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -297,6 +381,12 @@ class SecurityController extends Controller
 
     public function showSecurity(){
 
+
+          // notifications
+        $notifications = auth()->user()->notifications()->latest()->get();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
+
         // Get current admin user info
         $mentorUser = Auth::guard('mentor')->user();
         $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
@@ -310,7 +400,10 @@ class SecurityController extends Controller
             'mentorEmail',
             'mentorPasswordUpdatedDate',
             'mentorPasswordUpdatedTime',
-            'mentorAvailable'
+            'mentorAvailable',
+            'notifications',
+            'unreadCount',
+            'unreadNotifications'
         ));
 
     }

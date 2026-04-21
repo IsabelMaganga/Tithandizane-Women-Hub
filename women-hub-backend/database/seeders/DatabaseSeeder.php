@@ -2,12 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\HygieneArticle;
-use App\Models\GeneralGuide;
-use App\Models\EmergencyContact;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\{EmergencyContact, GeneralGuide, HygieneArticle, User};
 
 class DatabaseSeeder extends Seeder
 {
@@ -45,7 +42,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name' => 'Prof. Amina Banda',
-                'email' => 'amina.banda@tithandizane.mw',
+                'email' => 'martingulo28@gmail.com',
+                //  'email' => 'amina.banda@tithandizane.mw',
                 'password' => Hash::make('mentor123'),
                 'role' => 'mentor',
                 'bio' => 'University lecturer and women empowerment advocate.',

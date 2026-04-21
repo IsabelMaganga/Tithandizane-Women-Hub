@@ -7,6 +7,9 @@
     <link rel="short icon" href="{{ asset('images/Ellipse 3.png') }}">
     <title>{{ 'get-started' }}</title>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -32,7 +35,7 @@
     </head>
     <body class=" bg-[#874179]/80 text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
         <img src="{{ asset('images/shape (1).png')}}" class=" z-10 object-cover w-40 absolute top-0 left-0" alt="">
-        <img src="{{ asset('images/shape (1).png')}}" class=" z-10 object-cover w-40 absolute bottom-0 rotate-180 right-0" alt="">
+        <img src="{{ asset('images/shape (1).png')}}" class=" z-10 object-cover w-40 absolute bottom-0 -rotate-180 right-0" alt="">
 
         <header class=" w-[90%] md:w-full sticky  flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6 not-has-[nav]:hidden">
             <a  href="{{ route('get.started')}}" class="logo decoration-0 text-[#ffff] flex justify-start items-center gap-3">
@@ -65,7 +68,12 @@
                 <main class=" grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto z-20 gap-5 mb-5 p md:pt-0  w-full justify-center  items-top text-gray-200  ">
 
                     <div class=" flex-1 mx-auto  text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80  transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
-                        <h1 class="mb-1 text-2xl  font-bold">Mentors DashBoard</h1>
+
+                        <div class="top-text-section flex items-center gap-3">
+                            <i class="fa-regular fa-circle-user"></i>
+                            <h1 class="mb-1 text-2xl  font-bold">Mentors DashBoard</h1>
+                        </div>
+
                         <p class="mb-2 mt-3 text-sm  text-gray-200">
                             Tiyambe Ntchito: Empowerment starts with a single step. Step inside to lead the change. Dive into the Dashboard
                         </p>
@@ -81,7 +89,12 @@
                 </div>
 
                     <div class=" flex-1 mx-auto text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
-                        <h1 class="mb-1 text-2xl  font-bold">Admin DashBoard</h1>
+
+                        <div class="top-text-section flex items-center gap-3">
+                            <i class="fa-regular fa-circle-user"></i>
+                            <h1 class="mb-1 text-2xl  font-bold">Admin DashBoard</h1>
+                        </div>
+
                         <p class="mb-2 mt-3 text-sm  text-gray-200">
                             Control the platform. Empower the community. Let's get to work.
                         </p>

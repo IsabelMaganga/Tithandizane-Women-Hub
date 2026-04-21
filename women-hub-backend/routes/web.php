@@ -1,16 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\HarassmentReportController;
-use App\Http\Controllers\Admin\MentorController;
-use App\Http\Controllers\Mentor\AuthController as MentorAuthController;
-use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
-use App\Http\Controllers\Mentor\NotificationController;
-use App\Http\Controllers\Mentor\SecurityController as MentorSecurityController;
 use Illuminate\Broadcasting\BroadcastManager;
-use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Broadcast, Route};
+use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+
 
     //home page
     Route::get('/', fn() => view('welcome'))->name('welcome');
@@ -45,10 +39,16 @@ use Illuminate\Support\Facades\Route;
     // fallback for auth redirecting to get started
     Route::get('/login', function() { return redirect()->route('get.started'); })->name('login');
 
-        // Auth mentors routes (guest only)
+    // Auth mentors routes (guest only)
     Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(function () {
         Route::get('/login',  [MentorAuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [MentorAuthController::class, 'login'])->name('login.post');
+
+        // forgot password routes
+        Route::get('/forgot-password', [MentorAuthController::class, 'showForgot'])->name('forgot');
+        Route::post('/forgot-password', [MentorAuthController::class, 'sendResetLink'])->name('sendResetLink');
+        Route::get('/reset-password/{token}', [MentorAuthController::class, 'showVerify'])->name('reset-password');
+        Route::post('/reset-password', [MentorAuthController::class, 'updatePassword'])->name('update-password');
     });
 
     // Protected mentor routes
@@ -68,7 +68,10 @@ use Illuminate\Support\Facades\Route;
         Route::get('/calender',[MentorSecurityController::class, 'showCalender'])->name('calender');
 
         // reports
-        Route::get('/reports',[MentorSecurityController::class, 'showReports'])->name('reports');
+        Route::get('/reports',[ReportController::class, 'showReports'])->name('reports');
+        Route::post('/reports',[ReportController::class, 'SubmitReport'])->name('submit.report');
+        Route::get('/pending-reports',[ReportController::class, 'showPending'])->name('pending.reports');
+
 
         // chat
         Route::get('/chats',[MentorSecurityController::class, 'showChat'])->name('chat');

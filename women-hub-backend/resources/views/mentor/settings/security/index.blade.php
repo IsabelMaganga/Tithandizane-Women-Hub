@@ -3,11 +3,11 @@
 @section('title') privacy @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
+<div class="px-4 py-0 mx-auto max-w-7xl sm:px-6 lg:px-8">
     <!-- Header with Back Navigation -->
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
-            <a href="{{ route('mentor.settings') }}" class="hover:text-gray-900 flex items-center gap-1">
+    <div class="mb-20">
+        <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">
+            <a href="{{ route('mentor.settings') }}" class="flex items-center gap-1 hover:text-gray-900">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -20,18 +20,18 @@
         <p class="mt-2 text-sm text-gray-600">Manage your password and account security preferences.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Main Content - Change Password -->
         <div class="lg:col-span-2">
             <!-- Change Password Card -->
-            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="overflow-hidden bg-white border border-gray-200 rounded-xl">
                 <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
                     <h2 class="text-lg font-medium text-gray-900">Change Password</h2>
                 </div>
 
                 <div class="p-6">
                     @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="p-4 mb-6 border border-green-200 rounded-lg bg-green-50">
                         <div class="flex">
                             <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -42,13 +42,13 @@
                     @endif
 
                     @if($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="p-4 mb-6 border border-red-200 rounded-lg bg-red-50">
                         <div class="flex">
                             <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <div class="ml-3">
-                                <p class="text-sm text-red-700 font-medium">Please fix the following errors:</p>
+                                <p class="text-sm font-medium text-red-700">Please fix the following errors:</p>
                                 <ul class="mt-2 text-sm text-red-600 list-disc list-inside">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -66,7 +66,7 @@
 
                         <!-- Current Password -->
                         <div>
-                            <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="current_password" class="block mb-2 text-sm font-medium text-gray-700">
                                 Current Password
                             </label>
                             <div class="relative">
@@ -78,7 +78,7 @@
                                        required>
                                 <button type="button"
                                         onclick="togglePasswordVisibility('current_password')"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -89,7 +89,7 @@
 
                         <!-- New Password -->
                         <div>
-                            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="new_password" class="block mb-2 text-sm font-medium text-gray-700">
                                 New Password
                             </label>
                             <div class="relative">
@@ -101,7 +101,7 @@
                                        required>
                                 <button type="button"
                                         onclick="togglePasswordVisibility('new_password')"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -112,8 +112,8 @@
                             <!-- Password Strength Meter -->
                             <div class="mt-3">
                                 <div class="flex items-center gap-2">
-                                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                        <div id="password-strength-bar" class="h-full w-0 transition-all duration-300"></div>
+                                    <div class="flex-1 h-2 overflow-hidden bg-gray-200 rounded-full">
+                                        <div id="password-strength-bar" class="w-0 h-full transition-all duration-300"></div>
                                     </div>
                                     <span id="password-strength-text" class="text-xs font-medium text-gray-600">Enter password</span>
                                 </div>
@@ -139,26 +139,26 @@
 
                         <!-- Confirm New Password -->
                         <div>
-                            <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="new_password_confirmation" class="block mb-2 text-sm font-medium text-gray-700">
                                 Confirm New Password
                             </label>
                             <div class="relative">
                                 <input type="password"
                                        name="new_password_confirmation"
                                        id="new_password_confirmation"
-                                       class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       class="block w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="Confirm your new password"
                                        required>
                                 <button type="button"
                                         onclick="togglePasswordVisibility('new_password_confirmation')"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                 </button>
                             </div>
-                            <div id="password-match-message" class="mt-2 text-sm hidden"></div>
+                            <div id="password-match-message" class="hidden mt-2 text-sm"></div>
                         </div>
 
                         <!-- Form Actions -->
@@ -181,12 +181,12 @@
         </div>
 
         <!-- Sidebar - Security Tips & 2FA -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="space-y-6 lg:col-span-1">
 
 
             <!-- Security Tips -->
-            <div class="bg-blue-50 rounded-xl border border-blue-200 p-6">
-                <h3 class="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+            <div class="p-6 border border-blue-200 bg-blue-50 rounded-xl">
+                <h3 class="flex items-center gap-2 mb-3 text-sm font-semibold text-blue-900">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -208,8 +208,8 @@
                 </ul>
             </div>
             <!-- Account Status -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Security Status</h3>
+        <div class="p-6 bg-white border border-gray-200 rounded-lg">
+            <h3 class="mb-4 text-lg font-medium text-gray-900">Security Status</h3>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">Strength</span>
@@ -253,15 +253,15 @@
 
             <!-- Sessions -->
             <form action="{{ route('mentor.logoutAllSessions')}}"
-                onsubmit=" return confirm('Are you sure you want to sign out from all devices. This includes your device.');" method="POST" class="bg-white rounded-xl border border-gray-200 p-6">
+                onsubmit=" return confirm('Are you sure you want to sign out from all devices. This includes your device.');" method="POST" class="p-6 bg-white border border-gray-200 rounded-xl">
                 @csrf
                 @method('DELETE')
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-semibold text-gray-900">Active Sessions</h3>
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">1 active</span>
+                    <span class="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">1 active</span>
                 </div>
-                <p class="text-xs text-gray-500 mb-4">Manage your active sessions across devices</p>
-                <button type="submit" class="w-full bg-red-500 px-4 py-2 border border-gray-300 hover:bg-red-600 text-gray-100 text-sm font-medium rounded-lg transition-colors">
+                <p class="mb-4 text-xs text-gray-500">Manage your active sessions across devices</p>
+                <button type="submit" class="w-full px-4 py-2 text-sm font-medium text-gray-100 transition-colors bg-red-500 border border-gray-300 rounded-lg hover:bg-red-600">
                     Sign out all devices
                 </button>
             </form>

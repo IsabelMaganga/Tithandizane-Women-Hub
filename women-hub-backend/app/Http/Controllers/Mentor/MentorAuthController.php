@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Auth, Hash};
 
 class MentorAuthController extends Controller
 {
@@ -41,4 +40,5 @@ class MentorAuthController extends Controller
 
         return redirect()->route('admin.login');
     }
+
 }
