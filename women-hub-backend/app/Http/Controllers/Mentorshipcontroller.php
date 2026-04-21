@@ -12,12 +12,26 @@ class MentorshipController extends Controller
 {
     public function mentors(Request $request)
     {
-        $mentors = User::where('role', 'mentor')
-            ->where('is_available', true)
-            ->select('id', 'name', 'bio', 'expertise_area', 'available_days', 'available_time_start', 'available_time_end')
+        $mentors = \App\Models\User::where('role','mentor')->where('status', 'active')
+            ->select('id', 'name', 'email', 'bio', 'expertise_area', 'available_days', 'available_time_from', 'available_time_to', 'photo')
             ->get();
 
-        return response()->json($mentors);
+        // Transform to match frontend expectations
+        $transformedMentors = $mentors->map(function($mentor) {
+            return [
+                'id' => $mentor->id,
+                'name' => $mentor->name,
+                'bio' => $mentor->bio,
+                'expertise_area' => $mentor->area_label, // Using the model's accessor
+                'available_days' => $mentor->available_days,
+                'available_time_start' => $mentor->available_time_from,
+                'available_time_end' => $mentor->available_time_to,
+                'photo' => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
+                'is_available' => $mentor->status === 'active'
+            ];
+        });
+
+        return response()->json($transformedMentors);
     }
 
     public function request(Request $request)

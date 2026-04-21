@@ -15,7 +15,9 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    @vite(['resources/js/app.js'])
+
+    {{-- Comment out Vite to fix the manifest error --}}
+    {{-- @vite(['resources/js/app.js']) --}}
 
     <style>
         /* Custom scrollbar styles */
@@ -136,9 +138,10 @@
 
                     <i id="showIcon2" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
 
-                    </div>
+                        <i id="showIcon" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
+                     </div>
 
-                    <div id="sub-list2" class=" text-[12px]">
+                    <div id="sub-list" class=" text-[12px]">
                         <a href="{{ route('mentor.hygiene')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="hygiene">
                             <i class="w-5 fa-solid fa-pump-medical"></i>
                             <span class="ml-3">hygiene</span>
@@ -221,10 +224,7 @@
                             <p id="notifCount" class=" absolute right-0 -top-2 text-[11px] text-white">
                                 @if ($unreadCount > 0)
                                     {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                                @else
-
                                 @endif
-
                             </p>
                         </div>
 
@@ -312,50 +312,56 @@
     </div>
 
     <script>
+        // Fix: Use different IDs for different dropdowns to avoid conflicts
+        // Chat dropdown
+        const showIcon = document.getElementById('showIcon');
+        const subList = document.getElementById('sub-list');
+
+        if (showIcon && subList) {
+            showIcon.addEventListener('click', function() {
+                subList.classList.toggle('show');
+                showIcon.classList.toggle('arrow-rotate');
+            });
+        }
+
+        // Guidance dropdown
+        const showIconGuidance = document.getElementById('showIconGuidance');
+        const subListGuidance = document.getElementById('sub-list-guidance');
+
+        if (showIconGuidance && subListGuidance) {
+            showIconGuidance.addEventListener('click', function() {
+                subListGuidance.classList.toggle('show');
+                showIconGuidance.classList.toggle('arrow-rotate');
+            });
+        }
 
         //  Navigation active state management
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
             const currentPage = window.location.pathname.split('/').pop() || 'dashboard';
 
-            // Function to set active nav item
-            // function setActiveNavItem(activeItem) {
-            //     navItems.forEach(item => {
-            //         item.classList.remove('bg-blue-600', 'border-l-4', 'border-blue-400');
-            //         item.classList.add('text-gray-300');
-            //     });
-
-            //     activeItem.classList.remove('text-gray-300');
-            //     activeItem.classList.add('bg-blue-600', 'border-l-4', 'border-blue-400');
-            // }
-
             // Set active based on current page
-            // navItems.forEach(item => {
-            //     const page = item.getAttribute('data-page');
-            //     if (page === currentPage) {
-            //         setActiveNavItem(item);
-            //     }
-
-            //     // Add click handler
-            //     item.addEventListener('click', function(e) {
-            //         e.preventDefault();
-            //         // setActiveNavItem(this);
-
-            //         const page = this.getAttribute('data-page');
-            //     });
-            // });
+            navItems.forEach(item => {
+                const page = item.getAttribute('data-page');
+                if (page === currentPage) {
+                    item.classList.add('bg-gray-800');
+                }
+            });
         });
 
-        // random notifications
-        notificationSideBar = document.getElementById('notificationSideBar');
-        closeBtn = document.getElementById('close');
-        closeNotif = document.getElementById('closeNotif');
+        // notifications
+        const notificationSideBar = document.getElementById('notificationSideBar');
+        const closeNotif = document.getElementById('closeNotif');
+        const bellIcon = document.querySelector('.fa-bell');
 
-        document.querySelector('.fa-bell ').addEventListener('click', function() {
-
-            notificationSideBar.classList.remove('notificationHide');
-            notificationSideBar.classList.add('notificationShow');
-        });
+        if (bellIcon) {
+            bellIcon.addEventListener('click', function() {
+                if (notificationSideBar) {
+                    notificationSideBar.classList.remove('notificationHide');
+                    notificationSideBar.classList.add('notificationShow');
+                }
+            });
+        }
 
         closeNotif.addEventListener('click', function() {
             notificationSideBar.classList.remove('notificationShow');
@@ -365,9 +371,7 @@
 
         // dropDownList logic for chat tab
         const showIcon = document.getElementById('showIcon');
-        const showIcon2 = document.getElementById('showIcon2');
         const subList = document.getElementById('sub-list');
-        const subList2 = document.getElementById('sub-list2');
 
         showIcon.addEventListener('click', function() {
             subList.classList.toggle('show');
@@ -375,18 +379,10 @@
         });
 
 
-        showIcon2.addEventListener('click', function() {
-            subList2.classList.toggle('show');
-            showIcon2.classList.toggle('arrow-rotate');
-        });
-
-
         // chat request broadcast channel
-        const userId = {{ auth()->id() }};
-        // console.log(userId);
+        const userId = {{ auth()->id() ?? 0 }};
 
         document.addEventListener('DOMContentLoaded', function() {
-
             if (window.Echo) {
                 console.log("Echo loaded");
 
@@ -394,12 +390,12 @@
                     .notification((notification) => {
                         console.log('New notification:', notification);
 
-                    // increase badge
-                    const countEl = document.getElementById('notifCount');
-                    if (countEl) {
-                        const count = parseInt(countEl.innerText) || 0;
-                        countEl.innerText = count + 1;
-                    }
+                        // increase badge
+                        const countEl = document.getElementById('notifCount');
+                        if (countEl) {
+                            const count = parseInt(countEl.innerText) || 0;
+                            countEl.innerText = count + 1;
+                        }
 
                     // Show popup
                     const container = document.getElementById('notificationPopUp');
@@ -422,13 +418,9 @@
 
 
             } else {
-                console.log("Echo is not loaded");
+                console.log("Echo is not loaded or configured");
             }
-
         });
-
-
-
     </script>
 
     @stack('scripts')

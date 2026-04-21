@@ -6,6 +6,7 @@ use App\Http\Controllers\HarassmentController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\MentorController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Broadcasting\BroadcastManager;
 
@@ -14,9 +15,16 @@ Route::post('/broadcasting/auth', function () {
     return BroadcastManager::auth();
 })->middleware(['auth:sanctum'])->withoutMiddleware('api');
 
+// Direct routes (without v1 prefix) for frontend compatibility
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/mentors', [MentorController::class, 'getActiveMentors']); // Updated to use MentorController
+Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
+Route::get('/general-guides', [ContentController::class, 'generalGuides']);
+Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
+
 // v0.1
 Route::prefix('v1')->group(function () {
-
 
     // Auth routes (public)
     Route::post('/register', [AuthController::class, 'register']);
@@ -27,7 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
     Route::get('/general-guides', [ContentController::class, 'generalGuides']);
     Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
-    Route::get('/mentors', [MentorshipController::class, 'mentors']);
+    Route::get('/mentors', [MentorshipController::class, 'mentors']); // Updated to use MentorController
 
     // Anonymous harassment report
     Route::post('/harassment-reports/anonymous', [HarassmentController::class, 'store']);
@@ -36,8 +44,6 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
-
-
 
         // Messaging routes
         Route::post('/messages', [MessageController::class, 'send']);
@@ -61,15 +67,24 @@ Route::prefix('v1')->group(function () {
         Route::post('/harassment-reports', [HarassmentController::class, 'store']);
         Route::get('/harassment-reports/my-reports', [HarassmentController::class, 'myReports']);
 
-        // Admin
-        Route::get('/admin/harassment-reports', [HarassmentController::class, 'index']);
-        Route::patch('/admin/harassment-reports/{report}', [HarassmentController::class, 'updateStatus']);
-        Route::get('/admin/conversations', [MessageController::class, 'getAllGroups']);
+        // Admin routes
+        Route::prefix('admin')->group(function () {
+            Route::get('/harassment-reports', [HarassmentController::class, 'index']);
+            Route::patch('/harassment-reports/{report}', [HarassmentController::class, 'updateStatus']);
+            Route::get('/conversations', [MessageController::class, 'getAllGroups']);
+            
+            // Mentor Management Routes (API endpoints)
+            Route::post('/mentors', [MentorController::class, 'storeApi']);
+            Route::get('/mentors', [MentorController::class, 'getAllMentorsApi']);
+            Route::get('/mentors/{id}', [MentorController::class, 'showApi']);
+            Route::put('/mentors/{id}', [MentorController::class, 'updateApi']);
+            Route::delete('/mentors/{id}', [MentorController::class, 'destroyApi']);
+            Route::patch('/mentors/{id}/status', [MentorController::class, 'updateStatusApi']);
+        });
 
         // Group Discovery & Joining
         Route::get('/groups/available', [MessageController::class, 'getAvailableGroups']);
         Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
     });
-
 
 });

@@ -34,13 +34,13 @@
         </style>
     </head>
     <body class=" bg-[#874179]/80 text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
-        <img src="{{ asset('images/shape (1).png')}}" class=" z-10 object-cover w-40 absolute top-0 left-0" alt="">
-        <img src="{{ asset('images/shape (1).png')}}" class=" z-10 object-cover w-40 absolute bottom-0 -rotate-180 right-0" alt="">
+        <img src="{{ asset('images/shape (1).png')}}" class="absolute top-0 left-0 z-10 object-cover w-40 " alt="">
+        <img src="{{ asset('images/shape (1).png')}}" class="absolute bottom-0 right-0 z-10 object-cover w-40 rotate-180 " alt="">
 
         <header class=" w-[90%] md:w-full sticky  flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6 not-has-[nav]:hidden">
             <a  href="{{ route('get.started')}}" class="logo decoration-0 text-[#ffff] flex justify-start items-center gap-3">
-                <img src="{{ asset('images/Ellipse 3.png')}}" class=" w-10" alt="">
-                <h1 class=" font-bold">Tithandizane Women Hub</h1>
+                <img src="{{ asset('images/Ellipse 3.png')}}" class="w-10 " alt="">
+                <h1 class="font-bold ">Tithandizane Women Hub</h1>
             </a>
             <nav class="flex items-center text-[#ffff] justify-end gap-4 ">
                 <a href="{{ route('welcome')}}" class="inline-block px-5 py-3 hover:text-[#ee8edb] cursor-pointer  text-sm leading-normal">
@@ -56,31 +56,31 @@
         </nav>
     </header>
 
-        <div class="grid relative  items-center justify-center  w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+        <div class="relative grid items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
 
-                <main class="flex max-w-5xl mt-0 z-20 gap-5 md:pt-10  w-full justify-center  items-center text-gray-100 flex-col md:flex-row ">
+                <main class="z-20 flex flex-col items-center justify-center w-full max-w-5xl gap-5 mt-0 text-gray-100 md:pt-10 md:flex-row ">
                     <p class="mb-2  w-[90%] mt-10 max-w-5xl text-shadow-black text-shadow-2xs font-semibold text-3xl md:text-4xl text-center  ">
                         Empowering women to claim their rights, restore their dignity, and lead with justice
                     </p>
                 </main>
 
                 {{-- buttons section --}}
-                <main class=" grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto z-20 gap-5 mb-5 p md:pt-0  w-full justify-center  items-top text-gray-200  ">
+                <main class=" relative z-[100] grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-5 mb-5 p md:pt-0 w-full justify-center items-top text-gray-200">
 
                     <div class=" flex-1 mx-auto  text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80  transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
 
-                        <div class="top-text-section flex items-center gap-3">
+                        <div class="flex items-center gap-3 top-text-section">
                             <i class="fa-regular fa-circle-user"></i>
-                            <h1 class="mb-1 text-2xl  font-bold">Mentors DashBoard</h1>
+                            <h1 class="mb-1 text-2xl font-bold">Mentors DashBoard</h1>
                         </div>
 
-                        <p class="mb-2 mt-3 text-sm  text-gray-200">
+                        <p class="mt-3 mb-2 text-sm text-gray-200">
                             Tiyambe Ntchito: Empowerment starts with a single step. Step inside to lead the change. Dive into the Dashboard
                         </p>
 
                     <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
                         <li>
-                            <a href="{{ route('mentor.login')}}"
+                            <a href="/mentor/login"
                                 class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
                                 Enter Portal
                             </a>
@@ -90,29 +90,30 @@
 
                     <div class=" flex-1 mx-auto text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
 
-                        <div class="top-text-section flex items-center gap-3">
+                        <div class="flex items-center gap-3 top-text-section">
                             <i class="fa-regular fa-circle-user"></i>
-                            <h1 class="mb-1 text-2xl  font-bold">Admin DashBoard</h1>
+                            <h1 class="mb-1 text-2xl font-bold">Admin DashBoard</h1>
                         </div>
 
-                        <p class="mb-2 mt-3 text-sm  text-gray-200">
+                        <p class="mt-3 mb-2 text-sm text-gray-200">
                             Control the platform. Empower the community. Let's get to work.
                         </p>
 
                     <ul class="flex gap-3 mt-5 text-[20px] leading-normal">
-                        <li>
-                            <a href="{{ route('admin.login') }}"
-                                class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
-                                Manage Platform
-                            </a>
-                        </li>
+    <li>
+        <a href="{{ route('admin.login') }}"
+           class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] border-[#eeeeec]/20 transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal cursor-pointer">
+            Manage Platform
+        </a>
+    </li>
+</ul>
                     </ul>
                 </div>
 
             </main>
 
                 {{-- footer --}}
-                <p class=" flex text-sm text-center justify-center text-gray-300 w-full py-2"> &copy; 2026 Tithandizane-women-hub . All rights reserved </p>
+                <p class="flex justify-center w-full py-2 text-sm text-center text-gray-300 "> &copy; 2026 Tithandizane-women-hub . All rights reserved </p>
             </div>
 
     </body>

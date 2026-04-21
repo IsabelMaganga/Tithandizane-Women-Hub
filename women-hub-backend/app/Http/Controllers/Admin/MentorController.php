@@ -1,64 +1,160 @@
 <?php
+// app/Http/Controllers/Admin/MentorController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mentor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class MentorController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of mentors with search and filter capabilities
+     */
+    public function index(Request $request)
     {
-        $mentors = Mentor::latest()->paginate(10);
-        return view('admin.mentors.index', compact('mentors'));
+        $query = Mentor::query();
+        
+        // Search by name, email, or expertise
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('expertise', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by status
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+        
+        // Check if it's an AJAX request
+        if ($request->ajax() || $request->wantsJson()) {
+            $perPage = $request->get('per_page', 10);
+            $mentors = $query->latest()->paginate($perPage);
+            
+            // Get statistics
+            $stats = [
+                'total' => Mentor::count(),
+                'active' => Mentor::where('status', 'active')->count(),
+                'pending' => Mentor::where('status', 'pending')->count(),
+                'inactive' => Mentor::where('status', 'inactive')->count(),
+            ];
+            
+            // Format mentors for JSON response
+            $mentors->getCollection()->transform(function ($mentor) {
+                if (is_string($mentor->expertise)) {
+                    $mentor->expertise = json_decode($mentor->expertise, true);
+                }
+                if (is_string($mentor->available_days)) {
+                    $mentor->available_days = json_decode($mentor->available_days, true);
+                }
+                return $mentor;
+            });
+            
+            return response()->json([
+                'success' => true,
+                'mentors' => $mentors->items(),
+                'current_page' => $mentors->currentPage(),
+                'last_page' => $mentors->lastPage(),
+                'total' => $mentors->total(),
+                'per_page' => $mentors->perPage(),
+                'from' => $mentors->firstItem(),
+                'to' => $mentors->lastItem(),
+                'stats' => $stats,
+            ]);
+        }
+        
+        // For non-AJAX requests
+        $mentors = $query->latest()->paginate(10);
+        $stats = [
+            'total' => Mentor::count(),
+            'active' => Mentor::where('status', 'active')->count(),
+            'pending' => Mentor::where('status', 'pending')->count(),
+            'inactive' => Mentor::where('status', 'inactive')->count(),
+        ];
+        
+        return view('admin.mentors.index', compact('mentors', 'stats'));
     }
 
     public function create()
     {
-        return view('admin.addmentor', [
-            'adminName' => auth()->user()->name,
-            'adminEmail' => auth()->user()->email
-        ]);
+        $adminUser = Auth::guard('admin')->user();
+        $adminName = $adminUser ? $adminUser->name : 'Admin User';
+        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.org';
+        
+        return view('admin.addmentors.addmentor', compact('adminName', 'adminEmail'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:mentors',
-            'phone' => 'nullable|string|max:20',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'bio' => 'required|string',
-            'expertise' => 'required|array|min:1',
-            'status' => 'required|in:active,pending,inactive',
-            'availability' => 'nullable|string',
-        ]);
-
-        // Map expertise array to area_of_support
-        $areaOfSupport = 'both';
-        if (count($request->expertise) === 1) {
-            $areaOfSupport = $request->expertise[0];
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:mentors,email',
+                'password' => 'required|string|min:12|confirmed',
+                'phone' => 'nullable|string|max:20',
+                'location' => 'nullable|string|max:255',
+                'photo' => 'nullable|image|max:2048',
+                'expertise' => 'required|array|min:1',
+                'bio' => 'required|string|min:50|max:1000',
+                'status' => 'required|in:active,pending,inactive',
+                'availability' => 'nullable|string|max:500',
+                'available_days' => 'nullable|array',
+                'available_time_start' => 'nullable|date_format:H:i',
+                'available_time_end' => 'nullable|date_format:H:i',
+                'linkedin_url' => 'nullable|url',
+                'twitter_url' => 'nullable|url',
+                'website_url' => 'nullable|url',
+                'notes' => 'nullable|string',
+            ]);
+            
+            // Handle photo upload
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('mentor-photos', 'public');
+                $validated['photo'] = $photoPath;
+            }
+            
+            // Hash password
+            $validated['password'] = Hash::make($validated['password']);
+            
+            // Convert expertise array to JSON
+            $validated['expertise'] = json_encode($validated['expertise']);
+            
+            // Convert available_days array to JSON if present
+            if (isset($validated['available_days'])) {
+                $validated['available_days'] = json_encode($validated['available_days']);
+            }
+            
+            $mentor = Mentor::create($validated);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Mentor created successfully',
+                    'mentor' => $mentor
+                ]);
+            }
+            
+            return redirect()->route('admin.mentors.index')
+                ->with('success', 'Mentor created successfully!');
+                
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create mentor: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->withInput()->with('error', 'Failed to create mentor: ' . $e->getMessage());
         }
-
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'bio' => $request->bio,
-            'area_of_support' => $areaOfSupport,
-            'status' => $request->status,
-        ];
-
-        // Handle photo upload
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('mentors', 'public');
-        }
-
-        Mentor::create($data);
-
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor created successfully.');
     }
 
     public function show(Mentor $mentor)
@@ -68,44 +164,117 @@ class MentorController extends Controller
 
     public function edit(Mentor $mentor)
     {
-        return view('admin.mentors.edit', compact('mentor'));
+        $adminUser = Auth::guard('admin')->user();
+        $adminName = $adminUser ? $adminUser->name : 'Admin User';
+        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.org';
+        
+        return view('admin.mentors.edit', compact('mentor', 'adminName', 'adminEmail'));
     }
 
     public function update(Request $request, Mentor $mentor)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:mentors,email,' . $mentor->id,
-            'expertise' => 'required|array',
-            'availability' => 'nullable|string',
-            'status' => 'required|in:active,pending,inactive'
+            'phone' => 'nullable|string|max:20',
+            'location' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'expertise' => 'required|array|min:1',
+            'bio' => 'required|string|min:50|max:1000',
+            'status' => 'required|in:active,pending,inactive',
+            'availability' => 'nullable|string|max:500',
+            'available_days' => 'nullable|array',
+            'available_time_start' => 'nullable|date_format:H:i',
+            'available_time_end' => 'nullable|date_format:H:i',
+            'linkedin_url' => 'nullable|url',
+            'twitter_url' => 'nullable|url',
+            'website_url' => 'nullable|url',
+            'notes' => 'nullable|string',
         ]);
-
-        $mentor->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'expertise' => $request->expertise,
-            'availability' => $request->availability,
-            'status' => $request->status
-        ]);
-
+        
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            if ($mentor->photo) {
+                Storage::disk('public')->delete($mentor->photo);
+            }
+            $photoPath = $request->file('photo')->store('mentor-photos', 'public');
+            $validated['photo'] = $photoPath;
+        }
+        
+        // Update password if provided
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'string|min:12|confirmed']);
+            $validated['password'] = Hash::make($request->password);
+        }
+        
+        // Convert expertise array to JSON
+        $validated['expertise'] = json_encode($validated['expertise']);
+        
+        // Convert available_days array to JSON if present
+        if (isset($validated['available_days'])) {
+            $validated['available_days'] = json_encode($validated['available_days']);
+        }
+        
+        $mentor->update($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Mentor updated successfully',
+                'mentor' => $mentor
+            ]);
+        }
+        
         return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor updated successfully.');
+            ->with('success', 'Mentor updated successfully!');
     }
 
     public function destroy(Mentor $mentor)
     {
-        $mentor->delete();
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor deleted successfully.');
+        try {
+            if ($mentor->photo) {
+                Storage::disk('public')->delete($mentor->photo);
+            }
+            
+            $mentor->delete();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Mentor deleted successfully'
+                ]);
+            }
+            
+            return redirect()->route('admin.mentors.index')
+                ->with('success', 'Mentor deleted successfully!');
+                
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete mentor: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.mentors.index')
+                ->with('error', 'Failed to delete mentor!');
+        }
     }
 
     public function toggleStatus(Mentor $mentor)
     {
-        $newStatus = $mentor->status === 'active' ? 'inactive' : 'active';
-        $mentor->update(['status' => $newStatus]);
-
-        return redirect()->back()
-            ->with('success', "Mentor status changed to {$newStatus}.");
+        $mentor->status = $mentor->status === 'active' ? 'inactive' : 'active';
+        $mentor->save();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Mentor status updated successfully',
+                'status' => $mentor->status
+            ]);
+        }
+        
+        return redirect()->route('admin.mentors.index')
+            ->with('success', 'Mentor status updated successfully!');
     }
 }

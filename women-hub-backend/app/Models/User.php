@@ -12,8 +12,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'bio',
-        'expertise_area', 'is_available', 'available_days','profile_picture',
-        'available_time_start', 'available_time_end', 'last_password_updated_at'
+        'expertise_area', 'is_available', 'available_days',
+        'available_time_start', 'available_time_end',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -21,8 +21,11 @@ class User extends Authenticatable
     protected $dates = ['last_password_updated_at'];
 
     protected $casts = [
-        'available_days' => 'array',
-        'is_available' => 'boolean',
+    'available_days' => 'array',
+    'expertise_area' => 'array', // Added this since expertise is also an array
+    'is_available' => 'boolean', // Changed from is_available to match fillable
+    'notify_welcome' => 'boolean',
+    'notify_training' => 'boolean',
     ];
 
     public function isMentor(): bool
@@ -54,4 +57,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Message::class, 'sender_id');
     }
+
+    // Add 'photo_url' to the list of attributes appended to the JSON form
+protected $appends = ['photo_url'];
+
+public function getPhotoUrlAttribute()
+{
+    if (!$this->photo) {
+        return null;
+    }
+
+    // If the photo is a full URL (like from your seeder), return it directly
+    if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
+        return $this->photo;
+    }
+
+    // Otherwise, assume it's a local file in storage
+    return asset('storage/' . $this->photo);
+}
 }

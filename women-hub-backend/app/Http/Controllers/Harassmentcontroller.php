@@ -8,27 +8,27 @@ use Illuminate\Http\Request;
 class HarassmentController extends Controller
 {
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'incident_type' => 'required|string',
-            'description' => 'required|string|min:20',
-            'location' => 'nullable|string',
-            'incident_date' => 'nullable|date|before_or_equal:today',
-            'perpetrator_info' => 'nullable|string',
-            'is_anonymous' => 'boolean',
-        ]);
+{
+    $validated = $request->validate([
+        'incident_type'    => 'required|string',
+        'description'      => 'required|string|min:20',
+        'incident_location'=> 'nullable|string',
+        'incident_date'    => 'nullable|date|before_or_equal:today',
+        'perpetrator_info' => 'nullable|string',
+        'is_anonymous'     => 'boolean',
+    ]);
 
-        $report = HarassmentReport::create([
-            ...$validated,
-            'user_id' => $validated['is_anonymous'] ? null : $request->user()?->id,
-            'status' => 'submitted',
-        ]);
+    $report = HarassmentReport::create([
+        ...$validated,
+        'user_id' => ($request->is_anonymous ?? false) ? null : Auth::id(),
+        'status'  => 'new', // Must match one of: new, under_review, resolved, closed
+    ]);
 
-        return response()->json([
-            'message' => 'Your report has been submitted safely and confidentially. Our team will review it.',
-            'report_id' => $report->id,
-        ], 201);
-    }
+    return response()->json([
+        'message' => 'Your report has been submitted safely.',
+        'report_id' => $report->id,
+    ], 201);
+}
 
     public function myReports(Request $request)
     {

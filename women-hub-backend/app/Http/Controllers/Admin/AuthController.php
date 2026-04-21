@@ -11,7 +11,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('admin.login');
+        return view('admin.Auth.login');  // Changed from 'admin.login' to 'admin.Auth.login'
     }
 
     public function login(Request $request)
@@ -43,7 +43,7 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('admin.register');
+        return view('admin.Auth.register');  // Changed from 'admin.register' to 'admin.Auth.register'
     }
 
     public function register(Request $request)

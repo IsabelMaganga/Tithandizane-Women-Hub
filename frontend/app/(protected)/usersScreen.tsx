@@ -204,6 +204,7 @@ export default UsersScreen;
 
 //sub component for header with search and create group button
 const Header = React.memo(({ searchQuery, setSearchQuery }) => {
+  const router = useRouter()
   return (
     <View className="mb-4">
       <TextInput
@@ -223,7 +224,7 @@ const Header = React.memo(({ searchQuery, setSearchQuery }) => {
         className="rounded-2xl"
       />
 
-      <Pressable className="mt-3 bg-purple-500 p-3 rounded-xl items-center">
+      <Pressable className="mt-3 bg-purple-500 p-3 rounded-xl items-center" onPress={()=>router.push("/(protected)/createGroup")}>
         <Text className="text-white font-semibold">Create group</Text>
       </Pressable>
     </View>

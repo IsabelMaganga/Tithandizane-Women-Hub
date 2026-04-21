@@ -4,6 +4,7 @@ import { LegendList } from "@legendapp/list";
 import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { getChatList } from "@/services/api";
 import { getUserToken } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSegments } from "expo-router";
 import LottieView from "lottie-react-native";
 
@@ -11,6 +12,7 @@ export default function ChatListScreen() {
   const [activeTab, setActiveTab] = useState<"chats" | "groups">("chats");
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); // Essential for identifying 'you' in participants
 
   const router = useRouter();
   const segments = useSegments();
@@ -26,7 +28,6 @@ export default function ChatListScreen() {
       if (!token) return;
 
       const chatData = await getChatList(token);
-
       setChats(Array.isArray(chatData) ? chatData : []);
     } catch (error) {
       console.error("Error fetching chats:", error);
@@ -35,13 +36,12 @@ export default function ChatListScreen() {
     }
   };
 
-  //filtering chats
+  // Filter chats based on tab selection
   const filteredChats = useMemo(() => {
     return chats.filter(chat =>
       activeTab === "chats" ? !chat.is_group : chat.is_group
     );
   }, [chats, activeTab]);
-
 
   if (!segments) return null;
 
@@ -95,32 +95,43 @@ export default function ChatListScreen() {
         <LegendList
           data={filteredChats}
           estimatedItemSize={80}
-
           keyExtractor={(item) => `chat-${item.id}-${activeTab}`}
           renderItem={({ item }) => {
+            // Find the participant that is NOT the currently logged-in user
+            const otherParticipant = item.participants?.find((p: any) => p.id !== user?.id);
 
             const displayName = item.is_group 
               ? (item.name || "Unnamed Group") 
-              : (item.participants?.find((p: any) => p.name)?.name || "Chat");
+              : (otherParticipant?.name || "Chat User");
 
             const lastMsg = item.messages?.[0]?.message || "No messages yet";
             const time = item.messages?.[0]?.created_at 
                 ? new Date(item.messages[0].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : "";
 
+            // Handle Avatar URL
+            const avatarUri = item.is_group 
+                ? item.avatar 
+                : (otherParticipant?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff`);
+
             return (
               <Pressable 
-                onPress={() => router.push(`/chat/${item.id}`)}
-
+                onPress={() =>
+                  router.push({
+                    pathname: `/chat/${item.id}`, 
+                    params: { name: displayName }
+                  })
+                }
                 className="flex-row items-center bg-white p-4 mb-3 rounded-2xl shadow-sm border border-slate-100"
               >
-                {/* Avatar */}
+                {/* Avatar Section */}
                 <View className="relative">
                   <Image
-                    source={{ uri: item.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff` }}
+                    source={{ uri: avatarUri }}
                     className="w-14 h-14 rounded-full"
                   />
-                  {!item.is_group && item.is_online && (
+                  {/* Online Status for 1v1 chats */}
+                  {!item.is_group && otherParticipant?.is_online && (
                     <View className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
                   )}
                 </View>
@@ -156,7 +167,7 @@ export default function ChatListScreen() {
                 <Feather name="message-square" size={40} color="#cbd5e1" />
               </View>
               <Text className="text-slate-400 text-base font-medium">
-                No {activeTab} found
+                No {activeTab === "chats" ? "personal chats" : "groups"} found
               </Text>
             </View>
           )}

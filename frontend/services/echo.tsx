@@ -3,27 +3,47 @@ import Pusher from "pusher-js/react-native";
 
 global.Pusher = Pusher;
 
-let echo: Echo | null = null;
+let echoInstance: Echo | null = null;
 
-export const initializeEcho = async (token: string) => {
-  if (echo) return echo;
+export const initializeEcho = (token: string) => {
+  if (echoInstance) return echoInstance;
 
-  echo = new Echo({
+  echoInstance = new Echo({
     broadcaster: "reverb",
-    key: "your_unique_key",
-    wsHost: "192.168.43.103",
+    key: "1234",
+    wsHost: "192.168.1.101", 
     wsPort: 8080,
     forceTLS: false,
     disableStats: true,
     enabledTransports: ["ws", "wss"],
-    authEndpoint: "http://192.168.43.103:8000/api/broadcasting/auth",
-    auth: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
+    authorizer: (channel: any) => {
+      return {
+        authorize: (socketId: string, callback: Function) => {
+          fetch("http://192.168.1.101:8000/api/v1/broadcasting/auth", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              socket_id: socketId,
+              channel_name: channel.name,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => callback(false, data))
+            .catch((error) => {
+              console.error("Echo Auth Error:", error);
+              callback(true, error);
+            });
+        },
+      };
     },
   });
 
-  return echo;
+  return echoInstance;
 };
+
+// Also export a way to get the existing instance
+export const getEcho = () => echoInstance;

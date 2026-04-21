@@ -3,52 +3,47 @@
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController};
-use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, DashboardController as MentorDashboardController, NotificationController, SecurityController as MentorSecurityController};
 
+// Home page
+Route::get('/', fn() => view('welcome'))->name('welcome');
 
-    //home page
-    Route::get('/', fn() => view('welcome'))->name('welcome');
+// CSS test route (no authentication required)
+Route::get('/test-css', fn() => view('test-css'))->name('test.css');
 
-    // get started route
-    Route::get('/get-started', fn() => view('get-started'))->name('get.started');
+// Get started route
+Route::get('/get-started', fn() => view('admin.home.get-started'))->name('get.started');
 
-    // Auth admin routes (guest only)
-    Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-        Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-        Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-        });
+// Auth admin routes (guest only)
+Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+});
 
-        // Protected admin routes
-        Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Protected admin routes
+Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-        // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Mentors
-        Route::get('/mentors/toggle-status/{mentor}', [MentorController::class, 'toggleStatus'])->name('mentors.toggle');
-        Route::resource('mentors', MentorController::class);
+    // Mentors - Full resource route
+    Route::resource('mentors', MentorController::class);
 
-        // Harassment Reports
-        Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
-        Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
-    });
+    // Additional mentor routes
+    Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
 
-    // fallback for auth redirecting to get started
-    Route::get('/login', function() { return redirect()->route('get.started'); })->name('login');
+    // Harassment Reports
+    Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
+    Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
+});
 
-    // Auth mentors routes (guest only)
+        // Auth mentors routes (guest only)
     Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(function () {
         Route::get('/login',  [MentorAuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [MentorAuthController::class, 'login'])->name('login.post');
-
-        // forgot password routes
-        Route::get('/forgot-password', [MentorAuthController::class, 'showForgot'])->name('forgot');
-        Route::post('/forgot-password', [MentorAuthController::class, 'sendResetLink'])->name('sendResetLink');
-        Route::get('/reset-password/{token}', [MentorAuthController::class, 'showVerify'])->name('reset-password');
-        Route::post('/reset-password', [MentorAuthController::class, 'updatePassword'])->name('update-password');
     });
 
     // Protected mentor routes
@@ -68,10 +63,7 @@ use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, Dashboa
         Route::get('/calender',[MentorSecurityController::class, 'showCalender'])->name('calender');
 
         // reports
-        Route::get('/reports',[ReportController::class, 'showReports'])->name('reports');
-        Route::post('/reports',[ReportController::class, 'SubmitReport'])->name('submit.report');
-        Route::get('/pending-reports',[ReportController::class, 'showPending'])->name('pending.reports');
-
+        Route::get('/reports',[MentorSecurityController::class, 'showReports'])->name('reports');
 
         // chat
         Route::get('/chats',[MentorSecurityController::class, 'showChat'])->name('chat');

@@ -44,13 +44,29 @@ export interface EmergencyContact {
   region?: string;
 }
 
+// Updated Mentor interface to match the database schema
 export interface Mentor {
   id: number;
   name: string;
   email: string;
-  expertise: string;
   bio?: string;
-  avatar_url?: string;
+  expertise?: string; // JSON string or plain text
+  expertise_area?: string; // Formatted expertise for display
+  availability?: string;
+  available_days?: string | string[]; // Can be JSON string or array
+  available_time_start?: string;
+  available_time_end?: string;
+  phone?: string;
+  location?: string;
+  status?: 'active' | 'pending' | 'inactive';
+  photo?: string;
+  avatar?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  website_url?: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Conversation {
@@ -82,12 +98,14 @@ export interface HarassmentReport {
 
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://192.168.43.103:8000/api/v1',
+  baseURL: __DEV__ ? 'http://192.168.1.101:8000/api/v1' : 'https://your-production-api.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 15000,
+  timeout: 10000,
+  transformRequest: [(data) => JSON.stringify(data)],
+  validateStatus: (status) => status >= 200 && status < 300,
 });
 
 // Request interceptor to add auth token
@@ -222,14 +240,48 @@ export const getEmergencyContacts = async (): Promise<EmergencyContact[]> => {
   }
 };
 
-// Fetch mentors
+// Updated getMentor function with better error handling and data transformation
 export const getMentor = async (): Promise<Mentor[]> => {
   try {
     const response = await api.get<Mentor[]>('/mentors');
-    return response.data;
+    const mentors = response.data;
+    
+    // Transform the mentor data for consistent display
+    const transformedMentors = mentors.map(mentor => {
+      // Parse available_days if it's a string
+      let availableDays = mentor.available_days;
+      if (typeof availableDays === 'string') {
+        try {
+          availableDays = JSON.parse(availableDays);
+        } catch (e) {
+          availableDays = [];
+        }
+      }
+      
+      // Get expertise area (prefer expertise_area, fallback to expertise)
+      let expertiseArea = mentor.expertise_area;
+      if (!expertiseArea && mentor.expertise) {
+        try {
+          const expertiseArray = JSON.parse(mentor.expertise);
+          expertiseArea = Array.isArray(expertiseArray) ? expertiseArray.join(', ') : mentor.expertise;
+        } catch (e) {
+          expertiseArea = mentor.expertise;
+        }
+      }
+      
+      return {
+        ...mentor,
+        available_days: availableDays,
+        expertise_area: expertiseArea || 'Mentor',
+        avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=8b5cf6&color=fff`
+      };
+    });
+    
+    return transformedMentors;
   } catch (error: any) {
     console.error('Error fetching mentors:', error.response?.data?.message || error.message);
-    throw error;
+    // Return empty array instead of throwing to prevent app crash
+    return [];
   }
 };
 
@@ -299,9 +351,12 @@ export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
 
 // Submit harassment report (authenticated)
 export const submitHarassmentReport = async (data: {
-  title: string;
+  incident_type: string;
   description: string;
-  location?: string;
+  incident_location?: string;
+  incident_date?: string;
+  perpetrator_info?: string;
+  is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports', data);
@@ -313,10 +368,13 @@ export const submitHarassmentReport = async (data: {
 };
 
 // Submit anonymous harassment report
-export const submitHarassmentReportAnonymously = async (data: {
-  title: string;
+export const submitHarassmentReportAnonymously = async (data:  {
+  incident_type: string;
   description: string;
   location?: string;
+  incident_date?: string;
+  perpetrator_info?: string;
+  is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports/anonymous', data);
@@ -363,7 +421,6 @@ export const getAllUsers = async (token: string) => {
   }
 };
 
-
 export const getConversation = async (
         conversationId: number,
         token: string
@@ -382,7 +439,6 @@ export const getConversation = async (
         }
 };
 
-
 export const getUser = async (userId:number,token:string) => {
    try {
     const response = await api.get(`users/${userId}`,{
@@ -393,7 +449,8 @@ export const getUser = async (userId:number,token:string) => {
     return response.data;
     
    } catch (error) {
-    
+    console.error("Error fetching user:", error);
+    throw error;
    }
 }
 
@@ -412,6 +469,14 @@ export const sendMentorshipRequest = async (data: {
 //getting all sessions
 export const getMentorshipSessions = async (token: string) => {
   const response = await api.get('/mentorship/my-sessions', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+//getting mentor sessions
+export const getMentorSessions = async (token: string) => {
+  const response = await api.get('/mentorship/mentor-sessions', {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;
@@ -438,6 +503,7 @@ export const updateSessionStatus = async (
     throw error.response?.data || error;
   }
 };
+
 //group finding an joining
 export const getGroups = async (token:string)=>{
   try {
@@ -446,18 +512,20 @@ export const getGroups = async (token:string)=>{
     })
     return response.data;
   } catch (error) {
-
+    console.error("Error fetching groups:", error);
+    throw error;
   }
 }
 
 export const joinGroup = async (token:string,conversationID:number) => {
   try {
-    const response = await api.post(`/conversations/${conversationID}/join`,{
+    const response = await api.post(`/conversations/${conversationID}/join`,{},{
       headers:{ Authorization:`Bearer ${token}`}
     })
     return response.data
   } catch (error) {
-
+    console.error("Error joining group:", error);
+    throw error;
   }
 };
 

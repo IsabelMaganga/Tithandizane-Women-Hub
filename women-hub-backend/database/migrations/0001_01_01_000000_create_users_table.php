@@ -16,23 +16,13 @@ return new class extends Migration
             $table->enum('role', ['user', 'mentor', 'admin'])->default('user');
             $table->string('phone')->nullable();
             $table->text('bio')->nullable();
-            $table->string('profile_picture')->nullable();
             $table->string('expertise_area')->nullable(); // for mentors
             $table->boolean('is_available')->default(true); // for mentors
             $table->json('available_days')->nullable(); // e.g. ["Monday","Wednesday","Friday"]
             $table->string('available_time_start')->nullable(); // e.g. "09:00"
             $table->string('available_time_end')->nullable();   // e.g. "17:00"
-            $table->timestamp('last_password_updated_at')->nullable();
             $table->timestamps();
         });
-
-
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
     }
 
     public function down(): void

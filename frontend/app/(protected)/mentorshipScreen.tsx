@@ -12,12 +12,15 @@ import {BackButton} from '@/components/BackButton';
 type Mentor = {
   id: number;
   name: string;
-  bio: string;
-  available_days: string;
-  expertise_area: string;
-  available_time_start: string;
-  available_time_end: string;
+  bio?: string;
+  available_days?: string | string[];
+  expertise_area?: string;
+  expertise?: string;
+  available_time_start?: string;
+  available_time_end?: string;
   avatar?: string;
+  photo?: string;
+  status?: string;
 };
 
 const MentorshipScreen = () => {
@@ -33,9 +36,17 @@ const MentorshipScreen = () => {
   const fetchMentors = async () => {
     try {
       const data = await getMentor();
-      setMentors(data ?? []);
+      // Filter only active mentors
+      const activeMentors = (data || []).filter(mentor => mentor.status !== 'inactive');
+      setMentors(activeMentors);
     } catch (error) {
       console.log("Failed to fetch mentors:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load mentors. Please try again.',
+        position: 'top',
+      });
     } finally {
       setLoading(false);
     }
@@ -88,10 +99,24 @@ const MentorshipScreen = () => {
         renderItem={({ item }) => {
           let days: string[] = [];
           try {
-            days = item.available_days ? JSON.parse(item.available_days) : [];
+            // Handle both string and array formats for available_days
+            if (typeof item.available_days === 'string') {
+              days = JSON.parse(item.available_days);
+            } else if (Array.isArray(item.available_days)) {
+              days = item.available_days;
+            } else {
+              days = [];
+            }
           } catch {
             days = [];
           }
+
+          // Get expertise area
+          const expertiseArea = item.expertise_area || 
+            (item.expertise ? (typeof item.expertise === 'string' ? item.expertise : JSON.parse(item.expertise).join(', ')) : 'Mentor');
+
+          // Get avatar URL
+          const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=8b5cf6&color=fff`;
 
           return (
             <View className="bg-white rounded-3xl mb-5 overflow-hidden shadow-sm border border-slate-100">
@@ -101,9 +126,7 @@ const MentorshipScreen = () => {
                   <View className="flex-row flex-1 items-center">
                     <View className="relative">
                       <Image
-                        source={{
-                          uri: item.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=8b5cf6&color=fff`,
-                        }}
+                        source={{ uri: avatarUrl }}
                         className="w-16 h-16 rounded-2xl"
                       />
                       <View className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
@@ -113,7 +136,7 @@ const MentorshipScreen = () => {
                       <Text className="text-slate-900 text-lg font-bold" numberOfLines={1}>{item.name}</Text>
                       <View className="bg-violet-50 self-start px-2 py-0.5 rounded-md mt-1">
                         <Text className="text-violet-600 text-[10px] font-bold uppercase tracking-wider">
-                          {item.expertise_area}
+                          {expertiseArea}
                         </Text>
                       </View>
                     </View>
@@ -134,7 +157,7 @@ const MentorshipScreen = () => {
                   <View className="flex-row items-center mb-3">
                     <MaterialCommunityIcons name="calendar-clock" size={18} color="#8b5cf6" />
                     <Text className="text-slate-500 text-xs ml-2 font-medium">
-                      Available: {item.available_time_start} - {item.available_time_end}
+                      Available: {item.available_time_start || '09:00'} - {item.available_time_end || '17:00'}
                     </Text>
                   </View>
 
@@ -149,18 +172,18 @@ const MentorshipScreen = () => {
 
                 {/* Action */}
                 <Pressable
-                    className="bg-purple-600 h-16 rounded-2xl flex-row justify-center items-center space-x-3 border-2 border-purple-600 active:bg-purple-50"
+                    className="bg-purple-600 h-16 rounded-2xl flex-row justify-center items-center space-x-3 border-2 border-purple-600 active:bg-purple-50 mt-4"
                     onPress={() => {
                       router.push({
                         pathname: '/mentorship-request',
                         params: {
-                          mentorId: item.id,
+                          mentorId: item.id.toString(),
                           mentorName: item.name
                         }
                       });
                     }}
                   >
-                  <Text className="text-white text-center font-bold">Book Free Session</Text>
+                  <Text className="text-white text-center font-bold text-base">Book Free Session</Text>
                 </Pressable>
               </View>
             </View>

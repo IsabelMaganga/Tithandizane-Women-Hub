@@ -37,7 +37,7 @@ const UserInfoScreen = () => {
     try {
       await Share.share({ 
         message: `Check out ${profile?.name}'s profile on our platform!`,
-        url: `https://yourapp.com/user/${userId}` 
+        url: `https://ourapp.com/user/${userId}` 
       });
     } catch (error) { 
       console.log(error); 
