@@ -43,7 +43,7 @@ const MentorshipRequestScreen = () => {
         mentor_id: Number(mentorId),
         topic: topic,
         message: message
-      }, userToken || token);
+      }, userToken);
 
       Toast.show({
         type: 'success',

@@ -3,6 +3,17 @@
     chat groups
 @endsection
 
+@push('styles')
+    <style>
+            #show-group{
+                display: flex;
+            }
+            {{--  #popup-window{
+                display: none;
+            }  --}}
+    </style>
+@endpush
+
 @section('content')
 
     {{-- <div class="flex flex-col items-center justify-center h-full">
@@ -10,47 +21,83 @@
     </div> --}}
 
 
-<div class="max-w-full mx-auto p-6">
+<div class="relative w-full h-full max-w-full p-6 mx-auto">
 
-    <h1 class="text-2xl font-bold mb-6">Available Chat Groups</h1>
+    <h1 class="mb-6 text-2xl font-bold">Available Chat Groups</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            @for ($i = 0; $i < 3; $i++)
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-4 group-card">
 
-                <div class="bg-white shadow rounded-2xl p-4 hover:shadow-lg transition">
+            @for ($i = 0; $i < 10; $i++)
 
-                    <h2 class="text-lg font-semibold">
-                        Health & Wellness
-                    </h2>
 
-                    <p class="text-gray-600 text-sm mt-1">
-                        A supportive space to discuss health, wellness, and self-care tips.
-                    </p>
+            <div class="grid group-card">
 
-                    <div class="mt-3 flex justify-between items-center">
+            {{--  <div  id="show-group"  class="rounded-full cursor-pointer hover:scale-105 select-none transition-all ease-in-out images contain-content w-[20vh] border-4 border-[#f2e] h-[20vh] ">
+                <img src="{{ asset('/images/background.png') }}" class="object-cover w-full h-full " alt="group image">
+            </div>  --}}
 
-                        <span class="text-xs text-gray-500">
-                            Members: 12
-                        </span>
+                <div id="popup-window" class="top-0 right-0 z-20 flex items-center justify-center w-full pop-image">
 
-                        <a
-                           class="text-blue-600 text-sm cursor-pointer font-medium hover:underline">
-                           <i class="fa-solid fa-users"></i> Join Chat
-                        </a>
+                    <div class="p-4 transition w-[100%] bg-white shadow rounded-2xl hover:shadow-lg">
+                        {{--  <div class="flex items-center justify-end w-full p-0 cursor-pointer close-mark">
+                            <i id="xmark-btn" class="text-2xl fa-solid fa-xmark"></i>
+                        </div>  --}}
+                        <div class="rounded-2xl w-50 header bg-amber-800 contain-content h-[30vh]">
+                            <img src="{{ asset('/images/background.png') }}" class="object-cover w-full h-full " alt="group image">
+                        </div>
 
-                        {{-- <a href="{{ route('chat.groups.show', $group->id) }}"
-                           class="text-blue-600 text-sm font-medium hover:underline">
-                            Join Chat →
-                        </a> --}}
+                        <h2 class="mt-2 text-lg font-semibold">
+                            Health & Wellness
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-600">
+                            A supportive space to discuss health, wellness, and self-care tips.
+                        </p>
+
+                        <div class="flex items-center justify-between mt-3">
+
+                            <span class="text-xs text-gray-500">
+                                Members: 12
+                            </span>
+
+                            <a
+                                class="text-sm font-medium text-blue-600 cursor-pointer hover:underline">
+                                <i class="fa-solid fa-users"></i> Join Chat
+                            </a>
+
+                            {{-- <a href="{{ route('chat.groups.show', $group->id) }}"
+                                class="text-sm font-medium text-blue-600 hover:underline">
+                                Join Chat →
+                            </a> --}}
+
+                        </div>
 
                     </div>
-
                 </div>
+            </div>
+              @endfor
 
-            @endfor
         </div>
-
 
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+
+        {{--  const popupWindow = document.getElementById('popup-window');
+        const xmarkBtn = document.getElementById('xmark-btn');
+        const showGroup = document.getElementById('show-group');
+
+        showGroup.addEventListener('click', ()=>{
+            console.log('pressed');
+            popupWindow.style.display = 'flex';
+        });
+
+        xmarkBtn.addEventListener('click', ()=>{
+            popupWindow.style.display = 'none';
+        });  --}}
+
+    </script>
+@endpush

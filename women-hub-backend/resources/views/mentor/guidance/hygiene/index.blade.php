@@ -3,12 +3,12 @@
 @section('title') hygiene @endsection
 
 @section('content')
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
+    <div class="max-w-5xl px-4 py-0 mx-auto sm:px-6 lg:px-8">
         <!-- Header with Back Navigation -->
-        <div class="mb-4">
+        <div class="mt-10 mb-4">
 
-            <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                <a href="{{ route('mentor.Guidance') }}" class="hover:text-gray-900 flex items-center gap-1">
+            <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">
+                <a href="{{ route('mentor.Guidance') }}" class="flex items-center gap-1 hover:text-gray-900">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -27,27 +27,27 @@
 
 
         {{-- details --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
 
             @foreach ($hygiene as $item)
-                <div class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="overflow-hidden transition-all duration-300 bg-white shadow-md group rounded-2xl hover:shadow-xl">
                     <!-- Image Section -->
-                    <div class="relative h-48 bg-gray-100 overflow-hidden">
+                    <div class="relative h-48 overflow-hidden bg-gray-100">
                         @if ($item->image_url)
                             <img src="{{$item->image_url}}"
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                             alt="{{$item->title}}">
                         @else
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-200">
+                            <div class="flex items-center justify-center w-full h-full bg-gradient-to-br from-purple-100 to-purple-200">
                                     <img src="{{ asset('images/Ellipse 3.png')}}"
-                                        class="w-40 object-cover group-hover:scale-110 transition-transform duration-500"
+                                        class="object-cover w-40 transition-transform duration-500 group-hover:scale-110"
                                         alt="{{$item->title}}">
                                 </div>
                         @endif
 
                         <!-- Category Badge -->
                         <div class="absolute top-3 left-3">
-                            <span class="px-3 py-2 bg-purple-600 text-white text-xs font-semibold rounded-full shadow-lg">
+                            <span class="px-3 py-2 text-xs font-semibold text-white bg-purple-600 rounded-full shadow-lg">
                                 {{$item->category ?? 'Uncategorized'}}
                             </span>
                         </div>
@@ -55,11 +55,11 @@
                         <!-- Status Badge -->
                         <div class="absolute top-3 right-3">
                             @if ($item->is_published == 1)
-                                <span class="px-2 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                                <span class="px-2 py-2 text-xs font-semibold text-white bg-green-500 rounded-full shadow-lg">
                                     Published
                                 </span>
                             @else
-                                <span class="px-2 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                                <span class="px-2 py-1 text-xs font-semibold text-white bg-yellow-500 rounded-full shadow-lg">
                                     Draft
                                 </span>
                             @endif
@@ -69,12 +69,12 @@
                     <!-- Content Section -->
                     <div class="p-5">
                         <!-- Title -->
-                        <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-2 hover:text-purple-600 transition-colors">
-                            <p  class=" cursor-pointer ">{{$item->title}}</p>
+                        <h3 class="mb-2 text-lg font-bold text-gray-800 transition-colors line-clamp-2 hover:text-purple-600">
+                            <p  class="cursor-pointer ">{{$item->title}}</p>
                         </h3>
 
                         <!-- content -->
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-0">
+                        <p class="mb-4 text-sm text-gray-600 line-clamp-0">
                             {{$item->content}}
                         </p>
 

@@ -1,6 +1,7 @@
 <?php
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Broadcast;
+
+use Illuminate\Support\Facades\{Auth, Broadcast};
+use App\Models\User;
 
 Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
     return $user->conversations()
@@ -16,8 +17,8 @@ Broadcast::channel('presence-global', function ($user) {
 });
 
 // request channel
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+Broadcast::channel('App.Models.User.{id}', function (User $user, $id) {
     // $user is already the authenticated user from Sanctum
     // Just check if the authenticated user ID matches the channel ID
-    return (int)$user->id === (int)$id;
+    return (int) $user->id === (int)$id;
 });

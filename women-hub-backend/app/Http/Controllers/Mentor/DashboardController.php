@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Mentor;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth, Log};
+use App\Models\{MentorshipSession, ReportsIssues};
 use App\Events\NewChatRequest;
 use App\Http\Controllers\Controller;
-use App\Models\MentorshipSession;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -37,7 +36,10 @@ class DashboardController extends Controller
         $unreadCount = $notifications->where('read_at', null)->count();
         $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
-        // dd(auth()->guard());
+        // count reports grouped by type
+        $reportCounts = ReportsIssues::selectRaw('type, COUNT(*) as total')
+            ->groupBy('type')
+            ->pluck('total','type');
 
         return view('mentor.dashboard.index', compact(
             'mentorName',
@@ -46,7 +48,8 @@ class DashboardController extends Controller
             'activeChats',
             'notifications',
             'unreadCount',
-            'unreadNotifications'
+            'unreadNotifications',
+            'reportCounts'
         ));
 
     }

@@ -15,7 +15,7 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     {{-- Comment out Vite to fix the manifest error --}}
     {{-- @vite(['resources/js/app.js']) --}}
 
@@ -61,10 +61,17 @@
         .arrow-rotate{
             transform: rotate(180deg);
         }
-        .sub-list{
+        #sub-list{
             display: none;
         }
-         .sub-list.show {
+         #sub-list2{
+            display: none;
+        }
+        #sub-list.show {
+            display: block;
+        }
+
+         #sub-list2.show {
             display: block;
         }
 
@@ -81,40 +88,40 @@
                 <p class="text-sm text-gray-400">Women Hub</p>
             </a>
 
-            <nav class="mt-0 flex-1 h-full relative text-sm overflow-auto mx-2 " id="sidebar-nav">
-                <a href="{{ route('mentor.dashboard')}}" class="flex sticky top-0 bg-white rounded-3xl justify-center items-center px-6 text-center py-3 text-gray-600 hover:bg-gray-50 transition-all delay-75 ease-in-out nav-item" data-page="dashboard">
-                    <i class="fas fa-home w-5"></i>
-                    <span class="ml-3">Dashboard</span>
+            <nav class="relative flex-1 h-full mx-2 mt-0 overflow-auto text-sm " id="sidebar-nav">
+                <a href="{{ route('mentor.dashboard')}}" class="sticky top-0 flex items-center justify-between gap-4 px-6 py-3 text-center text-gray-600 transition-all ease-in-out delay-75 bg-white rounded-3xl hover:bg-gray-50 nav-item" data-page="dashboard">
+                    <i class="w-5 fas fa-home"></i>
+                    <span class="ml-0">Dashboard</span>
                 </a>
 
                 {{-- appointments --}}
-                <a href="{{ route('mentor.appointment')}}" class="flex items-center px-2 py-3 mt-3 border-t border-white/30 text-gray-300 hover:text-gray-50 hover:bg-gray-800 nav-item" data-page="guidance">
-                    <i class="fa-regular fa-calendar w-5"></i>
+                <a href="{{ route('mentor.appointment')}}" class="flex items-center px-2 py-3 mt-3 text-gray-300 border-t border-white/30 hover:text-gray-50 hover:bg-gray-800 nav-item" data-page="guidance">
+                    <i class="w-5 fa-regular fa-calendar"></i>
                     <span class="ml-3">Appointments</span>
                 </a>
 
                 {{-- chat tab --}}
-                <div class="div border-t border-white/30 ">
-                    <div class="div flex justify-between items-center w-full">
-                        <a class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-regular fa-comment w-5"></i>
+                <div class="border-t div hover:bg-gray-800 border-white/30 ">
+                    <div class="flex items-center justify-between w-full div">
+                        <div class="flex items-center px-2 py-3 text-gray-300 cursor-pointer hover:bg-gray-800 nav-item" data-page="guidance">
+                            <i class="w-5 fa-regular fa-comment"></i>
                             <span class="ml-0">chats</span>
-                        </a>
+                        </div>
 
-                        <i id="showIcon" class="fas fa-chevron-down arrow-rotate mr-4 cursor-pointer transition-all"></i>
+                        <i id="showIcon" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
                      </div>
 
                     <div id="sub-list" class="sub-list text-[12px]">
                         <a href="{{ route('mentor.chat')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-regular fa-comment w-5"></i>
+                            <i class="w-5 fa-regular fa-comment"></i>
                             <span class="ml-3">MentorShipSessions</span>
                         </a>
                         <a href="{{ route('mentor.group')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-regular fa-comment w-5"></i>
+                            <i class="w-5 fa-regular fa-comment"></i>
                             <span class="ml-3">Create group</span>
                         </a>
                         <a href="{{ route('mentor.groups')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-regular fa-comment w-5"></i>
+                            <i class="w-5 fa-regular fa-comment"></i>
                             <span class="ml-3">Groups</span>
                         </a>
                     </div>
@@ -122,72 +129,84 @@
                 </div>
 
                 {{-- Guidance tab --}}
-                <div class="div border-t border-white/30 ">
-                    <div class="div flex justify-between items-center w-full">
-                        <a href="{{ route('mentor.Guidance')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-solid fa-circle-info w-5"></i>
+                <div class="border-t div border-white/30 ">
+                    <div class="flex items-center justify-between w-full hover:bg-gray-800 div">
+                        <div class="flex items-center w-full px-2 py-3 text-gray-300 cursor-pointer nav-item" data-page="guidance">
+                            <i class="w-5 fa-solid fa-circle-info"></i>
                             <span class="ml-0 capitalize">guidance content</span>
-                        </a>
+                        </div>
 
-                        <i id="showIconGuidance" class="fas fa-chevron-down arrow-rotate mr-4 cursor-pointer transition-all"></i>
+                    <i id="showIcon2" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
+
+                        <i id="showIcon" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
                      </div>
 
-                    <div id="sub-list-guidance" class=" text-[12px]">
+                    <div id="sub-list" class=" text-[12px]">
                         <a href="{{ route('mentor.hygiene')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="hygiene">
-                            <i class="fa-solid fa-pump-medical w-5"></i>
+                            <i class="w-5 fa-solid fa-pump-medical"></i>
                             <span class="ml-3">hygiene</span>
                         </a>
                         <a href="{{ route('mentor.general')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="General">
-                            <i class="fa-solid fa-house-medical w-5"></i>
+                            <i class="w-5 fa-solid fa-house-medical"></i>
                             <span class="ml-3 capitalize">General</span>
                         </a>
                         <a href="{{ route('mentor.emergency')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="emergency">
-                            <i class="fa-solid fa-user-injured w-5"></i>
+                            <i class="w-5 fa-solid fa-user-injured"></i>
                             <span class="ml-3">Emergency    </span>
                         </a>
                     </div>
 
                 </div>
 
-                {{-- calendar --}}
-                <a  href="{{ route('mentor.calendar')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item">
-                    <i class="fa-regular fa-calendar w-5"></i>
-                    <span class="ml-3">Calendar</span>
+                {{-- calender --}}
+                <a  href="{{ route('mentor.calender')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item">
+                    <i class="w-5 fa-regular fa-calendar"></i>
+                    <span class="ml-3">Calender</span>
                 </a>
 
                 {{-- report --}}
-                <div class="div border-t border-white/30 ">
+                <div class="border-t div border-white/30 ">
                         <a  href="{{ route('mentor.reports')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="fa-solid fa-user-astronaut w-5"></i>
+                            <i class="w-5 fa-solid fa-user-astronaut"></i>
                             <span class="ml-0 capitalize">Report system</span>
                         </a>
 
                 </div>
 
                 {{-- profile tab --}}
-                <a href="{{ route('mentor.profile')}}" class="flex border-t border-white/30 items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                    <i class="fa-regular fa-circle-user w-5"></i>
+                <a href="{{ route('mentor.profile')}}" class="flex items-center px-2 py-3 text-gray-300 border-t border-white/30 hover:bg-gray-800 nav-item" data-page="guidance">
+                    <i class="w-5 fa-regular fa-circle-user"></i>
                     <span class="ml-3">Profile</span>
                 </a>
 
                 {{-- settings tab --}}
                 <a href="{{ route('mentor.settings')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="settings">
-                    <i class="fas fa-cog w-5"></i>
+                    <i class="w-5 fas fa-cog"></i>
                     <span class="ml-3">Settings</span>
                 </a>
 
             </nav>
 
             <!-- Logout Button -->
-            <div class="mt-auto text-sm pt-6">
-                <a href="{{ route('mentor.logout') }}" class="flex bg-red-600 items-center px-6 py-3 text-gray-300 hover:bg-red-700 hover:text-white transition-colors" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt w-5"></i>
+            <div class="pt-6 mt-auto text-sm">
+                <a href="{{ route('mentor.logout') }}" class="flex items-center px-6 py-3 text-gray-300 transition-colors bg-red-600 hover:bg-red-700 hover:text-white" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="w-5 fas fa-sign-out-alt"></i>
                     <span class="ml-3">Logout</span>
                 </a>
                 <form id="logout-form" action="{{ route('mentor.logout') }}" method="POST" class="hidden">
                     @csrf
                 </form>
             </div>
+
+            {{-- <div class="px-2 py-5 border-t border-gray-800 wrap-break-word">
+                <div class="flex items-center">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName) }}&background=0D8F81&color=fff" class="w-10 h-10 rounded-full">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">{{ $mentorName }}</p>
+                        <p class="text-xs text-gray-400">{{ $mentorEmail }}</p>
+                    </div>
+                </div>
+            </div> --}}
         </div>
 
         <!-- Main Content -->
@@ -195,13 +214,13 @@
 
             <!-- Top Header - Like "Welcome back, Andrea" -->
             <div class="bg-[#111827] flex justify-end sticky top-0 z-30 shadow-sm">
-                <div class="flex justify-between items-center px-8 py-4">
+                <div class="flex items-center justify-between px-8 py-4">
 
                     <div class="flex items-center space-x-4">
 
                         {{-- notifications --}}
-                        <div class=" relative notifications px-2">
-                            <i class="fas fa-bell text-yellow-500 text-xl cursor-pointer hover:text-yellow-600"></i>
+                        <div class="relative px-2 notifications">
+                            <i class="text-xl text-yellow-500 cursor-pointer fas fa-bell hover:text-yellow-600"></i>
                             <p id="notifCount" class=" absolute right-0 -top-2 text-[11px] text-white">
                                 @if ($unreadCount > 0)
                                     {{ $unreadCount > 9 ? '9+' : $unreadCount }}
@@ -210,10 +229,10 @@
                         </div>
 
                         {{-- name-section --}}
-                        <div class="h-8 w-px"></div>
+                        <div class="w-px h-8"></div>
                         <div class="flex items-center space-x-3">
                             <div class="text-right">
-                                <p class="text-sm text-gray-100 font-medium">{{ $mentorName }}</p>
+                                <p class="text-sm font-medium text-gray-100">{{ $mentorName }}</p>
                                 <p class="text-xs text-gray-200">{{ $mentorEmail }}</p>
                             </div>
                             <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName) }}&background=0D8F81&color=fff&size=128" class="w-10 h-10 rounded-full">
@@ -222,41 +241,41 @@
                 </div>
             </div>
 
-            <div class="p-6 relative">
+            <div class="relative p-1">
                 @yield('content')
 
 
                 <div id="notificationSideBar" class="notificationHide shadow flex flex-col bg-white fixed h-[89%] w-[20%] p-1 md:w-[30%] bottom-0 z-10">
-                    <div class=" p-3 flex justify-between items-center w-full">
+                    <div class="flex items-center justify-between w-full p-3 ">
                         <p>Notifications</p>
-                        <p id="closeNotif"><i class="fa-regular fa-circle-xmark text-red-600 text-xl"></i></p>
+                        <p id="closeNotif"><i class="text-xl text-red-600 fa-regular fa-circle-xmark"></i></p>
                     </div>
-                    <div class=" p-3 flex flex-1 justify-between items-top w-full">
+                    <div class="flex justify-between flex-1 w-full p-3 items-top">
 
                         {{-- notifications --}}
-                        <div  class=" text-sm flex gap-2 flex-col w-full">
+                        <div  class="flex flex-col w-full gap-2 text-sm ">
 
 
                             @if ($unreadNotifications->isEmpty())
-                                <p class="text-gray-500 text-center mt-4">No notifications</p>
+                                <p class="mt-4 text-center text-gray-500">No notifications</p>
 
                             @else
 
                                 @foreach ($unreadNotifications as $notification)
 
                                     {{-- notification --}}
-                                    <div  class="list text-sm grid rounded bg-gray-100/20 p-2 grid-cols-3 w-full">
-                                        <div class="text flex-col col-span-3">
-                                            <div class="div flex justify-between items-center mb-2 w-full">
-                                                <h1 class=" font-semibold">{{ $notification->data['title'] ?? 'Notification'}}</h1>
+                                    <div  class="grid w-full grid-cols-3 p-2 text-sm rounded list bg-gray-100/20">
+                                        <div class="flex-col col-span-3 text">
+                                            <div class="flex items-center justify-between w-full mb-2 div">
+                                                <h1 class="font-semibold ">{{ $notification->data['title'] ?? 'Notification'}}</h1>
                                                 <form  action="{{ route("mentor.notification.read", $notification->id )}}" method="POST" class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px] p-1 px-3">
                                                     @csrf
                                                     <button type="submit">Mark as read</button>
                                                 </form>
                                             </div>
 
-                                            <p class=" wrap-break-word text-gray-500">{{ $notification->data['message'] ?? '' }}</p>
-                                            <p class=" text-sm text-gray-400">{{ $notification->created_at->diffForHumans()}}</p>
+                                            <p class="text-gray-500 wrap-break-word">{{ $notification->data['message'] ?? '' }}</p>
+                                            <p class="text-sm text-gray-400 ">{{ $notification->created_at->diffForHumans()}}</p>
                                         </div>
                                     </div>
 
@@ -271,18 +290,18 @@
                     </div>
 
                     {{-- Mark all as read --}}
-                    <div class=" p-2 flex justify-between items-center w-full">
+                    <div class="flex items-center justify-between w-full p-2 ">
                         <form  action="{{ route('mentor.notification.read-all')}}" method="POST" class="  bg-slate-800 rounded-3xl text-gray-200 hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px] p-2 px-3">
                                 @csrf
                                <button type="submit"> Mark all as read</button>
                         </form>
 
-                        <p class=" text-sm text-gray-400">info@Tithandizane.com</p>
+                        <p class="text-sm text-gray-400 ">info@Tithandizane.com</p>
                     </div>
 
                 </div>
 
-                <div id="notificationPopUp" class="fixed bg-white text-xs bottom-3 right-10 select-none w-60  space-y-2 z-50 ">
+                <div id="notificationPopUp" class="fixed z-50 space-y-2 text-xs bg-white select-none bottom-3 right-10 w-60 ">
 
                 </div>
 
@@ -297,18 +316,18 @@
         // Chat dropdown
         const showIcon = document.getElementById('showIcon');
         const subList = document.getElementById('sub-list');
-        
+
         if (showIcon && subList) {
             showIcon.addEventListener('click', function() {
                 subList.classList.toggle('show');
                 showIcon.classList.toggle('arrow-rotate');
             });
         }
-        
+
         // Guidance dropdown
         const showIconGuidance = document.getElementById('showIconGuidance');
         const subListGuidance = document.getElementById('sub-list-guidance');
-        
+
         if (showIconGuidance && subListGuidance) {
             showIconGuidance.addEventListener('click', function() {
                 subListGuidance.classList.toggle('show');
@@ -344,14 +363,21 @@
             });
         }
 
-        if (closeNotif) {
-            closeNotif.addEventListener('click', function() {
-                if (notificationSideBar) {
-                    notificationSideBar.classList.remove('notificationShow');
-                    notificationSideBar.classList.add('notificationHide');
-                }
-            });
-        }
+        closeNotif.addEventListener('click', function() {
+            notificationSideBar.classList.remove('notificationShow');
+            notificationSideBar.classList.add('notificationHide');
+        });
+
+
+        // dropDownList logic for chat tab
+        const showIcon = document.getElementById('showIcon');
+        const subList = document.getElementById('sub-list');
+
+        showIcon.addEventListener('click', function() {
+            subList.classList.toggle('show');
+            showIcon.classList.toggle('arrow-rotate');
+        });
+
 
         // chat request broadcast channel
         const userId = {{ auth()->id() ?? 0 }};
@@ -371,21 +397,26 @@
                             countEl.innerText = count + 1;
                         }
 
-                        // Show popup
-                        const container = document.getElementById('notificationPopUp');
-                        if (container) {
-                            const div = document.createElement('div');
-                            div.className = ' bg-white shadow p-3 rounded border-l-4 border-blue-500';
-                            div.innerHTML = `
-                                <p class="font-bold">${notification.name || 'Notification'}</p>
-                                <p class="text-sm text-gray-500">${notification.message || 'You have a new notification'}</p>
-                            `;
-                            container.appendChild(div);
-                            setTimeout(() => {
-                                div.remove();
-                            }, 5000);
-                        }
-                    });
+                    // Show popup
+                    const container = document.getElementById('notificationPopUp');
+                    const div = document.createElement('div');
+                    div.className = ' bg-white shadow p-3 rounded border-l-4 border-blue-500'
+
+                    div.innerHTML = `
+                        <p class= "font-bold "> ${notification.name} </p>
+                        <p class= "text-sm font-bold text-gray-500 ">${notification.message} </p>
+                    `;
+
+                    container.appendChild(div);
+
+                    setTimeout(() => {
+                        div.remove();
+                    }, 5000);
+
+                    location.reload();
+                });
+
+
             } else {
                 console.log("Echo is not loaded or configured");
             }
@@ -394,4 +425,4 @@
 
     @stack('scripts')
 </body>
-</html> 
+</html>

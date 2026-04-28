@@ -11,29 +11,14 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'phone',
-        'location',
-        'photo',
-        'expertise_area',
-        'bio',
-        'status',
-        'is_available',
-        'available_days',
-        'available_time_start',
-        'available_time_end',
-        'linkedin_url',
-        'twitter_url',
-        'website_url',
-        'notes',
-        'notify_welcome',
-        'notify_training',
+        'name', 'email', 'password', 'role', 'phone', 'bio',
+        'expertise_area', 'is_available', 'available_days',
+        'available_time_start', 'available_time_end',
     ];
 
     protected $hidden = ['password', 'remember_token'];
+
+    protected $dates = ['last_password_updated_at'];
 
     protected $casts = [
     'available_days' => 'array',
@@ -79,9 +64,9 @@ protected $appends = ['photo_url'];
 public function getPhotoUrlAttribute()
 {
     if (!$this->photo) {
-        return null; 
+        return null;
     }
-    
+
     // If the photo is a full URL (like from your seeder), return it directly
     if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
         return $this->photo;

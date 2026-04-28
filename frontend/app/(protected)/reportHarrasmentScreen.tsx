@@ -124,7 +124,7 @@ export default function ReportHarrassmentScreen() {
       const payload = {
         incident_type: selectedType,
         description: description.trim(),
-        location: location.trim() || null,
+        incident_location: location.trim() || null,
         incident_date: date.trim() || null, // Ensure YYYY-MM-DD format from user
         perpetrator_info: isAnonymous ? "Anonymous" : name.trim() || "Unknown",
         is_anonymous: isAnonymous,
