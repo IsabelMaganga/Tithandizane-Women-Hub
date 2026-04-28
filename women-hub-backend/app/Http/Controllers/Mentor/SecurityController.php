@@ -73,13 +73,10 @@ class SecurityController extends Controller
         $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
         $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
 
-        // Get unread notifications count
-        $unreadCount = $mentorUser ? $mentorUser->unreadNotifications()->count() : 0;
 
         return view('mentor.chat.index', compact(
             'mentorName',
             'mentorEmail',
-            'unreadCount',
         ));
 
     }
@@ -92,14 +89,10 @@ class SecurityController extends Controller
         $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
         $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
 
-        // Get unread notifications count
-        $unreadCount = $mentorUser ? $mentorUser->unreadNotifications()->count() : 0;
-
 
         return view('mentor.chat.groups', compact(
             'mentorName',
             'mentorEmail',
-            'unreadCount',
         ));
 
     }

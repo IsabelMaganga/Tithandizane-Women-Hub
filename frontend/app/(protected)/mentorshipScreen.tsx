@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image, ScrollView } from 'react-native';
-import { getMentor } from '@/services/api';
+import { View, Text, Pressable, Image } from 'react-native';
+import { getActiveMentors } from '@/services/api';
 import { LegendList } from '@legendapp/list';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { useTranslation } from "react-i18next";
 import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
-import {BackButton} from '@/components/BackButton';
+import { BackButton } from '@/components/BackButton';
 
 type Mentor = {
   id: number;
   name: string;
-  bio?: string;
-  available_days?: string | string[];
-  expertise_area?: string;
-  expertise?: string;
-  available_time_start?: string;
-  available_time_end?: string;
+  email: string;
+  phone: string | null;
+  location: string | null;
+  photo: string | null;
   avatar?: string;
-  photo?: string;
+  expertise: string[];
+  bio: string;
+  availability: string | null;
+  available_days: string[];
+  available_time_start: string | null;
+  available_time_end: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  website_url: string | null;
+  rating?: number | null;
+  total_sessions?: number;
   status?: string;
 };
 
@@ -35,30 +43,38 @@ const MentorshipScreen = () => {
 
   const fetchMentors = async () => {
     try {
-      const data = await getMentor();
-      // Filter only active mentors
-      const activeMentors = (data || []).filter(mentor => mentor.status !== 'inactive');
-      setMentors(activeMentors);
-    } catch (error) {
-      console.log("Failed to fetch mentors:", error);
+      setLoading(true);
+      console.log('🔄 Fetching mentors...');
+      
+      const data = await getActiveMentors();
+      
+      console.log('📊 Received mentors:', data.length);
+      
+      if (data.length === 0) {
+        console.warn('⚠️ No mentors received');
+        Toast.show({
+          type: 'info',
+          text1: 'No mentors available',
+          text2: 'Check back later for expert mentors',
+          position: 'top',
+        });
+      } else {
+        console.log('✅ First mentor:', data[0].name, 'Expertise:', data[0].expertise);
+      }
+      
+      setMentors(data);
+    } catch (error: any) {
+      console.error("❌ fetchMentors error:", error?.message || error);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to load mentors. Please try again.',
+        text2: error?.message || 'Failed to load mentors',
         position: 'top',
       });
+      setMentors([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleBooking = () => {
-    Toast.show({
-      type: 'success',
-      text1: t("Session Booked"),
-      text2: t("Check your email for details"),
-      position: 'top',
-    });
   };
 
   if (loading) {
@@ -97,24 +113,11 @@ const MentorshipScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ padding: 20, paddingTop: 10 }}
         renderItem={({ item }) => {
-          let days: string[] = [];
-          try {
-            // Handle both string and array formats for available_days
-            if (typeof item.available_days === 'string') {
-              days = JSON.parse(item.available_days);
-            } else if (Array.isArray(item.available_days)) {
-              days = item.available_days;
-            } else {
-              days = [];
-            }
-          } catch {
-            days = [];
-          }
-
           // Get expertise area
-          const expertiseArea = item.expertise_area || 
-            (item.expertise ? (typeof item.expertise === 'string' ? item.expertise : JSON.parse(item.expertise).join(', ')) : 'Mentor');
-
+          const expertiseArea = item.expertise && item.expertise.length > 0 
+            ? item.expertise.join(', ') 
+            : 'Mentor';
+          
           // Get avatar URL
           const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=8b5cf6&color=fff`;
 
@@ -128,12 +131,15 @@ const MentorshipScreen = () => {
                       <Image
                         source={{ uri: avatarUrl }}
                         className="w-16 h-16 rounded-2xl"
+                        style={{ backgroundColor: '#f0f0f0' }}
                       />
                       <View className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
                     </View>
                     
                     <View className="ml-4 flex-1">
-                      <Text className="text-slate-900 text-lg font-bold" numberOfLines={1}>{item.name}</Text>
+                      <Text className="text-slate-900 text-lg font-bold" numberOfLines={1}>
+                        {item.name}
+                      </Text>
                       <View className="bg-violet-50 self-start px-2 py-0.5 rounded-md mt-1">
                         <Text className="text-violet-600 text-[10px] font-bold uppercase tracking-wider">
                           {expertiseArea}
@@ -148,9 +154,11 @@ const MentorshipScreen = () => {
                 </View>
 
                 {/* Bio */}
-                <Text className="text-slate-600 text-sm mt-4 leading-5" numberOfLines={3}>
-                  {item.bio}
-                </Text>
+                {item.bio && (
+                  <Text className="text-slate-600 text-sm mt-4 leading-5" numberOfLines={3}>
+                    {item.bio}
+                  </Text>
+                )}
 
                 {/* Schedule & Days */}
                 <View className="mt-4 pt-4 border-t border-slate-50">
@@ -161,13 +169,15 @@ const MentorshipScreen = () => {
                     </Text>
                   </View>
 
-                  <View className="flex-row flex-wrap gap-2">
-                    {days.map((day, index) => (
-                      <View key={index} className="bg-slate-100 px-3 py-1 rounded-lg">
-                        <Text className="text-slate-600 text-[10px] font-semibold">{day}</Text>
-                      </View>
-                    ))}
-                  </View>
+                  {item.available_days && item.available_days.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2">
+                      {item.available_days.map((day, index) => (
+                        <View key={index} className="bg-slate-100 px-3 py-1 rounded-lg">
+                          <Text className="text-slate-600 text-[10px] font-semibold capitalize">{day}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
 
                 {/* Action */}
@@ -198,6 +208,12 @@ const MentorshipScreen = () => {
             <Text className="text-slate-400 text-center mt-2 leading-5">
               We're currently onboarding new experts. Please check back later!
             </Text>
+            <Pressable 
+              onPress={fetchMentors}
+              className="mt-6 bg-purple-600 px-6 py-3 rounded-full"
+            >
+              <Text className="text-white font-semibold">Refresh</Text>
+            </Pressable>
           </View>
         )}
       />

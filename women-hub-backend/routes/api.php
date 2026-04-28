@@ -1,4 +1,5 @@
 <?php
+// routes/api.php
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
@@ -18,7 +19,9 @@ Route::post('/broadcasting/auth', function () {
 // Direct routes (without v1 prefix) for frontend compatibility
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/mentors', [MentorController::class, 'getActiveMentors']); // Updated to use MentorController
+Route::get('/mentors', [MentorController::class, 'getActiveMentors']);
+Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']); // Add this route
+Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']); // Optional
 Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
 Route::get('/general-guides', [ContentController::class, 'generalGuides']);
 Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
@@ -35,7 +38,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
     Route::get('/general-guides', [ContentController::class, 'generalGuides']);
     Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
-    Route::get('/mentors', [MentorshipController::class, 'mentors']); // Updated to use MentorController
+    Route::get('/mentors', [MentorController::class, 'getActiveMentors']); // Use the correct method
+    Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']); // Add details route
 
     // Anonymous harassment report
     Route::post('/harassment-reports/anonymous', [HarassmentController::class, 'store']);

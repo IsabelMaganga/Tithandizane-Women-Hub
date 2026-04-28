@@ -11,7 +11,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('admin.Auth.login');  // Changed from 'admin.login' to 'admin.Auth.login'
+        return view('admin.auth.login');
     }
 
     public function login(Request $request)
@@ -21,19 +21,10 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::guard('admin')->attempt([ ...$credentials, 'role' => 'admin' ])) {
+        if (Auth::guard('admin')->attempt($credentials)) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.dashboard'))->with('success', 'Login successful.');
-        }
-
-         // check if user exist but with wrong role
-        $user = \App\Models\User::where('email', $credentials['email'])->first();
-
-        if ($user && !$user->isAdmin()) {
-            return back()->withErrors([
-                'email' => 'This account does not have Admin privileges.',
-            ]);
         }
 
         return back()->withErrors([
@@ -43,7 +34,7 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('admin.Auth.register');  // Changed from 'admin.register' to 'admin.Auth.register'
+        return view('admin.register');
     }
 
     public function register(Request $request)

@@ -13,268 +13,149 @@ use Illuminate\Support\Facades\Storage;
 class MentorController extends Controller
 {
     /**
-     * Display a listing of mentors with search and filter capabilities
+     * Get active mentors for frontend display (React Native)
      */
-    public function index(Request $request)
+    public function getActiveMentors(Request $request)
     {
-        $query = Mentor::query();
+        $query = Mentor::where('status', 'active')
+            ->orderBy('name', 'asc');
         
-        // Search by name, email, or expertise
+        // Optional: Search by name or expertise
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('expertise', 'like', "%{$search}%");
+                  ->orWhere('expertise', 'like', "%{$search}%")
+                  ->orWhere('bio', 'like', "%{$search}%");
             });
         }
         
-        // Filter by status
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        // Optional: Filter by expertise
+        if ($request->has('expertise') && !empty($request->expertise)) {
+            $expertise = $request->expertise;
+            $query->where('expertise', 'like', "%{$expertise}%");
         }
         
-        // Check if it's an AJAX request
-        if ($request->ajax() || $request->wantsJson()) {
-            $perPage = $request->get('per_page', 10);
-            $mentors = $query->latest()->paginate($perPage);
-            
-            // Get statistics
-            $stats = [
-                'total' => Mentor::count(),
-                'active' => Mentor::where('status', 'active')->count(),
-                'pending' => Mentor::where('status', 'pending')->count(),
-                'inactive' => Mentor::where('status', 'inactive')->count(),
+        $mentors = $query->get();
+        
+        // Format mentors for frontend
+        $formattedMentors = $mentors->map(function($mentor) {
+            return [
+                'id' => $mentor->id,
+                'name' => $mentor->name,
+                'email' => $mentor->email,
+                'phone' => $mentor->phone,
+                'location' => $mentor->location,
+                'photo' => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
+                'expertise' => is_string($mentor->expertise) ? json_decode($mentor->expertise, true) : $mentor->expertise,
+                'bio' => $mentor->bio,
+                'availability' => $mentor->availability,
+                'available_days' => $mentor->available_days ? (is_string($mentor->available_days) ? json_decode($mentor->available_days, true) : $mentor->available_days) : [],
+                'available_time_start' => $mentor->available_time_start,
+                'available_time_end' => $mentor->available_time_end,
+                'linkedin_url' => $mentor->linkedin_url,
+                'twitter_url' => $mentor->twitter_url,
+                'website_url' => $mentor->website_url,
+                'rating' => $mentor->rating ?? null,
+                'total_sessions' => $mentor->total_sessions ?? 0,
             ];
-            
-            // Format mentors for JSON response
-            $mentors->getCollection()->transform(function ($mentor) {
-                if (is_string($mentor->expertise)) {
-                    $mentor->expertise = json_decode($mentor->expertise, true);
-                }
-                if (is_string($mentor->available_days)) {
-                    $mentor->available_days = json_decode($mentor->available_days, true);
-                }
-                return $mentor;
-            });
-            
+        });
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Mentors retrieved successfully',
+            'mentors' => $formattedMentors,
+            'total' => $formattedMentors->count()
+        ]);
+    }
+    
+    /**
+     * Get a single mentor details for frontend
+     */
+    public function getMentorDetails($id)
+    {
+        $mentor = Mentor::where('id', $id)
+            ->where('status', 'active')
+            ->first();
+        
+        if (!$mentor) {
             return response()->json([
-                'success' => true,
-                'mentors' => $mentors->items(),
-                'current_page' => $mentors->currentPage(),
-                'last_page' => $mentors->lastPage(),
-                'total' => $mentors->total(),
-                'per_page' => $mentors->perPage(),
-                'from' => $mentors->firstItem(),
-                'to' => $mentors->lastItem(),
-                'stats' => $stats,
-            ]);
+                'success' => false,
+                'message' => 'Mentor not found'
+            ], 404);
         }
         
-        // For non-AJAX requests
-        $mentors = $query->latest()->paginate(10);
+        $formattedMentor = [
+            'id' => $mentor->id,
+            'name' => $mentor->name,
+            'email' => $mentor->email,
+            'phone' => $mentor->phone,
+            'location' => $mentor->location,
+            'photo' => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
+            'expertise' => is_string($mentor->expertise) ? json_decode($mentor->expertise, true) : $mentor->expertise,
+            'bio' => $mentor->bio,
+            'availability' => $mentor->availability,
+            'available_days' => $mentor->available_days ? (is_string($mentor->available_days) ? json_decode($mentor->available_days, true) : $mentor->available_days) : [],
+            'available_time_start' => $mentor->available_time_start,
+            'available_time_end' => $mentor->available_time_end,
+            'linkedin_url' => $mentor->linkedin_url,
+            'twitter_url' => $mentor->twitter_url,
+            'website_url' => $mentor->website_url,
+            'notes' => $mentor->notes,
+            'rating' => $mentor->rating ?? null,
+            'total_sessions' => $mentor->total_sessions ?? 0,
+            'created_at' => $mentor->created_at,
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'mentor' => $formattedMentor
+        ]);
+    }
+    
+    /**
+     * Get mentor statistics for dashboard
+     */
+    public function getMentorStats()
+    {
         $stats = [
             'total' => Mentor::count(),
             'active' => Mentor::where('status', 'active')->count(),
             'pending' => Mentor::where('status', 'pending')->count(),
             'inactive' => Mentor::where('status', 'inactive')->count(),
+            'expertise_areas' => $this->getExpertiseStats(),
         ];
         
-        return view('admin.mentors.index', compact('mentors', 'stats'));
-    }
-
-    public function create()
-    {
-        $adminUser = Auth::guard('admin')->user();
-        $adminName = $adminUser ? $adminUser->name : 'Admin User';
-        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.org';
-        
-        return view('admin.addmentors.addmentor', compact('adminName', 'adminEmail'));
-    }
-
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:mentors,email',
-                'password' => 'required|string|min:12|confirmed',
-                'phone' => 'nullable|string|max:20',
-                'location' => 'nullable|string|max:255',
-                'photo' => 'nullable|image|max:2048',
-                'expertise' => 'required|array|min:1',
-                'bio' => 'required|string|min:50|max:1000',
-                'status' => 'required|in:active,pending,inactive',
-                'availability' => 'nullable|string|max:500',
-                'available_days' => 'nullable|array',
-                'available_time_start' => 'nullable|date_format:H:i',
-                'available_time_end' => 'nullable|date_format:H:i',
-                'linkedin_url' => 'nullable|url',
-                'twitter_url' => 'nullable|url',
-                'website_url' => 'nullable|url',
-                'notes' => 'nullable|string',
-            ]);
-            
-            // Handle photo upload
-            if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('mentor-photos', 'public');
-                $validated['photo'] = $photoPath;
-            }
-            
-            // Hash password
-            $validated['password'] = Hash::make($validated['password']);
-            
-            // Convert expertise array to JSON
-            $validated['expertise'] = json_encode($validated['expertise']);
-            
-            // Convert available_days array to JSON if present
-            if (isset($validated['available_days'])) {
-                $validated['available_days'] = json_encode($validated['available_days']);
-            }
-            
-            $mentor = Mentor::create($validated);
-            
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Mentor created successfully',
-                    'mentor' => $mentor
-                ]);
-            }
-            
-            return redirect()->route('admin.mentors.index')
-                ->with('success', 'Mentor created successfully!');
-                
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to create mentor: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            return redirect()->back()->withInput()->with('error', 'Failed to create mentor: ' . $e->getMessage());
-        }
-    }
-
-    public function show(Mentor $mentor)
-    {
-        return view('admin.mentors.show', compact('mentor'));
-    }
-
-    public function edit(Mentor $mentor)
-    {
-        $adminUser = Auth::guard('admin')->user();
-        $adminName = $adminUser ? $adminUser->name : 'Admin User';
-        $adminEmail = $adminUser ? $adminUser->email : 'admin@tithandizane.org';
-        
-        return view('admin.mentors.edit', compact('mentor', 'adminName', 'adminEmail'));
-    }
-
-    public function update(Request $request, Mentor $mentor)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:mentors,email,' . $mentor->id,
-            'phone' => 'nullable|string|max:20',
-            'location' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:2048',
-            'expertise' => 'required|array|min:1',
-            'bio' => 'required|string|min:50|max:1000',
-            'status' => 'required|in:active,pending,inactive',
-            'availability' => 'nullable|string|max:500',
-            'available_days' => 'nullable|array',
-            'available_time_start' => 'nullable|date_format:H:i',
-            'available_time_end' => 'nullable|date_format:H:i',
-            'linkedin_url' => 'nullable|url',
-            'twitter_url' => 'nullable|url',
-            'website_url' => 'nullable|url',
-            'notes' => 'nullable|string',
+        return response()->json([
+            'success' => true,
+            'stats' => $stats
         ]);
+    }
+    
+    /**
+     * Get expertise statistics
+     */
+    private function getExpertiseStats()
+    {
+        $mentors = Mentor::where('status', 'active')->get();
+        $expertiseCount = [];
         
-        // Handle photo upload
-        if ($request->hasFile('photo')) {
-            if ($mentor->photo) {
-                Storage::disk('public')->delete($mentor->photo);
+        foreach ($mentors as $mentor) {
+            $expertise = is_string($mentor->expertise) ? json_decode($mentor->expertise, true) : $mentor->expertise;
+            if (is_array($expertise)) {
+                foreach ($expertise as $area) {
+                    if (!isset($expertiseCount[$area])) {
+                        $expertiseCount[$area] = 0;
+                    }
+                    $expertiseCount[$area]++;
+                }
             }
-            $photoPath = $request->file('photo')->store('mentor-photos', 'public');
-            $validated['photo'] = $photoPath;
         }
         
-        // Update password if provided
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'string|min:12|confirmed']);
-            $validated['password'] = Hash::make($request->password);
-        }
-        
-        // Convert expertise array to JSON
-        $validated['expertise'] = json_encode($validated['expertise']);
-        
-        // Convert available_days array to JSON if present
-        if (isset($validated['available_days'])) {
-            $validated['available_days'] = json_encode($validated['available_days']);
-        }
-        
-        $mentor->update($validated);
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Mentor updated successfully',
-                'mentor' => $mentor
-            ]);
-        }
-        
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor updated successfully!');
+        arsort($expertiseCount);
+        return array_slice($expertiseCount, 0, 10, true);
     }
 
-    public function destroy(Mentor $mentor)
-    {
-        try {
-            if ($mentor->photo) {
-                Storage::disk('public')->delete($mentor->photo);
-            }
-            
-            $mentor->delete();
-            
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Mentor deleted successfully'
-                ]);
-            }
-            
-            return redirect()->route('admin.mentors.index')
-                ->with('success', 'Mentor deleted successfully!');
-                
-        } catch (\Exception $e) {
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete mentor: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            return redirect()->route('admin.mentors.index')
-                ->with('error', 'Failed to delete mentor!');
-        }
-    }
-
-    public function toggleStatus(Mentor $mentor)
-    {
-        $mentor->status = $mentor->status === 'active' ? 'inactive' : 'active';
-        $mentor->save();
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Mentor status updated successfully',
-                'status' => $mentor->status
-            ]);
-        }
-        
-        return redirect()->route('admin.mentors.index')
-            ->with('success', 'Mentor status updated successfully!');
-    }
+    // Your existing methods (index, create, store, show, edit, update, destroy, toggleStatus)
+    // ... (keep all your existing code below)
 }

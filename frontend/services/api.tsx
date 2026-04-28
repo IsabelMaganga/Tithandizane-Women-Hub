@@ -2,6 +2,7 @@
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Types
 export interface User {
@@ -44,27 +45,26 @@ export interface EmergencyContact {
   region?: string;
 }
 
-// Updated Mentor interface to match the database schema
 export interface Mentor {
   id: number;
   name: string;
   email: string;
-  bio?: string;
-  expertise?: string; // JSON string or plain text
-  expertise_area?: string; // Formatted expertise for display
-  availability?: string;
-  available_days?: string | string[]; // Can be JSON string or array
-  available_time_start?: string;
-  available_time_end?: string;
-  phone?: string;
-  location?: string;
-  status?: 'active' | 'pending' | 'inactive';
-  photo?: string;
+  phone: string | null;
+  location: string | null;
+  photo: string | null;
   avatar?: string;
-  linkedin_url?: string;
-  twitter_url?: string;
-  website_url?: string;
-  notes?: string;
+  expertise: string[];
+  bio: string;
+  availability: string | null;
+  available_days: string[];
+  available_time_start: string | null;
+  available_time_end: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  website_url: string | null;
+  rating?: number | null;
+  total_sessions?: number;
+  status?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -96,25 +96,77 @@ export interface HarassmentReport {
   created_at: string;
 }
 
+// YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.28.205
+const COMPUTER_IP = '192.168.28.205'; // Use the same IP as Metro
+const BACKEND_PORT = '8000';
+
+// Function to get the correct base URL based on platform
+const getBaseURL = (): string => {
+  if (__DEV__) {
+    console.log('📱 Platform:', Platform.OS);
+    
+    if (Platform.OS === 'android') {
+      // For Android Emulator: use 10.0.2.2
+      // For Physical Android Device: use computer's network IP
+      
+      // ✅ FOR PHYSICAL ANDROID DEVICE (Same WiFi)
+      return `http://192.168.28.205:8000/api/v1`;
+      
+      // For Android Emulator (comment the above, uncomment below):
+      // return 'http://10.0.2.2:8000/api/v1';
+    } 
+    
+    if (Platform.OS === 'ios') {
+      // For iOS Simulator: use localhost
+      // For Physical iOS Device: use computer's network IP
+      
+      // ✅ FOR PHYSICAL iOS DEVICE (Same WiFi)
+      return `http://192.168.28.205:8000/api/v1`;
+      
+      // For iOS Simulator (comment the above, uncomment below):
+      // return 'http://localhost:8000/api/v1';
+    }
+    
+    // Default fallback
+    return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+  } else {
+    // Production environment
+    return 'https://your-production-api.com/api/v1';
+  }
+};
+
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: __DEV__ ? 'http://192.168.1.101:8000/api/v1' : 'https://your-production-api.com/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 10000,
-  transformRequest: [(data) => JSON.stringify(data)],
-  validateStatus: (status) => status >= 200 && status < 300,
+  timeout: 30000,
 });
 
-// Request interceptor to add auth token
+// Log the base URL on startup
+console.log('🌐 API Base URL:', api.defaults.baseURL);
+console.log('💡 Make sure:');
+console.log(`   1. Laravel is running on port ${BACKEND_PORT}`);
+console.log(`   2. Phone is connected to WiFi (same network as computer)`);
+console.log(`   3. Can access ${api.defaults.baseURL}/register from phone browser`);
+
+// Request interceptor - DON'T add token for registration
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-    const token = await AsyncStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Public routes that don't need authentication
+    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset'];
+    const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
+    
+    if (!isPublicRoute) {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+    
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   },
   (error: AxiosError) => {
@@ -123,28 +175,46 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`📥 Response: ${response.status} ${response.config.url}`);
+    return response;
+  },
   async (error: AxiosError) => {
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401) {
-      console.log('Unauthorized access - clearing token');
-      await AsyncStorage.removeItem('token');
-      // You can add navigation to login here if needed
+    // Handle Network Errors
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.error('🔌 NETWORK ERROR:');
+      console.error('   Cannot connect to:', error.config?.baseURL);
+      console.error('   ');
+      console.error('   ⚠️ TROUBLESHOOTING STEPS:');
+      console.error('   1. Is Laravel running? Run: php artisan serve');
+      console.error(`   2. Is Laravel on port ${BACKEND_PORT}?`);
+      console.error('   3. Is phone on the SAME WiFi as computer?');
+      console.error(`   4. Can phone access: ${error.config?.baseURL}/register`);
+      console.error('   5. Windows Firewall might be blocking port 8000');
+      console.error('   ');
+      
+      throw new Error('Unable to connect to server. Please check:\n' +
+        '• Backend is running (php artisan serve)\n' +
+        '• Phone and computer on same WiFi\n' +
+        `• Can access ${COMPUTER_IP}:8000 from phone browser\n` +
+        '• Firewall allows port 8000');
     }
     
-    // Log detailed error information
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401) {
+      console.log('🔐 Unauthorized - clearing token');
+      await AsyncStorage.removeItem('token');
+    }
+    
+    // Log other errors
     if (error.response) {
-      console.error('API Error Response:', {
+      console.error('❌ API Error:', {
         status: error.response.status,
         data: error.response.data,
-        headers: error.response.headers,
+        url: error.config?.url,
       });
-    } else if (error.request) {
-      console.error('API Error Request (no response):', error.request);
-    } else {
-      console.error('API Error Message:', error.message);
     }
     
     return Promise.reject(error);
@@ -154,18 +224,35 @@ api.interceptors.response.use(
 // User Registration
 export const registerUser = async (userData: RegisterData): Promise<LoginResponse> => {
   try {
+    console.log('📝 Registering user:', userData.email);
+    console.log('📍 Endpoint:', `${api.defaults.baseURL}/register`);
+    
     const response = await api.post<LoginResponse>('/register', userData);
+    
+    console.log('✅ Registration successful!');
+    
+    if (response.data.token) {
+      await AsyncStorage.setItem('token', response.data.token);
+    }
+    
     return response.data;
   } catch (error: any) {
-    console.error('Error registering user:', error.response?.data?.message || error.message);
+    console.error('❌ Registration error:', error.message);
     
-    // Throw validation errors for better handling
+    if (error.message?.includes('Unable to connect')) {
+      throw error;
+    }
+    
     if (error.response?.data?.errors) {
       const errors = error.response.data.errors as Record<string, string[]>;
       const errorValues = Object.values(errors);
       const firstErrorArray = errorValues[0];
-      const firstError = Array.isArray(firstErrorArray) ? firstErrorArray[0] : firstErrorArray;
+      const firstError = Array.isArray(firstErrorArray) ? firstErrorArray[0] : undefined;
       throw new Error(firstError || 'Validation failed');
+    }
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
     }
     
     throw error;
@@ -175,10 +262,17 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
 // User Login
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
   try {
+    console.log('📝 Logging in:', email);
+    
     const response = await api.post<LoginResponse>('/login', { email, password });
+    
+    if (response.data.token) {
+      await AsyncStorage.setItem('token', response.data.token);
+    }
+    
     return response.data;
   } catch (error: any) {
-    console.error('Error logging in user:', error.response?.data?.message || error.message);
+    console.error('❌ Login error:', error.response?.data?.message || error.message);
     throw error;
   }
 };
@@ -187,8 +281,10 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
 export const logoutUser = async (): Promise<void> => {
   try {
     await api.post('/logout');
+    await AsyncStorage.removeItem('token');
   } catch (error: any) {
-    console.error('Error logging out:', error.response?.data?.message || error.message);
+    console.error('❌ Logout error:', error.message);
+    await AsyncStorage.removeItem('token');
     throw error;
   }
 };
@@ -199,12 +295,12 @@ export const getCurrentUser = async (): Promise<User> => {
     const response = await api.get<User>('/me');
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching current user:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching user:', error.message);
     throw error;
   }
 };
 
-// Fetch hygiene articles (optional category filter)
+// Fetch hygiene articles
 export const getHygieneArticles = async (category?: string): Promise<HygieneArticle[]> => {
   try {
     const url = category
@@ -213,7 +309,7 @@ export const getHygieneArticles = async (category?: string): Promise<HygieneArti
     const response = await api.get<HygieneArticle[]>(url);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching hygiene articles:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching articles:', error.message);
     throw error;
   }
 };
@@ -224,7 +320,7 @@ export const getSingleArticle = async (id: number): Promise<HygieneArticle> => {
     const response = await api.get<HygieneArticle>(`/hygiene-articles/${id}`);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching article:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching article:', error.message);
     throw error;
   }
 };
@@ -235,20 +331,50 @@ export const getEmergencyContacts = async (): Promise<EmergencyContact[]> => {
     const response = await api.get<EmergencyContact[]>('/emergency-contacts');
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching emergency contacts:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching contacts:', error.message);
     throw error;
   }
 };
 
-// Updated getMentor function with better error handling and data transformation
+// Get mentors - FIXED VERSION
 export const getMentor = async (): Promise<Mentor[]> => {
   try {
-    const response = await api.get<Mentor[]>('/mentors');
-    const mentors = response.data;
+    const response = await api.get('/mentors');
+    console.log('📥 Raw mentors response:', response.data);
     
-    // Transform the mentor data for consistent display
-    const transformedMentors = mentors.map(mentor => {
-      // Parse available_days if it's a string
+    // Extract the mentors array based on your response structure
+    let mentorsArray = [];
+    
+    // Your backend returns { success: true, mentors: [...] }
+    if (response.data && response.data.success === true && response.data.mentors) {
+      mentorsArray = response.data.mentors;
+      console.log('✅ Extracted mentors from response.data.mentors');
+    } 
+    // If it's a direct array
+    else if (Array.isArray(response.data)) {
+      mentorsArray = response.data;
+      console.log('✅ Response is direct array');
+    }
+    // If it's wrapped in 'data' property
+    else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      mentorsArray = response.data.data;
+      console.log('✅ Extracted mentors from response.data.data');
+    }
+    // If it's a single object
+    else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+      console.log('⚠️ Response is an object, checking for mentors property...');
+      if (response.data.mentor) {
+        mentorsArray = [response.data.mentor];
+        console.log('✅ Found single mentor object');
+      } else {
+        mentorsArray = [];
+        console.log('⚠️ No mentors array found in response');
+      }
+    }
+    
+    console.log(`📊 Found ${mentorsArray.length} mentors`);
+    
+    const transformedMentors = mentorsArray.map((mentor: Mentor) => {
       let availableDays = mentor.available_days;
       if (typeof availableDays === 'string') {
         try {
@@ -258,40 +384,209 @@ export const getMentor = async (): Promise<Mentor[]> => {
         }
       }
       
-      // Get expertise area (prefer expertise_area, fallback to expertise)
-      let expertiseArea = mentor.expertise_area;
-      if (!expertiseArea && mentor.expertise) {
+      // Handle expertise parsing - it's already a string[] in the interface
+      let expertiseArray: string[] = mentor.expertise || [];
+      if (typeof expertiseArray === 'string') {
         try {
-          const expertiseArray = JSON.parse(mentor.expertise);
-          expertiseArea = Array.isArray(expertiseArray) ? expertiseArray.join(', ') : mentor.expertise;
+          const parsed = JSON.parse(expertiseArray);
+          expertiseArray = Array.isArray(parsed) ? parsed : [expertiseArray];
         } catch (e) {
-          expertiseArea = mentor.expertise;
+          expertiseArray = [];
         }
       }
       
       return {
         ...mentor,
+        expertise: expertiseArray,
         available_days: availableDays,
-        expertise_area: expertiseArea || 'Mentor',
         avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=8b5cf6&color=fff`
       };
     });
     
     return transformedMentors;
   } catch (error: any) {
-    console.error('Error fetching mentors:', error.response?.data?.message || error.message);
-    // Return empty array instead of throwing to prevent app crash
+    console.error('❌ Error fetching mentors:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     return [];
   }
 };
 
-// Fetch chat list (conversations)
+// Get single mentor details - NEW FUNCTION
+export const getMentorDetails = async (mentorId: number): Promise<Mentor | null> => {
+  try {
+    const response = await api.get(`/mentors/${mentorId}`);
+    console.log('📥 Raw mentor details response:', response.data);
+    
+    let mentor = null;
+    
+    // Extract mentor from response
+    if (response.data && response.data.success === true && response.data.mentor) {
+      mentor = response.data.mentor;
+    } else if (response.data && response.data.mentor) {
+      mentor = response.data.mentor;
+    } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+      mentor = response.data;
+    }
+    
+    if (!mentor) {
+      console.log('⚠️ No mentor found in response');
+      return null;
+    }
+    
+    // Handle expertise parsing - it's already a string[] in the interface
+    let expertiseArray: string[] = mentor.expertise || [];
+    if (typeof expertiseArray === 'string') {
+      try {
+        const parsed = JSON.parse(expertiseArray);
+        expertiseArray = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        expertiseArray = [];
+      }
+    }
+    
+    // Parse available days if it's a string
+    let availableDays = mentor.available_days;
+    if (typeof availableDays === 'string') {
+      try {
+        availableDays = JSON.parse(availableDays);
+      } catch (e) {
+        availableDays = [];
+      }
+    }
+    
+    return {
+      ...mentor,
+      expertise: expertiseArray,
+      available_days: availableDays,
+      avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff`
+    };
+  } catch (error: any) {
+    console.error('❌ Error fetching mentor details:', error.message);
+    return null;
+  }
+};
+
+export const getActiveMentors = async (search?: string, expertise?: string): Promise<Mentor[]> => {
+  try {
+    let url = '/mentors';
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (expertise) params.append('expertise', expertise);
+    if (params.toString()) url += `?${params.toString()}`;
+    
+    console.log('🔍 getActiveMentors: Fetching from URL:', url);
+    const response = await api.get(url);
+    console.log('📥 getActiveMentors: Response status:', response.status);
+    console.log('📥 getActiveMentors: Full response:', JSON.stringify(response.data, null, 2));
+    
+    let mentorsArray: any[] = [];
+    
+    // Your API returns: { success: true, message: "...", mentors: [...], total: 2 }
+    if (response.data && response.data.success === true && Array.isArray(response.data.mentors)) {
+      mentorsArray = response.data.mentors;
+      console.log('✅ Extracted mentors from response.data.mentors, count:', mentorsArray.length);
+    } 
+    // Fallback for direct array
+    else if (Array.isArray(response.data)) {
+      mentorsArray = response.data;
+      console.log('✅ Response is direct array, count:', mentorsArray.length);
+    }
+    // Fallback for data wrapper
+    else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      mentorsArray = response.data.data;
+      console.log('✅ Extracted mentors from response.data.data, count:', mentorsArray.length);
+    }
+    else {
+      console.warn('⚠️ Unknown response format:', response.data);
+      return [];
+    }
+    
+    console.log(`📊 Found ${mentorsArray.length} mentors from API`);
+    
+    // Transform each mentor to match the Mentor interface
+    const transformedMentors: Mentor[] = mentorsArray.map((mentor: any) => {
+      // Handle expertise - could be array or null
+      let expertiseArray: string[] = [];
+      if (mentor.expertise) {
+        if (Array.isArray(mentor.expertise)) {
+          expertiseArray = mentor.expertise;
+        } else if (typeof mentor.expertise === 'string') {
+          try {
+            const parsed = JSON.parse(mentor.expertise);
+            expertiseArray = Array.isArray(parsed) ? parsed : [mentor.expertise];
+          } catch (e) {
+            expertiseArray = [mentor.expertise];
+          }
+        }
+      }
+      
+      // Handle available_days
+      let availableDaysArray: string[] = [];
+      if (mentor.available_days) {
+        if (Array.isArray(mentor.available_days)) {
+          availableDaysArray = mentor.available_days;
+        } else if (typeof mentor.available_days === 'string') {
+          try {
+            const parsed = JSON.parse(mentor.available_days);
+            availableDaysArray = Array.isArray(parsed) ? parsed : [];
+          } catch (e) {
+            availableDaysArray = [];
+          }
+        }
+      }
+      
+      // Determine status - default to 'active' if not specified
+      const status = mentor.status || 'active';
+      
+      return {
+        id: mentor.id,
+        name: mentor.name || 'Unknown',
+        email: mentor.email || '',
+        phone: mentor.phone || null,
+        location: mentor.location || null,
+        photo: mentor.photo || null,
+        avatar: mentor.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name || 'Mentor')}&background=8b5cf6&color=fff`,
+        expertise: expertiseArray,
+        bio: mentor.bio || '',
+        availability: mentor.availability || null,
+        available_days: availableDaysArray,
+        available_time_start: mentor.available_time_start || null,
+        available_time_end: mentor.available_time_end || null,
+        linkedin_url: mentor.linkedin_url || null,
+        twitter_url: mentor.twitter_url || null,
+        website_url: mentor.website_url || null,
+        rating: mentor.rating || null,
+        total_sessions: mentor.total_sessions || 0,
+        status: status,
+      };
+    });
+    
+    console.log(`✅ Transformed ${transformedMentors.length} mentors`);
+    if (transformedMentors.length > 0) {
+      console.log('📝 First mentor:', transformedMentors[0].name, 'Status:', transformedMentors[0].status);
+    }
+    
+    return transformedMentors;
+  } catch (error: any) {
+    console.error('❌ Error fetching active mentors:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
+    return [];
+  }
+};
+
+// Fetch chat list
 export const getChatList = async (): Promise<Conversation[]> => {
   try {
     const response = await api.get<Conversation[]>('/conversations');
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching chats:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching chats:', error.message);
     throw error;
   }
 };
@@ -308,7 +603,7 @@ export const sendMessage = async (
     });
     return response.data;
   } catch (error: any) {
-    console.error('Error sending message:', error.response?.data?.message || error.message);
+    console.error('❌ Error sending message:', error.message);
     throw error;
   }
 };
@@ -322,34 +617,34 @@ export const createConversation = async (payload: {
     const response = await api.post<Conversation>('/conversations', payload);
     return response.data;
   } catch (error: any) {
-    console.error('Error creating conversation:', error.response?.data?.message || error.message);
+    console.error('❌ Error creating conversation:', error.message);
     throw error;
   }
 };
 
-// Get messages for a conversation
+// Get messages
 export const getMessages = async (conversationId: number): Promise<Message[]> => {
   try {
     const response = await api.get<Message[]>(`/conversations/${conversationId}/messages`);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching messages:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching messages:', error.message);
     throw error;
   }
 };
 
-// Get user's harassment reports
+// Get harassment reports
 export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
   try {
     const response = await api.get<HarassmentReport[]>('/harassment-reports/my-reports');
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching harassment reports:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching reports:', error.message);
     throw error;
   }
 };
 
-// Submit harassment report (authenticated)
+// Submit harassment report
 export const submitHarassmentReport = async (data: {
   title: string;
   description: string;
@@ -362,23 +657,23 @@ export const submitHarassmentReport = async (data: {
     const response = await api.post<HarassmentReport>('/harassment-reports', data);
     return response.data;
   } catch (error: any) {
-    console.error('Error submitting harassment report:', error.response?.data?.message || error.message);
+    console.error('❌ Error submitting report:', error.message);
     throw error;
   }
 };
 
-// Submit anonymous harassment report
+// Submit anonymous report
 export const submitHarassmentReportAnonymously = async (data: {
   title: string;
   description: string;
   location?: string;
-  date?:string;
+  date?: string;
 }): Promise<HarassmentReport> => {
   try {
     const response = await api.post<HarassmentReport>('/harassment-reports/anonymous', data);
     return response.data;
   } catch (error: any) {
-    console.error('Error reporting anonymously:', error.response?.data?.message || error.message);
+    console.error('❌ Error submitting anonymous report:', error.message);
     throw error;
   }
 };
@@ -398,73 +693,63 @@ export const getGeneralGuides = async (): Promise<any[]> => {
     const response = await api.get('/general-guides');
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching general guides:', error.response?.data?.message || error.message);
+    console.error('❌ Error fetching guides:', error.message);
     throw error;
   }
 };
 
-//get all users except mentor and admins
+// Get all users
 export const getAllUsers = async (token: string) => {
   try {
     const response = await api.get("/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     return response.data;
   } catch (error) {
-    console.error("Fetch Users Error:", error);
+    console.error("❌ Fetch Users Error:", error);
     throw error;
   }
 };
 
-export const getConversation = async (
-        conversationId: number,
-        token: string
-      ) => {
-        try {
-          const response = await api.get(`/conversations/${conversationId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          return response.data;
-        } catch (error) {
-          console.error("Error fetching conversation:", error);
-          throw error;
-        }
+// Get conversation
+export const getConversation = async (conversationId: number, token: string) => {
+  try {
+    const response = await api.get(`/conversations/${conversationId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching conversation:", error);
+    throw error;
+  }
 };
 
-export const getUser = async (userId:number,token:string) => {
-   try {
-    const response = await api.get(`users/${userId}`,{
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    })
-    return response.data;
-    
-   } catch (error) {
-    console.error("Error fetching user:", error);
-    throw error;
-   }
-}
-
-//requesting the mentorship session
-export const sendMentorshipRequest = async (data: {
-    mentor_id: number;
-    topic: string;
-    message?: string
-  }, token: string) => {
-    const response = await api.post('/mentorship/request', data, {
+// Get user
+export const getUser = async (userId: number, token: string) => {
+  try {
+    const response = await api.get(`users/${userId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching user:", error);
+    throw error;
+  }
 };
 
-//getting all sessions
+// Send mentorship request
+export const sendMentorshipRequest = async (data: {
+  mentor_id: number;
+  topic: string;
+  message?: string
+}, token: string) => {
+  const response = await api.post('/mentorship/request', data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+// Get mentorship sessions
 export const getMentorshipSessions = async (token: string) => {
   const response = await api.get('/mentorship/my-sessions', {
     headers: { Authorization: `Bearer ${token}` }
@@ -472,7 +757,7 @@ export const getMentorshipSessions = async (token: string) => {
   return response.data;
 };
 
-//getting mentor sessions
+// Get mentor sessions
 export const getMentorSessions = async (token: string) => {
   const response = await api.get('/mentorship/mentor-sessions', {
     headers: { Authorization: `Bearer ${token}` }
@@ -480,52 +765,67 @@ export const getMentorSessions = async (token: string) => {
   return response.data;
 };
 
-//updating mentorship session by mentors
+// Update session status
 export const updateSessionStatus = async (
   sessionId: string,
   token: string,
-  payload: { 
-    status: 'accepted' | 'declined' | 'completed'; 
-    mentor_notes?: string; 
-    scheduled_at?: string 
+  payload: {
+    status: 'accepted' | 'declined' | 'completed';
+    mentor_notes?: string;
+    scheduled_at?: string
   }
 ) => {
   try {
-    // Ensure the URL matches: /mentorship/sessions/{session}
     const response = await api.patch(`/mentorship/sessions/${sessionId}`, payload, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   } catch (error: any) {
-    console.error("API Error:", error.response?.data || error.message);
+    console.error("❌ API Error:", error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
 
-//group finding an joining
-export const getGroups = async (token:string)=>{
+// Get groups
+export const getGroups = async (token: string) => {
   try {
-    const response = await api.get('/groups/available',{
-      headers:{ Authorization:`Bearer ${token}`}
-    })
+    const response = await api.get('/groups/available', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     return response.data;
   } catch (error) {
-    console.error("Error fetching groups:", error);
-    throw error;
-  }
-}
-
-export const joinGroup = async (token:string,conversationID:number) => {
-  try {
-    const response = await api.post(`/conversations/${conversationID}/join`,{},{
-      headers:{ Authorization:`Bearer ${token}`}
-    })
-    return response.data
-  } catch (error) {
-    console.error("Error joining group:", error);
+    console.error("❌ Error fetching groups:", error);
     throw error;
   }
 };
 
-// Export the api instance for use in contexts
+// Join group
+export const joinGroup = async (token: string, conversationID: number) => {
+  try {
+    const response = await api.post(`/conversations/${conversationID}/join`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error joining group:", error);
+    throw error;
+  }
+};
+
+// Test connection helper
+export const testConnection = async (): Promise<boolean> => {
+  try {
+    console.log('🔍 Testing connection to:', api.defaults.baseURL);
+    // Try a simple OPTIONS request or GET to a public endpoint
+    const response = await api.get('/register', { 
+      validateStatus: (status) => status < 500 
+    });
+    console.log('✅ Connection successful! Server responded with status:', response.status);
+    return true;
+  } catch (error: any) {
+    console.error('❌ Connection failed:', error.message);
+    return false;
+  }
+};
+
 export default api;
