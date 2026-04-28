@@ -110,7 +110,7 @@ const getBaseURL = (): string => {
       // For Physical Android Device: use computer's network IP
       
       // ✅ FOR PHYSICAL ANDROID DEVICE (Same WiFi)
-      return `http://192.168.28.205:8000/api/v1`;
+      return `http://192.168.1.102:8000/api/v1`;
       
       // For Android Emulator (comment the above, uncomment below):
       // return 'http://10.0.2.2:8000/api/v1';

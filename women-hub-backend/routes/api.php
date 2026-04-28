@@ -1,6 +1,4 @@
 <?php
-// routes/api.php
-
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\HarassmentController;
@@ -62,6 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{userId}',[UserController::class,'getUser']);
 
         // Mentorship
+        Route::get('/mentors', [MentorshipController::class, 'mentors']);
         Route::post('/mentorship/request', [MentorshipController::class, 'request']);
         Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
         Route::get('/mentorship/mentor-sessions', [MentorshipController::class, 'mentorSessions']);
@@ -79,7 +78,7 @@ Route::prefix('v1')->group(function () {
             
             // Mentor Management Routes (API endpoints)
             Route::post('/mentors', [MentorController::class, 'storeApi']);
-            Route::get('/mentors', [MentorController::class, 'getAllMentorsApi']);
+            Route::get('/mentors', [MentorshipController::class, 'getAllMentorsApi']);
             Route::get('/mentors/{id}', [MentorController::class, 'showApi']);
             Route::put('/mentors/{id}', [MentorController::class, 'updateApi']);
             Route::delete('/mentors/{id}', [MentorController::class, 'destroyApi']);
