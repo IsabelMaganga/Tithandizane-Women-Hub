@@ -61,8 +61,7 @@ class ReportController extends Controller
             'unreadNotifications',
             'reports'
         ));
-
-
+        
     }
 
     public function SubmitReport(Request $request)

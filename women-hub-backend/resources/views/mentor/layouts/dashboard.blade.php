@@ -138,8 +138,7 @@
 
                     <i id="showIcon2" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
 
-                        <i id="showIcon" class="mr-4 transition-all cursor-pointer fas fa-chevron-down arrow-rotate"></i>
-                     </div>
+                </div>
 
                     <div id="sub-list" class=" text-[12px]">
                         <a href="{{ route('mentor.hygiene')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="hygiene">
@@ -312,31 +311,35 @@
     </div>
 
     <script>
-        // Fix: Use different IDs for different dropdowns to avoid conflicts
-        // Chat dropdown
-        const showIcon = document.getElementById('showIcon');
-        const subList = document.getElementById('sub-list');
 
-        if (showIcon && subList) {
-            showIcon.addEventListener('click', function() {
-                subList.classList.toggle('show');
-                showIcon.classList.toggle('arrow-rotate');
-            });
-        }
 
-        // Guidance dropdown
-        const showIconGuidance = document.getElementById('showIconGuidance');
-        const subListGuidance = document.getElementById('sub-list-guidance');
+            alert(200);
 
-        if (showIconGuidance && subListGuidance) {
-            showIconGuidance.addEventListener('click', function() {
-                subListGuidance.classList.toggle('show');
-                showIconGuidance.classList.toggle('arrow-rotate');
-            });
-        }
+            // Fix: Use different IDs for different dropdowns to avoid conflicts
+            // Chat dropdown
+            const showIcon = document.getElementById('showIcon');
+            const subList = document.getElementById('sub-list');
 
-        //  Navigation active state management
-        document.addEventListener('DOMContentLoaded', function() {
+            if (showIcon && subList) {
+                showIcon.addEventListener('click', function() {
+                    subList.classList.toggle('show');
+                    showIcon.classList.toggle('arrow-rotate');
+                });
+            }
+
+            // Guidance dropdown
+            const showIconGuidance = document.getElementById('showIconGuidance');
+            const subListGuidance = document.getElementById('sub-list-guidance');
+
+            if (showIconGuidance && subListGuidance) {
+                showIconGuidance.addEventListener('click', function() {
+                    subListGuidance.classList.toggle('show');
+                    showIconGuidance.classList.toggle('arrow-rotate');
+                });
+            }
+
+            //  Navigation active state management
+
             const navItems = document.querySelectorAll('.nav-item');
             const currentPage = window.location.pathname.split('/').pop() || 'dashboard';
 
@@ -347,7 +350,7 @@
                     item.classList.add('bg-gray-800');
                 }
             });
-        });
+
 
         // notifications
         const notificationSideBar = document.getElementById('notificationSideBar');
@@ -374,6 +377,7 @@
         const subList = document.getElementById('sub-list');
 
         showIcon.addEventListener('click', function() {
+            alert(200);
             subList.classList.toggle('show');
             showIcon.classList.toggle('arrow-rotate');
         });
@@ -421,6 +425,7 @@
                 console.log("Echo is not loaded or configured");
             }
         });
+
     </script>
 
     @stack('scripts')

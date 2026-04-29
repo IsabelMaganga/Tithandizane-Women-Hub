@@ -92,7 +92,7 @@
 
 
         // alert('test');
-        console.log('testing testing');
+        console.log('welcome to your dashboard');
 
         // Listen for new chat requests instantly
         // window.Echo.private('mentor.' . {{ auth()->id() }})
@@ -146,7 +146,7 @@
 
         chart.render();
 
-        alert(200);
+        {{--  alert(200);  --}}
         // bar chart dataset
         var options = {
             chart: {

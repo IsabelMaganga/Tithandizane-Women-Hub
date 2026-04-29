@@ -35,12 +35,12 @@ class AuthController extends Controller
             $user = Auth::guard('mentor')->user();
 
             // Check if user is active
-            if ($user->status !== 'active') {
-                Auth::guard('mentor')->logout();
-                return back()->withErrors([
-                    'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
-                ])->onlyInput('email');
-            }
+            // if ($user->status !== 'active') {
+            //     Auth::guard('mentor')->logout();
+            //     return back()->withErrors([
+            //         'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
+            //     ])->onlyInput('email');
+            // }
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');

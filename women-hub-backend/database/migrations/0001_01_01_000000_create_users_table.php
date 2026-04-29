@@ -15,12 +15,22 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role', ['user', 'mentor', 'admin'])->default('user');
             $table->string('phone')->nullable();
+            $table->string('location')->nullable();
+            $table->string('photo')->nullable();
+            $table->json('expertise')->nullable();
             $table->text('bio')->nullable();
+            $table->text('notes')->nullable();
+            $table->enum('status', ['pending', 'active', 'inactive'])->default('pending');
+            $table->string('availability')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('twitter_url')->nullable();
+            $table->string('website_url')->nullable();
             $table->string('expertise_area')->nullable(); // for mentors
             $table->boolean('is_available')->default(true); // for mentors
             $table->json('available_days')->nullable(); // e.g. ["Monday","Wednesday","Friday"]
             $table->string('available_time_start')->nullable(); // e.g. "09:00"
             $table->string('available_time_end')->nullable();   // e.g. "17:00"
+            $table->rememberToken();
             $table->timestamps();
         });
     }

@@ -37,6 +37,16 @@
             to   { transform: translateY(0); }
         }
 
+        .btn-spinning{
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+
+
     </style>
 </head>
 
@@ -113,7 +123,9 @@
                 </div>
             @endif
 
-            <form id="signinForm" method="POST" action="{{ route('mentor.login.post') }}" class="w-full ">
+            {{--  <form id="signinForm" method="POST"  class="w-full ">  --}}
+
+            <form id="signinForm" method="POST" action="{{ route('mentor.login') }}" class="w-full ">
                 @csrf
 
                 {{-- email --}}
@@ -129,11 +141,9 @@
                         class="input w-full px-3 pl-10 py-3 text-sm placeholder:text-sm placeholder:text-[#962980]/50 text-[#962980] transition-all ease-in-out border-2 bg-amber-50/0 border-[#962980]/30 rounded-3xl focus:outline-none focus:ring-2 focus:ring-[#962980] focus:border-transparent"
                         placeholder="mentor@tithandizane.mw"
                         required
-                        autocomplete="email"
-                        autofocus
-                        >
+                        autocomplete="email">
 
-                        <i class="fa-regular fa-envelope absolute left-3 top-3 text-[#962980]/80 text-xl"></i>
+                        <i class="fa-regular fa-envelope absolute left-3 top-3 text-[#5c1a4fb2]/70 text-xl"></i>
                     </div>
                 </div>
 
@@ -151,27 +161,28 @@
                             autocomplete="current-password"
                         >
 
-                        <i class="fa-solid fa-lock absolute left-3 top-3 text-[#962980]/80 text-xl"></i>
+                        <i class="fa-solid fa-lock absolute left-3 top-3 text-[#5c1a4fb2]/70 text-xl"></i>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mt-3 mb-4 forgot-password">
-                    <label class="flex items-center gap-2">
+                <div class="flex items-center justify-end mt-3 mb-4 forgot-password">
+                    {{--  <label class="flex items-center gap-2">
                         <input type="checkbox" name="remember" id="remember" class="form-checkbox accent-[#962980] h-4 w-4 text-[#962980] focus:ring-[#962980] border-gray-300 rounded">
                         <span class="text-sm text-gray-600 select-none">Remember me</span>
-                    </label>
+                    </label>  --}}
 
                      <label class="flex items-center gap-2">
-                        <a href="{{  route('mentor.forgot') }}" class="text-sm text-gray-600 select-none">forgot password</a>
+                        <a href="#" class="text-sm text-[#5c1a4fb2] hover:text-[#5c1a4f] transition-all select-none">forgot password</a>
                     </label>
                 </div>
 
-                    <button
-                        type="submit"
-                        class="w-full bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] border border-[#eeeeec]/20 transition delay-75 px-5 py-4 rounded-3xl text-white text-sm font-semibold leading-normal flex items-center justify-center gap-2"
-                    >
-                        Sign In
-                    </button>
+                <button
+                    id="signInBtn"
+                    type="submit"
+                    class="w-full bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] border border-[#eeeeec]/20 transition delay-75 px-5 py-4 rounded-3xl text-white text-sm font-semibold leading-normal flex items-center justify-center gap-2"
+                >
+                    Sign In
+                </button>
 
             </form>
 
@@ -188,8 +199,8 @@
                 <p class="pl-5 text-sm text-gray-50">Empower and Inspire: Connect with passionate mentees, share your wisdom and experiences, foster growth through meaningful guidance, and make a lasting impact in the lives of women at Tithandizane.    </p>
 
                 <div class="flex items-center justify-end w-full gap-5 mt-10 mb-5 text-sm text-gray-200">
-                    <p> <a href="{{ route('get.started') }}"  class=" text-[#d3d2d2] hover:text-white transition">tithandizane@help.com</a></p>
-                    <p> <a href="{{ route('get.started') }}"  class=" text-[#d3d2d2] hover:text-white transition ">Back to portal selection</a></p>
+                    <p> <a   class=" text-[#d3d2d2] hover:text-[#ff00cc] transition">tithandizane@help.com</a></p>
+                    <p> <a href="{{ route('get.started') }}"  class=" text-[#d3d2d2] hover:text-[#ff00cc] transition ">Back to portal selection</a></p>
                 </div>
             </div>
         </div>
@@ -202,13 +213,18 @@
     let signinForm = document.getElementById('signinForm');
 
     signinForm.addEventListener('submit', function(e) {
-        alert(200);
+        let signInBtn = document.getElementById('signInBtn');
+          signInBtn.innerHTML = `
+                    <p class='btn-spinning w-5 h-5 border-l-2 rounded-full border-white'></p>
+                    <p>signing in...</p>`;
     });
 
-        window.addEventListener('DOMContentLoaded', ()=>{
+    window.addEventListener('DOMContentLoaded', ()=>{
 
             const msgSuccess = document.getElementById('success');
+            {{--  const signInBtn = document.getElementById('signInBtn');  --}}
             const msgError = document.getElementById('error');
+
 
             if(msgSuccess){
                 msgSuccess.style.display = 'flex';

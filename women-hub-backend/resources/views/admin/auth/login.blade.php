@@ -83,11 +83,11 @@
     </style>
 </head>
 
-<body class="bg-[#874179]/80 text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
+<body class="bg-[#874179]/80 relative text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
 
     <!-- Decorative corner shapes -->
-    <img src="{{ asset('images/shape (1).png')}}" class="z-10 object-cover w-40 absolute top-0 left-0" alt="">
-    <img src="{{ asset('images/shape (1).png')}}" class="z-10 object-cover w-40 absolute bottom-0 rotate-180 right-0" alt="">
+    <img src="{{ asset('images/shape (1).png')}}" class="z-10  object-cover w-40 fixed top-0 left-0" alt="">
+    <img src="{{ asset('images/shape (1).png')}}" class="z-10 object-cover w-40 fixed bottom-0 -rotate-180 right-0" alt="">
 
     <!-- Header -->
     <header class="w-[90%] md:w-full sticky flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6">
@@ -112,14 +112,14 @@
     <div class="grid relative items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow">
 
         <!-- Page Title -->
-        <main class="flex max-w-5xl mt-0 z-20 gap-5 md:pt-6 w-full justify-center items-center text-gray-100 flex-col">
+        {{--  <main class="flex max-w-5xl mt-0 z-20 gap-5 md:pt-6 w-full justify-center items-center text-gray-100 flex-col">
             <p class="mb-2 w-[90%] mt-6 max-w-5xl font-semibold text-3xl md:text-4xl text-center" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
                 Admin Platform Login
             </p>
             <p class="text-gray-300 text-sm text-center w-[90%] max-w-md -mt-2">
                 Control the platform. Empower the community. Let's get to work.
             </p>
-        </main>
+        </main>  --}}
 
         <!-- Login Card -->
         <main class="grid grid-cols-1 max-w-4xl mx-auto z-20 gap-5 mb-5 pt-4 md:pt-4 w-full justify-center items-center text-gray-200">
@@ -192,7 +192,7 @@
                                 placeholder="••••••••"
                                 class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-[#962980] focus:ring-1 focus:ring-[#962980] transition pr-12"
                             >
-                            <button 
+                            <button
                                 type="button"
                                 class="password-toggle"
                                 onclick="togglePassword()"
@@ -255,7 +255,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 // Change to eye with slash (hidden)
@@ -281,13 +281,13 @@
             // Basic validation
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
+
             if (email && password) {
                 // Show loading state
                 loginButton.disabled = true;
                 loginButton.classList.add('btn-loading');
                 buttonText.innerHTML = '<span class="loading-spinner"></span>Signing in...';
-                
+
                 // Allow the form to submit naturally to Laravel backend
                 // The backend will handle authentication and redirect to dashboard
             } else {

@@ -34,8 +34,8 @@
         </style>
     </head>
     <body class=" bg-[#874179]/80 text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
-        <img src="{{ asset('images/shape (1).png')}}" class="absolute top-0 left-0 z-10 object-cover w-40 " alt="">
-        <img src="{{ asset('images/shape (1).png')}}" class="absolute bottom-0 right-0 z-10 object-cover w-40 rotate-180 " alt="">
+        <img src="{{ asset('images/shape (1).png')}}" class="fixed top-0 left-0 z-10 object-cover w-40 " alt="left eclipse sharp">
+        <img src="{{ asset('images/shape (1).png')}}" class="fixed bottom-0 right-0 z-10 object-cover w-80 opacity-30 -rotate-180 " alt="right eclipse sharp">
 
         <header class=" w-[90%] md:w-full sticky  flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6 not-has-[nav]:hidden">
             <a  href="{{ route('get.started')}}" class="logo decoration-0 text-[#ffff] flex justify-start items-center gap-3">
@@ -54,7 +54,7 @@
                 </a>
 
         </nav>
-    </header>
+        </header>
 
         <div class="relative grid items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
 
@@ -80,7 +80,7 @@
 
                     <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
                         <li>
-                            <a href="/mentor/login"
+                            <a href="{{ route('mentor.login') }}"
                                 class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
                                 Enter Portal
                             </a>
@@ -114,7 +114,7 @@
 
                 {{-- footer --}}
                 <p class="flex justify-center w-full py-2 text-sm text-center text-gray-300 "> &copy; 2026 Tithandizane-women-hub . All rights reserved </p>
-            </div>
+        </div>
 
     </body>
 </html>
