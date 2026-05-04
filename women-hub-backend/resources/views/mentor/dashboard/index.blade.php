@@ -2,6 +2,24 @@
 
 @section('title') home @endsection
 
+@push('styles')
+    <style>
+       .emoji-bounce {
+            animation: bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+    </style>
+@endpush
+
 @section('content')
 
 
@@ -14,8 +32,7 @@
             <div class="relative col-span-1 break-all transition delay-200 border cursor-pointer group bg-gradient-to-t from-purple-800 to-purple-800 wrap-break-word border-slate-900/10 rounded-xl p-7">
 
                 <div class="flex items-center justify-start gap-2 mt-2">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName) }}&background=0D8F81&color=fff&size=128"
-                        class="w-10 h-10 rounded-full">
+                    <h1 id="emoji" class="emoji-bounce mx-0 text-4xl ">🙂</h1>
                     <h2 class="text-xl font-semibold text-gray-100">{{ $mentorName }}</h2>
                 </div>
 
@@ -33,19 +50,26 @@
             {{-- line chart --}}
             <div  class="relative h-full col-span-1 p-1 break-all transition delay-200 bg-white border cursor-pointer group row-span-0 wrap-break-word rounded-xl border-slate-900/10">
                 <h1 class="mx-2 mt-3 ">Monthly chats</h1>
-                <div id="chart" class="chart"></div>
+                 <div id="area" class="chart"></div>
             </div>
 
         </div>
 
 
         {{-- bar chart --}}
-        <div class="col-span-2 row-span-4 bg-white border left rounded-2xl border-slate-900/10">
+        {{--  <div class="col-span-2 row-span-4 bg-white border left rounded-2xl border-slate-900/10">
             <h1 class="mx-3 mt-3 text-2xl ">Monthly stats</h1>
             <div  id="area" class="chart"></div>
-        </div>
+        </div>  --}}
 
-        <div class="col-span-2 bg-white border left rounded-2xl p-7 row-span-8 border-slate-900/10">
+        {{--  <div class="col-span-1 bg-white border left rounded-2xl p-7 row-span-2 border-slate-900/10">
+            <div >
+
+
+            </div>
+        </div>  --}}
+
+        <div class="col-span-2 bg-white border left rounded-2xl p-7 row-span-2 border-slate-900/10">
             <div id="radar" class="rader"></div>
         </div>
 
@@ -93,6 +117,17 @@
 
         // alert('test');
         console.log('welcome to your dashboard');
+
+        const emoji = document.getElementById('emoji');
+
+        if(emoji) {
+            const emojis = ['🙂', '😀', '😎','👋', '🤓', '🧐', '😇','👋'];
+            let index = 0;
+            setInterval(() => {
+                emoji.textContent = emojis[index];
+                index = (index + 1) % emojis.length;
+            }, 3000);
+        }
 
         // Listen for new chat requests instantly
         // window.Echo.private('mentor.' . {{ auth()->id() }})

@@ -2,6 +2,7 @@
 
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
+
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController};
 use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 
@@ -49,7 +50,7 @@ Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(func
 // Protected mentor routes
 Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(function () {
 
-    // auth()->user()->markEmailAsVerified();
+    // auth()->u    ser()->markEmailAsVerified();
     Route::post('/logout', [MentorAuthController::class, 'logout'])->name('logout');
     Route::delete('/sessions', [MentorAuthController::class, 'logoutAllSessions'])->name('logoutAllSessions');
 
@@ -57,8 +58,12 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
 
     // dashboard
     Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
+
+    // notifitions routes
     Route::post('/notifications/{id}/read',[NotificationController::class, 'markAsRead'])->name('notification.read');
     Route::post('/notifications/read-all',[NotificationController::class, 'markAllAsRead'])->name('notification.read-all');
+    Route::get('/notifications',[NotificationController::class, 'getMyNotification'])->name('notifications');
+
 
     // appointments
     Route::get('/appointments',[MentorSecurityController::class, 'showAppointments'])->name('appointment');

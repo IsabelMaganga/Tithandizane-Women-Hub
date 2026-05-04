@@ -28,7 +28,7 @@
 
         <div class="grid grid-cols-1 gap-5 md:grid-cols-4 group-card">
 
-            @for ($i = 0; $i < 10; $i++)
+            @for ($i = 0; $i < 4; $i++)
 
 
             <div class="grid group-card">
@@ -43,15 +43,15 @@
                         {{--  <div class="flex items-center justify-end w-full p-0 cursor-pointer close-mark">
                             <i id="xmark-btn" class="text-2xl fa-solid fa-xmark"></i>
                         </div>  --}}
-                        <div class="rounded-2xl w-50 header bg-amber-800 contain-content h-[30vh]">
+                        <div class=" w-50 header bg-amber-800 contain-content h-[30vh]">
                             <img src="{{ asset('/images/background.png') }}" class="object-cover w-full h-full " alt="group image">
                         </div>
 
-                        <h2 class="mt-2 text-lg font-semibold">
+                        <h2 class="mt-2 text-lg font-semibold select-none">
                             Health & Wellness
                         </h2>
 
-                        <p class="mt-1 text-sm text-gray-600">
+                        <p class="mt-1 text-sm text-gray-600 select-none">
                             A supportive space to discuss health, wellness, and self-care tips.
                         </p>
 

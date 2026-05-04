@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mentor;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Hash, Log, Mail, Notification, RateLimiter};
+
 use App\Http\Controllers\Controller;
 use App\Notifications\WelcomeNotification;
 
@@ -35,16 +36,20 @@ class AuthController extends Controller
             $user = Auth::guard('mentor')->user();
 
             // Check if user is active
-            // if ($user->status !== 'active') {
-            //     Auth::guard('mentor')->logout();
-            //     return back()->withErrors([
-            //         'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
-            //     ])->onlyInput('email');
-            // }
+            if ($user->status !== 'active') {
+                Auth::guard('mentor')->logout();
+                return back()->withErrors([
+                    'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
+                ])->onlyInput('email');
+            }
+
+            Notification::send($user, new WelcomeNotification($user));
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');
+
         }
+
 
          // check if user exist but with wrong role
         $user = \App\Models\User::where('email', $credentials['email'])->first();

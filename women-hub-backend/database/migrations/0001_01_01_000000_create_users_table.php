@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('expertise')->nullable();
             $table->text('bio')->nullable();
             $table->text('notes')->nullable();
-            $table->enum('status', ['pending', 'active', 'inactive'])->default('pending');
+            $table->enum('status', [ 'active', 'inactive'])->default('active');
             $table->string('availability')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->string('twitter_url')->nullable();
