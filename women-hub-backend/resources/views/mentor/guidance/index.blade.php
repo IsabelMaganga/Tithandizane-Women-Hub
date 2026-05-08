@@ -32,7 +32,7 @@
         <div class="p-6 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
             <div class="flex items-center mb-4">
                 <div class="p-2 rounded-lg bg-green-50">
-                    <i class="w-6 h-6 text-green-600 fa-brands fa-hubspot"></i>
+                    <i class="w-6 h-6 text-green-600 fa-solid fa-blender"></i>
                 </div>
                 <h3 class="ml-3 text-lg font-medium text-gray-900">general_guides</h3>
             </div>

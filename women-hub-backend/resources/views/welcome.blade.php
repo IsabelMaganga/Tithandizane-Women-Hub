@@ -38,8 +38,8 @@
 
                     <div class=" flex-2  text-[30px] backdrop-blur-sm  p-6 pb-12 lg:p-20  text-[#ffffff] shadow-[inset_0px_0px_0px_10px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-2xl">
                         <h1 class="mb-1 text-2xl  font-bold capitalize">
-                            <span class=" text-3xl md:text-6xl flex mt-3 md:mt-3 items-center gap-2.5 justify-center">
-                                <img src="{{ asset('images/Ellipse 3.png')}}" class=" w-8 md:w-[70px] " alt="">
+                            <span class=" text-3xl md:text-6xl font-bold flex mt-3 md:mt-3 items-center gap-2.5 justify-center">
+                                <img src="{{ asset('images/Ellipse 3.png')}}" class=" w-8 md:w-[70px] " alt="tithandizane logo">
                                 Tithandizane women hub
                             </span>
                         </h1>
@@ -49,10 +49,10 @@
 
                         {{-- get started --}}
                         <ul class="flex gap-6 mt-7 text-[20px] justify-center leading-normal">
-                                <a href="{{route('get.started')}}" target="_parent" class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#962980]/80   transition delay-75 px-10 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                <a href="{{route('get.started')}}" target="_parent" class="inline-block w-full bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#962980]/80 text-center  transition delay-75 px-10 py-4 rounded-3xl border text-white text-sm leading-normal">
                                     Get started
                                 </a>
-                                <a href="" target="_parent" class="inline-block  active:bg-[#5c1a4f] hover:bg-[#af2a95] border-2 border-[#962980]/80  transition delay-75 px-10 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                <a href="" target="_parent" class="inline-block w-full  active:bg-[#5c1a4f] hover:bg-[#af2a95] border-2 border-[#962980]/80  transition delay-75 px-10 py-4 text-center rounded-3xl border text-white text-sm leading-normal">
                                     Download an App
                                 </a>
                         </ul>

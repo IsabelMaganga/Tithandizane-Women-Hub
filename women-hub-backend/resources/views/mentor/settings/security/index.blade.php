@@ -3,7 +3,7 @@
 @section('title') privacy @endsection
 
 @section('content')
-<div class="px-4 py-0 mx-auto max-w-7xl sm:px-6 lg:px-8">
+<div class="px-4 py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
     <!-- Header with Back Navigation -->
     <div class="mb-20">
         <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">

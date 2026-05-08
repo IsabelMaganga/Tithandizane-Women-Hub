@@ -16,14 +16,14 @@
 
 
 
-            <div class="col-span-2 p-4 bg-white shadow rounded-2xl">
+            <div class="col-span-2 p-4 overflow-x-auto bg-white shadow rounded-2xl">
                  @if(session('success'))
                     <div id="success" class="p-3 mt-2 mb-4 text-green-700 bg-green-100 rounded success">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                <table class="w-full text-sm border border-collapse border-gray-300">
+                <table class="w-full text-sm border border-collapse  min-w-full divide-y divide-gray-200 border-gray-300">
                     <thead>
                         <tr class="text-left bg-gray-100">
                             <th class="p-2 border">ID</th>
@@ -38,15 +38,15 @@
                     <tbody>
                         @forelse($reports as $report)
                             <tr class="hover:bg-gray-50">
-                                <td class="p-2 border">{{ $report->id }}</td>
-                                <td class="p-2 border">{{ $report->username }}</td>
-                                <td class="p-2 border">{{ $report->title }}</td>
-                                <td class="p-2 border">{{ ucfirst($report->type) }}</td>
-                                <td class="p-2 border">{{ ucfirst($report->status) }}</td>
-                                <td class="p-2 border">
+                                <td class="p-2 border whitespace-nowrap">{{ $report->id }}</td>
+                                <td class="p-2 border whitespace-nowrap">{{ $report->username }}</td>
+                                <td class="p-2 border whitespace-nowrap">{{ $report->title }}</td>
+                                <td class="p-2 border whitespace-nowrap">{{ ucfirst($report->type) }}</td>
+                                <td class="p-2 border whitespace-nowrap">{{ ucfirst($report->status) }}</td>
+                                <td class="p-2 border whitespace-nowrap">
                                     {{ \Carbon\Carbon::parse($report->issue_date)->format('Y-m-d H:i') }}
                                 </td>
-                                <td class="p-2 border">
+                                <td class="p-2 border whitespace-nowrap">
                                     {{ $report->created_at->format('Y-m-d H:i') }}
                                 </td>
                             </tr>

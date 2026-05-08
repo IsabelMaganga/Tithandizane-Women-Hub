@@ -3,7 +3,7 @@
 @section('title') profile @endsection
 
 @section('content')
-<div class="max-w-4xl px-4 py-0 mx-auto sm:px-6 lg:px-8">
+<div class="max-w-4xl px-4 py-10 mx-auto sm:px-6 lg:px-8">
      <!-- Header with Back Navigation -->
     <div class="mb-4">
 

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description');
             $table->enum('type', ['bug','feedback','request','other']);
             $table->dateTime('issue_date');
-            $table->enum('status', ['open','in_progress','resolved'])->default('open');
+            $table->enum('status', ['open','pending','resolved'])->default('pending');
 
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')

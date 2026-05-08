@@ -73,6 +73,30 @@
         #general-sub-list.show {
             display: block;
         }
+
+        .spin-notification{
+            animation: spin 4s infinite linear;
+        }
+       @keyframes spin {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .notification-bar{
+             animation: moveY 1s infinite linear;
+        }
+
+         .notification-bar:hover{
+            animation-play-state: paused;
+        }
+
+        @keyframes moveY {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
     </style>
 
     @stack('styles')
@@ -107,13 +131,14 @@
 
                        {{-- appointments --}}
                         <a href="{{ route('mentor.appointment')}}" class="flex items-center px-6 py-3 mt-3 text-gray-300  hover:text-gray-50 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <i class="w-5 fa-regular fa-calendar"></i>
+                            <i class="w-5 text-md fa-solid fa-calendar text-yellow-600"></i>
                             <span class="ml-3">Appointments</span>
                         </a>
 
                         {{-- calendar --}}
                         <a href="{{ route('mentor.calender')}}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item">
-                            <i class="w-5 fa-regular fa-calendar"></i>
+                            {{--  <i class="w-5 fa-regular fa-calendar"></i>  --}}
+                            <p class=" text-md">📅 </p>
                             <span class="ml-3">Calendar</span>
                         </a>
 
@@ -216,6 +241,19 @@
                     </div>
                 </div>
             </nav>
+
+            {{--  notiticaton bar  --}}
+            @if (isset($unreadCount) && $unreadCount > 0)
+               
+                <a href="{{ route('mentor.notifications') }}" class="notification-bar pt-6 mt-auto w-[100%] text-sm">
+                    <div  class="flex relative items-center gap-4 px-6 py-3 text-gray-300 transition-colors bg-[#090d14] hover:bg-[#000000] hover:text-white" >
+                        <i class="w-5 absolute fas ml-2 fa-bell text-yellow-500 text-xl"></i>
+                        <span class="spin-notification rounded-full w-8 h-8 border-l-2 border-t-2 border-[#EBB208]"></span>
+                        <span class="ml-3">Notifications</span>
+                    </div>
+                </a>
+
+            @endif
 
             <!-- Logout Button -->
             <div class="pt-6 mt-auto text-sm">

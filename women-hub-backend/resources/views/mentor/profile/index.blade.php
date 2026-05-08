@@ -7,14 +7,14 @@
      <!-- Header with Back Navigation -->
     <div class="mb-4">
 
-        <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+        {{--  <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
             <a href="{{ route('mentor.dashboard') }}" class="hover:text-gray-900 flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
                 <span>back</span>
             </a>
-        </div>
+        </div>  --}}
     </div>
 
     <!-- Header -->

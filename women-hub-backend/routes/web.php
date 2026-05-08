@@ -4,7 +4,7 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController};
-use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 
 // Home page
 Route::get('/', fn() => view('welcome'))->name('welcome');
@@ -14,6 +14,7 @@ Route::get('/test-css', fn() => view('test-css'))->name('test.css');
 
 // Get started route
 Route::get('/get-started', fn() => view('get-started'))->name('get.started');
+Route::get('/login?redirect/', fn() => view('get-started'))->name('login');
 
 // Auth admin routes (guest only)
 Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {
@@ -69,7 +70,11 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/appointments',[MentorSecurityController::class, 'showAppointments'])->name('appointment');
 
     // calender
-    Route::get('/calender',[MentorSecurityController::class, 'showCalender'])->name('calender');
+    Route::get('/calender',[CalenderController::class, 'showCalender'])->name('calender');
+    Route::get('/calendar', [CalenderController::class, 'index'])->name('calendar.index');
+    Route::get('/events', [CalenderController::class, 'getEvents'])->name('events.fetch');
+    Route::post('/events/store', [CalenderController::class, 'store'])->name('events.store');
+    Route::delete('/events/{id}', [CalenderController::class, 'destroy'])->name('events.destroy');
 
     // reports
     Route::get('/reports',[ReportController::class, 'showReports'])->name('reports');
@@ -97,4 +102,9 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
     // Route::get('/test-broadcast', [MentorDashboardController::class, 'testBroadcast']);
+});
+
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
 });
