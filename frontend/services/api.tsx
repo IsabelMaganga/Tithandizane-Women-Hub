@@ -96,8 +96,8 @@ export interface HarassmentReport {
   created_at: string;
 }
 
-// YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.28.205
-const COMPUTER_IP = '192.168.28.205'; // Use the same IP as Metro
+// YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
+const COMPUTER_IP = '192.168.74.205'; // Use the same IP as Metro
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -110,10 +110,10 @@ const getBaseURL = (): string => {
       // For Physical Android Device: use computer's network IP
       
       // ✅ FOR PHYSICAL ANDROID DEVICE (Same WiFi)
-      return `http://192.168.1.102:8000/api/v1`;
+      return `http://192.168.74.205:8000/api`;
       
       // For Android Emulator (comment the above, uncomment below):
-      // return 'http://10.0.2.2:8000/api/v1';
+      // return 'http://10.0.2.2:8000/api';
     } 
     
     if (Platform.OS === 'ios') {
@@ -121,17 +121,17 @@ const getBaseURL = (): string => {
       // For Physical iOS Device: use computer's network IP
       
       // ✅ FOR PHYSICAL iOS DEVICE (Same WiFi)
-      return `http://192.168.28.205:8000/api/v1`;
+      return `http://192.168.74.205:8000/api`;
       
       // For iOS Simulator (comment the above, uncomment below):
-      // return 'http://localhost:8000/api/v1';
+      // return 'http://localhost:8000/api';
     }
     
     // Default fallback
-    return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+    return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
   } else {
     // Production environment
-    return 'https://your-production-api.com/api/v1';
+    return 'https://your-production-api.com/api';
   }
 };
 
@@ -150,13 +150,13 @@ console.log('🌐 API Base URL:', api.defaults.baseURL);
 console.log('💡 Make sure:');
 console.log(`   1. Laravel is running on port ${BACKEND_PORT}`);
 console.log(`   2. Phone is connected to WiFi (same network as computer)`);
-console.log(`   3. Can access ${api.defaults.baseURL}/register from phone browser`);
+console.log(`   3. Can access ${api.defaults.baseURL}/mentors/active from phone browser`);
 
 // Request interceptor - DON'T add token for registration
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
     // Public routes that don't need authentication
-    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset'];
+    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/'];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
     
     if (!isPublicRoute) {
@@ -188,15 +188,15 @@ api.interceptors.response.use(
       console.error('   Cannot connect to:', error.config?.baseURL);
       console.error('   ');
       console.error('   ⚠️ TROUBLESHOOTING STEPS:');
-      console.error('   1. Is Laravel running? Run: php artisan serve');
+      console.error('   1. Is Laravel running? Run: php artisan serve --host=0.0.0.0 --port=8000');
       console.error(`   2. Is Laravel on port ${BACKEND_PORT}?`);
       console.error('   3. Is phone on the SAME WiFi as computer?');
-      console.error(`   4. Can phone access: ${error.config?.baseURL}/register`);
+      console.error(`   4. Can phone access: ${error.config?.baseURL}/mentors/active`);
       console.error('   5. Windows Firewall might be blocking port 8000');
       console.error('   ');
       
       throw new Error('Unable to connect to server. Please check:\n' +
-        '• Backend is running (php artisan serve)\n' +
+        '• Backend is running (php artisan serve --host=0.0.0.0)\n' +
         '• Phone and computer on same WiFi\n' +
         `• Can access ${COMPUTER_IP}:8000 from phone browser\n` +
         '• Firewall allows port 8000');
@@ -336,142 +336,18 @@ export const getEmergencyContacts = async (): Promise<EmergencyContact[]> => {
   }
 };
 
-// Get mentors - FIXED VERSION
-export const getMentor = async (): Promise<Mentor[]> => {
-  try {
-    const response = await api.get('/mentors');
-    console.log('📥 Raw mentors response:', response.data);
-    
-    // Extract the mentors array based on your response structure
-    let mentorsArray = [];
-    
-    // Your backend returns { success: true, mentors: [...] }
-    if (response.data && response.data.success === true && response.data.mentors) {
-      mentorsArray = response.data.mentors;
-      console.log('✅ Extracted mentors from response.data.mentors');
-    } 
-    // If it's a direct array
-    else if (Array.isArray(response.data)) {
-      mentorsArray = response.data;
-      console.log('✅ Response is direct array');
-    }
-    // If it's wrapped in 'data' property
-    else if (response.data && response.data.data && Array.isArray(response.data.data)) {
-      mentorsArray = response.data.data;
-      console.log('✅ Extracted mentors from response.data.data');
-    }
-    // If it's a single object
-    else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
-      console.log('⚠️ Response is an object, checking for mentors property...');
-      if (response.data.mentor) {
-        mentorsArray = [response.data.mentor];
-        console.log('✅ Found single mentor object');
-      } else {
-        mentorsArray = [];
-        console.log('⚠️ No mentors array found in response');
-      }
-    }
-    
-    console.log(`📊 Found ${mentorsArray.length} mentors`);
-    
-    const transformedMentors = mentorsArray.map((mentor: Mentor) => {
-      let availableDays = mentor.available_days;
-      if (typeof availableDays === 'string') {
-        try {
-          availableDays = JSON.parse(availableDays);
-        } catch (e) {
-          availableDays = [];
-        }
-      }
-      
-      // Handle expertise parsing - it's already a string[] in the interface
-      let expertiseArray: string[] = mentor.expertise || [];
-      if (typeof expertiseArray === 'string') {
-        try {
-          const parsed = JSON.parse(expertiseArray);
-          expertiseArray = Array.isArray(parsed) ? parsed : [expertiseArray];
-        } catch (e) {
-          expertiseArray = [];
-        }
-      }
-      
-      return {
-        ...mentor,
-        expertise: expertiseArray,
-        available_days: availableDays,
-        avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=8b5cf6&color=fff`
-      };
-    });
-    
-    return transformedMentors;
-  } catch (error: any) {
-    console.error('❌ Error fetching mentors:', error.message);
-    if (error.response) {
-      console.error('Response status:', error.response.status);
-      console.error('Response data:', error.response.data);
-    }
-    return [];
-  }
-};
+// ============================================
+// MENTOR API FUNCTIONS - FIXED
+// ============================================
 
-// Get single mentor details - NEW FUNCTION
-export const getMentorDetails = async (mentorId: number): Promise<Mentor | null> => {
-  try {
-    const response = await api.get(`/mentors/${mentorId}`);
-    console.log('📥 Raw mentor details response:', response.data);
-    
-    let mentor = null;
-    
-    // Extract mentor from response
-    if (response.data && response.data.success === true && response.data.mentor) {
-      mentor = response.data.mentor;
-    } else if (response.data && response.data.mentor) {
-      mentor = response.data.mentor;
-    } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
-      mentor = response.data;
-    }
-    
-    if (!mentor) {
-      console.log('⚠️ No mentor found in response');
-      return null;
-    }
-    
-    // Handle expertise parsing - it's already a string[] in the interface
-    let expertiseArray: string[] = mentor.expertise || [];
-    if (typeof expertiseArray === 'string') {
-      try {
-        const parsed = JSON.parse(expertiseArray);
-        expertiseArray = Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
-        expertiseArray = [];
-      }
-    }
-    
-    // Parse available days if it's a string
-    let availableDays = mentor.available_days;
-    if (typeof availableDays === 'string') {
-      try {
-        availableDays = JSON.parse(availableDays);
-      } catch (e) {
-        availableDays = [];
-      }
-    }
-    
-    return {
-      ...mentor,
-      expertise: expertiseArray,
-      available_days: availableDays,
-      avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff`
-    };
-  } catch (error: any) {
-    console.error('❌ Error fetching mentor details:', error.message);
-    return null;
-  }
-};
-
+/**
+ * Get only ACTIVE mentors for the frontend (React Native)
+ * This is the main function used by MentorshipScreen
+ */
 export const getActiveMentors = async (search?: string, expertise?: string): Promise<Mentor[]> => {
   try {
-    let url = '/mentors';
+    // Use the dedicated endpoint for active mentors
+    let url = '/mentors/active';
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (expertise) params.append('expertise', expertise);
@@ -480,11 +356,10 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
     console.log('🔍 getActiveMentors: Fetching from URL:', url);
     const response = await api.get(url);
     console.log('📥 getActiveMentors: Response status:', response.status);
-    console.log('📥 getActiveMentors: Full response:', JSON.stringify(response.data, null, 2));
     
     let mentorsArray: any[] = [];
     
-    // Your API returns: { success: true, message: "...", mentors: [...], total: 2 }
+    // Your API returns: { success: true, message: "...", mentors: [...], total: X }
     if (response.data && response.data.success === true && Array.isArray(response.data.mentors)) {
       mentorsArray = response.data.mentors;
       console.log('✅ Extracted mentors from response.data.mentors, count:', mentorsArray.length);
@@ -561,12 +436,16 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
         rating: mentor.rating || null,
         total_sessions: mentor.total_sessions || 0,
         status: status,
+        created_at: mentor.created_at,
+        updated_at: mentor.updated_at,
       };
     });
     
-    console.log(`✅ Transformed ${transformedMentors.length} mentors`);
+    console.log(`✅ Transformed ${transformedMentors.length} active mentors`);
     if (transformedMentors.length > 0) {
       console.log('📝 First mentor:', transformedMentors[0].name, 'Status:', transformedMentors[0].status);
+    } else {
+      console.warn('⚠️ No active mentors found. Make sure mentors have status="active" in database');
     }
     
     return transformedMentors;
@@ -579,6 +458,98 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
     return [];
   }
 };
+
+/**
+ * Get single mentor details by ID
+ */
+export const getMentorDetails = async (mentorId: number): Promise<Mentor | null> => {
+  try {
+    const response = await api.get(`/mentors/${mentorId}`);
+    console.log('📥 Raw mentor details response:', response.data);
+    
+    let mentor = null;
+    
+    // Extract mentor from response
+    if (response.data && response.data.success === true && response.data.mentor) {
+      mentor = response.data.mentor;
+    } else if (response.data && response.data.mentor) {
+      mentor = response.data.mentor;
+    } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+      mentor = response.data;
+    }
+    
+    if (!mentor) {
+      console.log('⚠️ No mentor found in response');
+      return null;
+    }
+    
+    // Handle expertise parsing
+    let expertiseArray: string[] = mentor.expertise || [];
+    if (typeof expertiseArray === 'string') {
+      try {
+        const parsed = JSON.parse(expertiseArray);
+        expertiseArray = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        expertiseArray = [];
+      }
+    }
+    
+    // Parse available days if it's a string
+    let availableDays = mentor.available_days;
+    if (typeof availableDays === 'string') {
+      try {
+        availableDays = JSON.parse(availableDays);
+      } catch (e) {
+        availableDays = [];
+      }
+    }
+    
+    return {
+      ...mentor,
+      expertise: expertiseArray,
+      available_days: availableDays,
+      avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff`
+    };
+  } catch (error: any) {
+    console.error('❌ Error fetching mentor details:', error.message);
+    return null;
+  }
+};
+
+/**
+ * Get all mentors (including inactive/pending) - for admin use only
+ * This requires authentication
+ */
+export const getAllMentors = async (): Promise<Mentor[]> => {
+  try {
+    const response = await api.get('/mentors');
+    console.log('📥 Raw all mentors response:', response.data);
+    
+    let mentorsArray = [];
+    
+    if (response.data && response.data.success === true && response.data.mentors) {
+      mentorsArray = response.data.mentors;
+    } else if (Array.isArray(response.data)) {
+      mentorsArray = response.data;
+    } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      mentorsArray = response.data.data;
+    }
+    
+    return mentorsArray;
+  } catch (error: any) {
+    console.error('❌ Error fetching all mentors:', error.message);
+    return [];
+  }
+};
+
+// Legacy function - kept for backward compatibility
+export const getMentor = async (): Promise<Mentor[]> => {
+  return getActiveMentors();
+};
+
+// ============================================
+// CHAT & MESSAGING FUNCTIONS
+// ============================================
 
 // Fetch chat list
 export const getChatList = async (): Promise<Conversation[]> => {
@@ -633,6 +604,10 @@ export const getMessages = async (conversationId: number): Promise<Message[]> =>
   }
 };
 
+// ============================================
+// HARASSMENT REPORT FUNCTIONS
+// ============================================
+
 // Get harassment reports
 export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
   try {
@@ -663,7 +638,7 @@ export const submitHarassmentReport = async (data: {
 };
 
 // Submit anonymous harassment report
-export const submitHarassmentReportAnonymously = async (data:  {
+export const submitHarassmentReportAnonymously = async (data: {
   incident_type: string;
   description: string;
   location?: string;
@@ -686,7 +661,11 @@ export const submitAnonymousReport = async (data: {
   description: string;
   location?: string;
 }): Promise<HarassmentReport> => {
-  return submitHarassmentReportAnonymously(data);
+  return submitHarassmentReportAnonymously({
+    incident_type: data.title,
+    description: data.description,
+    location: data.location,
+  });
 };
 
 // Fetch general guides
@@ -699,6 +678,10 @@ export const getGeneralGuides = async (): Promise<any[]> => {
     throw error;
   }
 };
+
+// ============================================
+// USER & ADMIN FUNCTIONS
+// ============================================
 
 // Get all users
 export const getAllUsers = async (token: string) => {
@@ -738,6 +721,10 @@ export const getUser = async (userId: number, token: string) => {
     throw error;
   }
 };
+
+// ============================================
+// MENTORSHIP SESSION FUNCTIONS
+// ============================================
 
 // Send mentorship request
 export const sendMentorshipRequest = async (data: {
@@ -818,8 +805,7 @@ export const joinGroup = async (token: string, conversationID: number) => {
 export const testConnection = async (): Promise<boolean> => {
   try {
     console.log('🔍 Testing connection to:', api.defaults.baseURL);
-    // Try a simple OPTIONS request or GET to a public endpoint
-    const response = await api.get('/register', { 
+    const response = await api.get('/mentors/active', { 
       validateStatus: (status) => status < 500 
     });
     console.log('✅ Connection successful! Server responded with status:', response.status);

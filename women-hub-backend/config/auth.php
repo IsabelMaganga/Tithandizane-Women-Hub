@@ -32,7 +32,7 @@ return [
 
         'mentor' => [
             'driver' => 'session',
-            'provider' => 'users',  // This should point to 'mentors' provider
+            'provider' => 'mentors',  // points to 'mentors' provider
         ],
     ],
 
@@ -50,12 +50,12 @@ return [
 
         'admins' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,  // Make sure you have an Admin model
+            'model' => App\Models\Admin::class,
         ],
 
         'mentors' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,  // FIXED: Was pointing to User::class
+            'model' => App\Models\Mentor::class,  //   points to Mentor model
         ],
     ],
 

@@ -14,17 +14,28 @@ Route::post('/broadcasting/auth', function () {
     return BroadcastManager::auth();
 })->middleware(['auth:sanctum'])->withoutMiddleware('api');
 
+// ============================================
+// PUBLIC API ROUTES (No Authentication Required)
+// ============================================
+
 // Direct routes (without v1 prefix) for frontend compatibility
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/mentors', [MentorController::class, 'getActiveMentors']);
-Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']); // Add this route
-Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']); // Optional
+
+// Mentor routes - PUBLIC (for React Native frontend)
+Route::get('/mentors/active', [MentorController::class, 'getActiveMentors']);  // Get active mentors only
+Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']);     // Get single mentor details
+Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']);       // Get mentor statistics
+
+// Content routes
 Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
+Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
 Route::get('/general-guides', [ContentController::class, 'generalGuides']);
 Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
 
-// v0.1
+// ============================================
+// API V1 ROUTES
+// ============================================
 Route::prefix('v1')->group(function () {
 
     // Auth routes (public)
@@ -36,14 +47,20 @@ Route::prefix('v1')->group(function () {
     Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
     Route::get('/general-guides', [ContentController::class, 'generalGuides']);
     Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
-    Route::get('/mentors', [MentorController::class, 'getActiveMentors']); // Use the correct method
-    Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']); // Add details route
+    
+    // Mentor routes - PUBLIC (for React Native frontend)
+    Route::get('/mentors/active', [MentorController::class, 'getActiveMentors']);  // Get active mentors only
+    Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']);     // Get single mentor details
+    Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']);       // Get mentor statistics
 
     // Anonymous harassment report
     Route::post('/harassment-reports/anonymous', [HarassmentController::class, 'store']);
 
-    // Authenticated routes
+    // ============================================
+    // AUTHENTICATED ROUTES (Require Sanctum Token)
+    // ============================================
     Route::middleware('auth:sanctum')->group(function () {
+        // Auth
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
 
@@ -52,15 +69,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
         Route::post('/conversations', [MessageController::class, 'createConversation']);
         Route::get('/conversations', [MessageController::class, 'getConversations']);
-
         Route::get('/conversations/{id}', [MessageController::class, 'showInfo']);
 
-        //get users
-        Route::get('/users',[UserController::class,'getAllUsers']);
-        Route::get('/users/{userId}',[UserController::class,'getUser']);
+        // User routes
+        Route::get('/users', [UserController::class, 'getAllUsers']);
+        Route::get('/users/{userId}', [UserController::class, 'getUser']);
 
-        // Mentorship
-        Route::get('/mentors', [MentorshipController::class, 'mentors']);
+        // Mentorship routes
+        Route::get('/available-mentors', [MentorshipController::class, 'mentors']);
         Route::post('/mentorship/request', [MentorshipController::class, 'request']);
         Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
         Route::get('/mentorship/mentor-sessions', [MentorshipController::class, 'mentorSessions']);
@@ -70,19 +86,38 @@ Route::prefix('v1')->group(function () {
         Route::post('/harassment-reports', [HarassmentController::class, 'store']);
         Route::get('/harassment-reports/my-reports', [HarassmentController::class, 'myReports']);
 
-        // Admin routes
+        // ============================================
+        // ADMIN ROUTES (Require Admin Authentication)
+        // ============================================
         Route::prefix('admin')->group(function () {
+            // Harassment reports management
             Route::get('/harassment-reports', [HarassmentController::class, 'index']);
             Route::patch('/harassment-reports/{report}', [HarassmentController::class, 'updateStatus']);
+            
+            // Groups management
             Route::get('/conversations', [MessageController::class, 'getAllGroups']);
             
-            // Mentor Management Routes (API endpoints)
-            Route::post('/mentors', [MentorController::class, 'storeApi']);
-            Route::get('/mentors', [MentorshipController::class, 'getAllMentorsApi']);
-            Route::get('/mentors/{id}', [MentorController::class, 'showApi']);
-            Route::put('/mentors/{id}', [MentorController::class, 'updateApi']);
-            Route::delete('/mentors/{id}', [MentorController::class, 'destroyApi']);
-            Route::patch('/mentors/{id}/status', [MentorController::class, 'updateStatusApi']);
+            // ============================================
+            // MENTOR MANAGEMENT - ADMIN API ENDPOINTS
+            // ============================================
+            // Get all mentors (admin view - includes inactive/pending)
+            Route::get('/mentors', [MentorController::class, 'index']);
+            
+            // Get single mentor (admin view)
+            Route::get('/mentors/{id}', [MentorController::class, 'show']);
+            
+            // Create new mentor
+            Route::post('/mentors', [MentorController::class, 'store']);
+            
+            // Update mentor
+            Route::put('/mentors/{id}', [MentorController::class, 'update']);
+            Route::patch('/mentors/{id}', [MentorController::class, 'update']);
+            
+            // Delete mentor
+            Route::delete('/mentors/{id}', [MentorController::class, 'destroy']);
+            
+            // Update mentor status (activate/deactivate)
+            Route::patch('/mentors/{id}/status', [MentorController::class, 'toggleStatus']);
         });
 
         // Group Discovery & Joining
@@ -90,4 +125,14 @@ Route::prefix('v1')->group(function () {
         Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
     });
 
+});
+
+// ============================================
+// FALLBACK ROUTE FOR 404 ERRORS (Optional)
+// ============================================
+Route::fallback(function () {
+    return response()->json([
+        'success' => false,
+        'message' => 'API endpoint not found'
+    ], 404);
 });

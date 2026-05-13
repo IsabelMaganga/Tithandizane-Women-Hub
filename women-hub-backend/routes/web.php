@@ -3,7 +3,7 @@
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
-use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController};
+use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController};
 use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 
 // Home page
@@ -31,6 +31,24 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Settings Routes
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::post('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
+    Route::post('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
+    Route::post('/settings/backup', [SettingsController::class, 'createBackup'])->name('settings.backup.create');
+    Route::delete('/settings/backup/{file}', [SettingsController::class, 'deleteBackup'])->name('settings.backup.delete');
+    Route::post('/settings/api/generate', [SettingsController::class, 'generateApiKey'])->name('settings.api.generate');
+    Route::delete('/settings/api/{key}', [SettingsController::class, 'revokeApiKey'])->name('settings.api.revoke');
+    Route::post('/settings/email/template/update', [SettingsController::class, 'updateEmailTemplate'])->name('settings.email.template.update');
+    Route::post('/settings/guidance/store', [SettingsController::class, 'storeGuidance'])->name('settings.guidance.store');
+    Route::put('/settings/guidance/{id}', [SettingsController::class, 'updateGuidance'])->name('settings.guidance.update');
+    Route::delete('/settings/guidance/{id}', [SettingsController::class, 'deleteGuidance'])->name('settings.guidance.delete');
+    
+    // Admin Management Routes
+    Route::post('/settings/admins', [SettingsController::class, 'storeAdmin'])->name('settings.admins.store');
+    Route::put('/settings/admins/{id}', [SettingsController::class, 'updateAdmin'])->name('settings.admins.update');
+    Route::delete('/settings/admins/{id}', [SettingsController::class, 'deleteAdmin'])->name('settings.admins.delete');
+
     // Mentors - Full resource route
     Route::resource('mentors', MentorController::class);
 
@@ -51,7 +69,7 @@ Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(func
 // Protected mentor routes
 Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(function () {
 
-    // auth()->u    ser()->markEmailAsVerified();
+    // auth()->user()->markEmailAsVerified();
     Route::post('/logout', [MentorAuthController::class, 'logout'])->name('logout');
     Route::delete('/sessions', [MentorAuthController::class, 'logoutAllSessions'])->name('logoutAllSessions');
 
@@ -60,16 +78,15 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     // dashboard
     Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
 
-    // notifitions routes
+    // notifications routes
     Route::post('/notifications/{id}/read',[NotificationController::class, 'markAsRead'])->name('notification.read');
     Route::post('/notifications/read-all',[NotificationController::class, 'markAllAsRead'])->name('notification.read-all');
     Route::get('/notifications',[NotificationController::class, 'getMyNotification'])->name('notifications');
 
-
     // appointments
     Route::get('/appointments',[MentorSecurityController::class, 'showAppointments'])->name('appointment');
 
-    // calender
+    // calendar
     Route::get('/calender',[CalenderController::class, 'showCalender'])->name('calender');
     Route::get('/calendar', [CalenderController::class, 'index'])->name('calendar.index');
     Route::get('/events', [CalenderController::class, 'getEvents'])->name('events.fetch');
@@ -103,7 +120,6 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
     // Route::get('/test-broadcast', [MentorDashboardController::class, 'testBroadcast']);
 });
-
 
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);

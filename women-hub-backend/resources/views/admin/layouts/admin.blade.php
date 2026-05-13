@@ -2,239 +2,442 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') - Tithandizane Women Hub</title>
-    {{-- <link rel="short icon" href="{{ asset('images/Ellipse 3.png') }}"> --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS + Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
+        /* Light Mode Variables (Default) */
         :root {
-            --primary: #7C3D5E;
-            --primary-lt: #A85080;
-            --accent: #E8976A;
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #FDF6F0;
-        }
-
-        .navbar-brand {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            color: var(--primary) !important;
-        }
-
-        .navbar {
-            background: #fff;
-            border-bottom: 1px solid #EDE0D8;
-            box-shadow: 0 2px 4px rgba(124,61,94,.08);
-        }
-
-        .nav-link {
-            color: #6B3D57 !important;
-            font-weight: 500;
-            transition: color .2s;
-        }
-
-        .nav-link:hover {
-            color: var(--primary) !important;
-        }
-
-        .nav-link.active {
-            color: var(--primary) !important;
-            font-weight: 600;
-        }
-
-        .btn-primary-hub {
-            background: linear-gradient(135deg, var(--primary), var(--primary-lt));
-            border: none;
-            color: #fff;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-weight: 600;
-            transition: opacity .2s;
-        }
-
-        .btn-primary-hub:hover {
-            opacity: .9;
-            color: #fff;
-        }
-
-        .page-header {
-            background: #fff;
-            padding: 24px 0;
-            border-bottom: 1px solid #EDE0D8;
-            margin-bottom: 24px;
-        }
-
-        .page-header h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .page-header p {
-            color: #9A7A8E;
-            font-size: .9rem;
-        }
-
-        .form-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid #EDE0D8;
-            box-shadow: 0 4px 12px rgba(124,61,94,.06);
-        }
-
-        .section-card {
-            background: #fff;
-            border-radius: 16px;
-            border: 1px solid #EDE0D8;
-            overflow: hidden;
-        }
-
-        .section-card-header {
-            background: linear-gradient(135deg, var(--primary-lt), var(--accent));
-            color: #fff;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .section-card-header h6 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .invalid-feedback {
-            font-size: .78rem;
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a2a3a;
+            --text-secondary: #7f8c8d;
+            --sidebar-bg: #1a2a3a;
+            --sidebar-text: #E2E8F0;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --teal-green: #2ecc71;
+            --green: #27ae60;
+            --light-teal: #d5f5e3;
+            --orange: #f39c12;
+            --light-orange: #fdebd0;
+            --red: #e74c3c;
+            --light-red: #fadbd8;
+            --purple: #9b59b6;
+            --light-purple: #e8daef;
+            --blue: #3498db;
+            --light-blue: #d6eaf8;
+            --dark-blue: #2c3e50;
+            --white: #ffffff;
+            --light-gray: #f8f9fa;
+            --gray-bg: #f0f2f5;
         }
         
-        /* Additional styles for better UX */
-        .dropdown-item {
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --sidebar-bg: #0f0f1a;
+            --sidebar-text: #cbd5e0;
+            --card-bg: #1e293b;
+            --border-color: #2d3748;
+            --light-teal: #1a3a2a;
+            --light-orange: #3a2a1a;
+            --light-red: #3a1a1a;
+            --light-purple: #2a1a3a;
+            --light-blue: #1a2a3a;
+            --light-gray: #1a202c;
+            --gray-bg: #0f172a;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            font-family: 'DM Sans', system-ui, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--light-gray); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--dark-blue); border-radius: 10px; }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid #2c3e50;
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+            color: var(--sidebar-text);
+        }
+        
+        .nav-item:hover {
+            background: rgba(52, 152, 219, 0.2);
+            transform: translateX(2px);
+        }
+        
+        .nav-item.active-nav {
+            background: var(--blue) !important;
+            color: #FFFFFF !important;
+        }
+        
+        /* Main Content */
+        .main-content {
+            background: var(--bg-primary);
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+        
+        /* Cards */
+        .card-bg {
+            background: var(--card-bg);
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--light-gray);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Text Colors */
+        .text-primary-color { color: var(--text-primary); }
+        .text-secondary-color { color: var(--text-secondary); }
+        
+        /* Border Colors */
+        .border-color { border-color: var(--border-color); }
+        
+        /* Progress bar colors */
+        .progress-bar-green { background: var(--teal-green); }
+        .progress-bar-blue { background: var(--blue); }
+        .progress-bar-orange { background: var(--orange); }
+        .progress-bar-red { background: var(--red); }
+        
+        /* Badge colors */
+        .badge-success { background: var(--light-teal); color: var(--teal-green); }
+        .badge-warning { background: var(--light-orange); color: var(--orange); }
+        .badge-danger { background: var(--light-red); color: var(--red); }
+        .badge-info { background: var(--light-blue); color: var(--blue); }
+        .badge-purple { background: var(--light-purple); color: var(--purple); }
+        
+        /* Stat Card */
+        .stat-card {
+            background: var(--card-bg);
+            transition: all 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.15);
+        }
+        
+        /* Empower Card */
+        .empower-card {
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--dark-blue) 100%);
+        }
+        
+        /* Hover effects for mentor boxes */
+        .mentor-box {
+            transition: all 0.3s ease;
+            border-color: var(--border-color);
             cursor: pointer;
         }
         
-        .dropdown-item button {
-            background: none;
-            border: none;
-            width: 100%;
-            text-align: left;
-            padding: 0;
+        .mentor-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
         }
+        
+        .mentor-box:hover .mentor-icon {
+            transform: scale(1.1);
+        }
+        
+        .mentor-box.view-all:hover {
+            border-color: var(--purple);
+            background: var(--light-purple);
+        }
+        
+        .mentor-box.add-new:hover {
+            border-color: var(--teal-green);
+            background: var(--light-teal);
+        }
+        
+        .mentor-box.pending:hover {
+            border-color: var(--orange);
+            background: var(--light-orange);
+        }
+        
+        .mentor-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Utility */
+        .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-scale:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -12px rgba(0,0,0,0.15); }
+        .card-shadow { box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Card borders */
+        .card-teal-border { border-left-color: var(--teal-green); }
+        .card-blue-border { border-left-color: var(--blue); }
+        .card-purple-border { border-left-color: var(--purple); }
+        .card-orange-border { border-left-color: var(--orange); }
+        
+        /* KPI Text Colors */
+        .text-success { color: var(--teal-green); }
+        .text-warning { color: var(--orange); }
+        .text-danger { color: var(--red); }
+        .text-info { color: var(--blue); }
+        .text-purple { color: var(--purple); }
     </style>
     
     @stack('styles')
 </head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-                <i class="bi bi-heart-fill me-2"></i>
-                Tithandizane Women Hub
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" 
-                           href="{{ route('admin.dashboard') }}">
-                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.mentors*') ? 'active' : '' }}" 
-                           href="{{ route('admin.mentors.index') }}">
-                            <i class="bi bi-people me-1"></i> Mentors
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}" 
-                           href="{{ route('admin.reports.index') }}">
-                            <i class="bi bi-exclamation-triangle me-1"></i> Reports
-                        </a>
-                    </li>
-                </ul>
-                
-                <ul class="navbar-nav">
-                    @guest('admin')
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.login') }}">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                            </a>
-                        </li>
-                    @else
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i>
-                                {{ Auth::guard('admin')->user()->name }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ route('admin.register') }}">
-                                    <i class="bi bi-person-plus me-2"></i>Add Admin
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="POST" action="{{ route('admin.logout') }}">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item" style="background: none; border: none; width: 100%; text-align: left;">
-                                            <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @endguest
-                </ul>
+<body class="antialiased">
+
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <div class="w-64 flex flex-col shadow-xl sidebar">
+        <div class="p-6 border-b" style="border-color: #2c3e50;">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
+                    <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
+                </div>
             </div>
         </div>
-    </nav>
 
-    <!-- Page Header -->
-    @hasSection('page-title')
-    <div class="page-header">
-        <div class="container-fluid">
-            <h2>@yield('page-title')</h2>
-            @hasSection('page-subtitle')
-                <p>@yield('page-subtitle')</p>
-            @endif
+        <nav class="flex-1 mt-6 space-y-1 px-3" id="sidebar-nav">
+            <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.dashboard') ? 'active-nav' : '' }}">
+                <i class="fas fa-home w-5"></i>
+                <span class="ml-3 font-medium">Dashboard</span>
+            </a>
+            <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.mentors.*') ? 'active-nav' : '' }}">
+                <i class="fas fa-chalkboard-user w-5"></i>
+                <span class="ml-3">Mentors</span>
+            </a>
+            <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'active-nav' : '' }}">
+                <i class="fas fa-flag w-5"></i>
+                <span class="ml-3">Harassment Reports</span>
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style="background: var(--red); color: white;" id="pendingReportsBadge">0</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group">
+                <i class="fas fa-book-open w-5"></i>
+                <span class="ml-3">Guidance Content</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group">
+                <i class="fas fa-user-circle w-5"></i>
+                <span class="ml-3">Users</span>
+                <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background: var(--dark-blue); color: white;" id="totalUsersBadge">0</span>
+            </a>
+            <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}">
+                <i class="fas fa-cog w-5"></i>
+                <span class="ml-3">Settings</span>
+            </a>
+        </nav>
+
+        <!-- Admin user card - stays at bottom -->
+        <div class="p-5 m-3 rounded-xl mb-6" style="background: var(--dark-blue); border: 1px solid #34495e;">
+            <div class="flex items-center">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('admin')->user()->name ?? 'Admin User') }}&background=3498db&color=fff&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white" id="adminAvatarImg">
+                <div class="ml-3">
+                    <p class="text-sm font-semibold text-white" id="adminNameDisplay">{{ Auth::guard('admin')->user()->name ?? 'Admin User' }}</p>
+                    <p class="text-xs text-white/80" id="adminEmailDisplay">{{ Auth::guard('admin')->user()->email ?? 'admin@tithandizane.org' }}</p>
+                </div>
+            </div>
         </div>
     </div>
-    @endif
 
     <!-- Main Content -->
-    <main class="container-fluid py-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="flex-1 overflow-y-auto custom-scroll main-content">
+        <!-- Top welcome bar with logout and dark mode toggle -->
+        <div class="sticky top-0 z-10 backdrop-blur-sm shadow-sm border-b top-bar" style="background: var(--bg-secondary); border-color: var(--border-color);">
+            <div class="flex justify-between items-center px-8 py-4 flex-wrap gap-3">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight text-primary-color">@yield('page-title', 'Welcome back, Admin')</h2>
+                    <p class="text-sm mt-1 text-secondary-color">@yield('page-subtitle', 'Empowering women through mentorship & safety')</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Dark/Light Mode Toggle Button -->
+                    <button id="themeToggle" class="theme-toggle flex items-center gap-2 px-4 py-2 rounded-lg transition" style="background: var(--light-gray); color: var(--text-primary);">
+                        <i id="themeIcon" class="fas fa-moon"></i>
+                        <span id="themeText" class="text-sm font-medium">Dark Mode</span>
+                    </button>
+                    
+                    <div class="relative">
+                        <i class="fas fa-bell text-xl cursor-pointer transition" style="color: var(--text-primary);"></i>
+                        <span class="absolute -top-1 -right-2 text-white text-[10px] rounded-full px-1.5" style="background: var(--red);" id="notificationBadge">0</span>
+                    </div>
+                    <i class="fas fa-envelope text-xl cursor-pointer transition" style="color: var(--text-primary);"></i>
+                    
+                    <!-- Logout Button -->
+                    <form method="POST" action="{{ route('admin.logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-lg transition" style="background: var(--light-red); color: var(--red);">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="text-sm font-medium">Logout</span>
+                        </button>
+                    </form>
+                </div>
             </div>
-        @endif
-        
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        
-        @yield('content')
-    </main>
+        </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @stack('scripts')
+        <!-- Page Content -->
+        <div class="p-8">
+            @if(session('success'))
+                <div class="alert-success mb-4 p-4 rounded-lg flex items-center gap-3" style="background: var(--light-teal); color: var(--teal-green); border-left: 4px solid var(--teal-green);">
+                    <i class="fas fa-check-circle text-xl"></i>
+                    <span>{{ session('success') }}</span>
+                    <button type="button" class="ml-auto" onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer;">
+                        <i class="fas fa-times" style="color: var(--teal-green);"></i>
+                    </button>
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="alert-danger mb-4 p-4 rounded-lg flex items-center gap-3" style="background: var(--light-red); color: var(--red); border-left: 4px solid var(--red);">
+                    <i class="fas fa-exclamation-triangle text-xl"></i>
+                    <span>{{ session('error') }}</span>
+                    <button type="button" class="ml-auto" onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer;">
+                        <i class="fas fa-times" style="color: var(--red);"></i>
+                    </button>
+                </div>
+            @endif
+            
+            @if($errors->any())
+                <div class="alert-danger mb-4 p-4 rounded-lg" style="background: var(--light-red); color: var(--red); border-left: 4px solid var(--red);">
+                    <ul class="mb-0 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                            <li class="text-sm">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            
+            @yield('content')
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dark/Light Mode Toggle with localStorage persistence
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const body = document.body;
+        
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            updateThemeUI(true);
+        } else {
+            body.classList.remove('dark-mode');
+            updateThemeUI(false);
+        }
+    }
+    
+    function updateThemeUI(isDark) {
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        
+        if (themeIcon && themeText) {
+            if (isDark) {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Light Mode';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+    }
+    
+    function toggleTheme() {
+        const body = document.body;
+        const isDark = body.classList.contains('dark-mode');
+        
+        if (isDark) {
+            body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+            updateThemeUI(false);
+        } else {
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+            updateThemeUI(true);
+        }
+    }
+    
+    // Load pending reports count for badge
+    function loadPendingReportsCount() {
+        const url = '{{ route("admin.reports.index") }}';
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.reports && Array.isArray(data.reports)) {
+                const pendingReports = data.reports.filter(r => r.status === 'new' || r.status === 'in_review').length;
+                const badge = document.getElementById('pendingReportsBadge');
+                if (badge) badge.innerText = pendingReports;
+            }
+        })
+        .catch(error => console.error('Error loading reports:', error));
+    }
+    
+    // Load total users count
+    function loadTotalUsersCount() {
+        const url = '{{ route("admin.dashboard") }}';
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.totalUsers !== undefined) {
+                const badge = document.getElementById('totalUsersBadge');
+                if (badge) badge.innerText = data.totalUsers;
+            }
+        })
+        .catch(error => console.error('Error loading users count:', error));
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initTheme();
+        loadPendingReportsCount();
+        loadTotalUsersCount();
+        
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+    });
+</script>
+
+@stack('scripts')
 </body>
 </html>

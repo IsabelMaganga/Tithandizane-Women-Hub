@@ -1,785 +1,629 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Mentor – Tithandizane Women Hub</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        /* Color Palette Variables - Matching Dashboard Purple Theme */
-        :root {
-            --purple-primary: #874179;
-            --purple-dark: #6d3661;
-            --purple-light: #af5c9c;
-            --purple-soft: #F3E6F1;
-            --purple-gradient-start: #874179;
-            --purple-gradient-end: #af5c9c;
-            --vibrant-green: #4CAF50;
-            --lime-green: #8BC34A;
-            --bright-blue: #5CB8E4;
-        }
+{{-- resources/views/admin/mentors/create.blade.php --}}
+@extends('admin.layouts.admin')
 
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--purple-primary) !important;
-        }
+@section('title', 'Add New Mentor')
+@section('page-title', 'Add New Mentor')
+@section('page-subtitle', 'Create and configure a professional mentor profile')
 
-        .form-section {
-            opacity: 0;
-            transform: translateY(10px);
-            animation: fadeInUp 0.4s ease-out forwards;
-        }
+@section('content')
+<!-- Breadcrumb -->
+<nav class="mb-6 text-sm" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2">
+        <li>
+            <a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: var(--purple);">
+                <i class="fas fa-home mr-1.5 text-xs"></i> Dashboard
+            </a>
+        </li>
+        <li class="text-secondary-color"><i class="fas fa-chevron-right text-xs"></i></li>
+        <li>
+            <a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: var(--purple);">Mentors</a>
+        </li>
+        <li class="text-secondary-color"><i class="fas fa-chevron-right text-xs"></i></li>
+        <li class="font-medium" style="color: var(--text-primary);">Add New Mentor</li>
+    </ol>
+</nav>
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+<!-- Form Card -->
+<div class="rounded-2xl shadow-lg overflow-hidden" style="background: var(--card-bg);">
+    <form id="mentorForm" action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-        .file-input-label {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .file-input-label input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .expertise-checkbox { display: none; }
-
-        .expertise-label {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
-            width: 100%;
-        }
-
-        .expertise-checkbox:checked + .expertise-label {
-            border-color: var(--purple-primary);
-            background: var(--purple-soft);
-            color: var(--purple-primary);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-button { transition: all 0.3s ease; }
-        .tab-button.active {
-            border-bottom: 3px solid var(--purple-primary);
-            color: var(--purple-primary);
-        }
-
-        .strength-bar {
-            height: 4px;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--purple-soft);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--purple-primary);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--purple-dark);
-        }
-        
-        /* Toast notification styles */
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 30px;
-            font-size: 14px;
-            transform: translateX(-50%);
-        }
-        .toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-        
-        /* Custom select for multiple days */
-        select[multiple] {
-            background-image: none;
-        }
-        select[multiple] option {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        select[multiple] option:checked {
-            background: var(--purple-primary) linear-gradient(0deg, var(--purple-primary) 0%, var(--purple-primary) 100%);
-            color: white;
-        }
-        
-        /* Success Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .success-modal {
-            background: white;
-            border-radius: 1.5rem;
-            max-width: 500px;
-            width: 90%;
-            padding: 2rem;
-            text-align: center;
-            animation: modalSlideIn 0.3s ease-out;
-        }
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        .checkmark-circle {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #874179, #af5c9c);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-        }
-        .checkmark {
-            font-size: 3rem;
-            color: white;
-        }
-        .success-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 2rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #874179, #af5c9c);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(135, 65, 121, 0.3);
-        }
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen antialiased">
-<div class="flex min-h-screen">
-
-   <!-- Sidebar -->
-<aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 text-white flex-shrink-0 fixed h-screen" style="background: #874179; border-right: 1px solid #6d3661;">
-    <div class="p-6 border-b" style="border-color: #6d3661;">
-        <div class="flex items-center gap-3">
-            <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
-                <p class="text-xs opacity-90 text-white">Women Hub</p>
+        <!-- Header -->
+        <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, var(--light-purple) 0%, var(--card-bg) 100%); border-color: var(--border-color);">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold" style="color: var(--purple);">Mentor Registration</h2>
+                    <p class="mt-2 text-sm" style="color: var(--text-secondary);">
+                        Complete the form below to add a new mentor to the platform.
+                        Fields marked <span style="color: var(--red); font-weight: 600;">*</span> are required.
+                    </p>
+                </div>
+                <div class="hidden sm:block">
+                    <div class="inline-flex items-center space-x-2 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="background: var(--card-bg); border-color: var(--purple);">
+                        <i class="fas fa-info-circle text-sm" style="color: var(--purple);"></i>
+                        <span class="text-sm font-medium" style="color: var(--text-secondary);">
+                            Step <span id="currentStep">1</span> of <span id="totalSteps">3</span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-        <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
-            <i class="fas fa-home w-5 mr-3" style="color: #FFFFFF;"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="background: #6d3661; color: #FFFFFF;">
-            <i class="fas fa-chalkboard-user w-5 mr-3" style="color: #9C27B0;"></i>
-            <span class="font-medium">Mentors</span>
-        </a>
-        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
-            <i class="fas fa-flag w-5 mr-3" style="color: #8BC34A;"></i>
-            <span>Harassment Reports</span>
-        </a>
-        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
-            <i class="fas fa-book-open w-5 mr-3" style="color: #4CAF50;"></i>
-            <span>Guidance Content</span>
-        </a>
-        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
-            <i class="fas fa-user-circle w-5 mr-3" style="color: #5CB8E4;"></i>
-            <span>Users</span>
-        </a>
-        <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" style="color: #F1E6EF;">
-            <i class="fas fa-cog w-5 mr-3" style="color: #8BC34A;"></i>
-            <span>Settings</span>
-        </a>
-        <div class="pt-8 mt-auto">
-            <button type="button" onclick="handleLogout()" class="w-full flex items-center px-4 py-3 rounded-lg transition hover:bg-rose-800/50 text-stone-200 hover:text-white">
-                <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                <span>Logout</span>
+
+        <!-- Tab Navigation -->
+        <div class="hidden md:block px-6 md:px-8 border-b" style="background: var(--light-gray); border-color: var(--border-color);">
+            <div class="flex space-x-8">
+                <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: var(--purple); color: var(--purple);">
+                    <i class="fas fa-user mr-2"></i> Basic Info
+                </button>
+                <button type="button" class="tab-button py-4 px-1 font-medium border-b-2 border-transparent" data-tab="professional" style="color: var(--text-secondary);">
+                    <i class="fas fa-briefcase mr-2"></i> Professional
+                </button>
+                <button type="button" class="tab-button py-4 px-1 font-medium border-b-2 border-transparent" data-tab="additional" style="color: var(--text-secondary);">
+                    <i class="fas fa-link mr-2"></i> Additional
+                </button>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="p-6 md:p-8 space-y-8">
+
+            <!-- TAB 1: BASIC INFO -->
+            <div id="basic" class="tab-content form-section active">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <!-- Profile Photo -->
+                    <div class="lg:col-span-1">
+                        <div class="sticky top-0">
+                            <label class="block text-sm font-semibold mb-4" style="color: var(--text-primary);">Profile Photo</label>
+                            <div class="relative">
+                                <div id="photo-preview"
+                                     class="w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden shadow-inner transition-all cursor-pointer"
+                                     style="background: linear-gradient(135deg, var(--light-gray), var(--border-color)); border-color: var(--border-color);">
+                                    <div class="text-center">
+                                        <i class="fas fa-user text-5xl mb-2" style="color: var(--text-secondary);"></i>
+                                        <p class="text-xs" style="color: var(--text-secondary);">Click to upload</p>
+                                    </div>
+                                </div>
+                                <label class="absolute inset-0 rounded-xl cursor-pointer">
+                                    <input type="file" name="photo" id="photo" accept="image/*" class="w-full opacity-0 cursor-pointer">
+                                </label>
+                            </div>
+                            <p class="mt-3 text-xs text-center" style="color: var(--text-secondary);">
+                                <i class="fas fa-check-circle mr-1" style="color: var(--teal-green);"></i> PNG, JPG
+                                <br><i class="fas fa-info-circle mr-1" style="color: var(--purple);"></i> Max 2MB
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Basic Fields -->
+                    <div class="lg:col-span-3 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Full Name <span style="color: var(--red);">*</span></label>
+                                <input type="text" name="name" id="name" required placeholder="e.g., Jane Smith"
+                                       class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                       style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Email Address <span style="color: var(--red);">*</span></label>
+                                <input type="email" name="email" id="email" required placeholder="jane.smith@example.com"
+                                       class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                       style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Phone Number</label>
+                                <input type="tel" name="phone" id="phone" placeholder="+265 99 123 4567"
+                                       class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                       style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label for="location" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Location</label>
+                                <input type="text" name="location" id="location" placeholder="e.g., Lilongwe, Malawi"
+                                       class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                       style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                        </div>
+
+                        <!-- Password Section -->
+                        <div class="pt-6 border-t" style="border-color: var(--border-color);">
+                            <h4 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">Account Credentials</h4>
+                            <p class="text-xs mb-4" style="color: var(--text-secondary);">Password must be at least 12 characters with uppercase, lowercase, numbers, and special characters.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="password" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Password <span style="color: var(--red);">*</span></label>
+                                    <div class="relative">
+                                        <input type="password" name="password" id="password" required placeholder="••••••••••••"
+                                               class="block w-full px-4 py-3 pr-10 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                               style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                                        <button type="button" class="toggle-pw absolute right-3 top-3.5" data-target="password" style="color: var(--text-secondary);">
+                                            <i class="fas fa-eye text-sm"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mt-2 space-y-1">
+                                        <div class="flex gap-1">
+                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar1"></div>
+                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar2"></div>
+                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar3"></div>
+                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar4"></div>
+                                        </div>
+                                        <p id="strength-label" class="text-xs" style="color: var(--text-secondary);"></p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="password_confirmation" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Confirm Password <span style="color: var(--red);">*</span></label>
+                                    <div class="relative">
+                                        <input type="password" name="password_confirmation" id="password_confirmation" required placeholder="••••••••••••"
+                                               class="block w-full px-4 py-3 pr-10 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                               style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                                        <button type="button" class="toggle-pw absolute right-3 top-3.5" data-target="password_confirmation" style="color: var(--text-secondary);">
+                                            <i class="fas fa-eye text-sm"></i>
+                                        </button>
+                                    </div>
+                                    <div id="password-match" class="mt-2 text-xs"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-1 text-xs" id="pw-reqs">
+                                <span id="req-length" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> 12+ characters</span>
+                                <span id="req-upper" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Uppercase letter</span>
+                                <span id="req-lower" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Lowercase letter</span>
+                                <span id="req-number" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Number</span>
+                                <span id="req-special" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Special character</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PROFESSIONAL INFO -->
+            <div id="professional" class="tab-content form-section">
+                <div class="space-y-8">
+                    <!-- Areas of Expertise -->
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color: var(--text-primary);">Areas of Expertise <span style="color: var(--red);">*</span></label>
+                        
+                        <div class="flex gap-2 mb-4">
+                            <select id="expertiseDropdown"
+                                    class="flex-1 px-4 py-3 border rounded-lg shadow-sm transition-all text-sm focus:ring-2"
+                                    style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                                <option value="">Choose an area of expertise</option>
+                                @php
+                                $expertiseOptions = [
+                                    'Career Development', 'Business & Entrepreneurship', 'Mental Health & Wellness',
+                                    'Financial Literacy', 'Leadership Skills', 'Technical Skills (IT/Tech)',
+                                    'Education & Training', 'Legal Advice', 'Health & Nutrition', 'Life Coaching',
+                                    'Agriculture & Rural Development', 'Arts & Creative Industries', 'Gender & Human Rights',
+                                    'Community Development', 'Parenting & Family Support',
+                                ];
+                                @endphp
+                                @foreach($expertiseOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" id="addExpertiseBtn"
+                                    class="px-4 py-3 rounded-lg text-sm font-semibold text-white transition flex items-center gap-2 shrink-0"
+                                    style="background: var(--purple);">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+
+                        <!-- "Add other" custom input -->
+                        <div id="customExpertiseWrap" class="hidden mb-4">
+                            <div class="flex gap-2">
+                                <input type="text" id="customExpertiseInput" placeholder="Type a custom area of expertise..."
+                                       class="flex-1 px-4 py-3 border border-dashed rounded-lg text-sm focus:ring-2"
+                                       style="border-color: var(--purple); background: var(--card-bg); color: var(--text-primary);">
+                                <button type="button" id="addCustomExpertiseBtn"
+                                        class="px-4 py-3 rounded-lg text-sm font-semibold text-white transition"
+                                        style="background: var(--teal-green);">
+                                    <i class="fas fa-check"></i> Add
+                                </button>
+                                <button type="button" id="cancelCustomExpertiseBtn"
+                                        class="px-3 py-3 rounded-lg text-sm transition border"
+                                        style="color: var(--text-secondary); border-color: var(--border-color);">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="button" id="showCustomExpertiseBtn"
+                                class="mb-4 flex items-center gap-2 text-sm font-medium transition px-3 py-2 rounded-lg border border-dashed"
+                                style="color: var(--purple); border-color: var(--purple); background: var(--light-purple);">
+                            <i class="fas fa-plus-circle"></i> Add other (not in the list)
+                        </button>
+
+                        <div id="expertiseTags" class="flex flex-wrap gap-2 min-h-[2rem]">
+                            <p class="text-xs italic" id="expertiseEmptyHint" style="color: var(--text-secondary);">No areas selected yet. Use the dropdown above to add expertise.</p>
+                        </div>
+                        <div id="expertiseHiddenInputs"></div>
+                    </div>
+
+                    <!-- Professional Bio -->
+                    <div>
+                        <label for="bio" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Professional Bio <span style="color: var(--red);">*</span></label>
+                        <textarea name="bio" id="bio" rows="5" required
+                                  placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
+                                  class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                  style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+                        <div class="mt-2 flex justify-between items-center">
+                            <p class="text-xs" style="color: var(--text-secondary);"><i class="fas fa-pen-fancy mr-1" style="color: var(--purple);"></i> 2–4 sentences recommended</p>
+                            <span id="bio-count" class="text-xs" style="color: var(--text-secondary);">0 / 500 characters</span>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Status</label>
+                        <select name="status" id="status"
+                                class="block w-full md:w-1/2 px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
+                            <option value="active" selected>Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);"><i class="fas fa-info-circle mr-1" style="color: var(--purple);"></i> Active mentors can immediately access the platform and be matched with mentees.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ADDITIONAL INFO -->
+            <div id="additional" class="tab-content form-section">
+                <div class="space-y-8">
+                    <!-- Online Profiles & Links -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold" style="color: var(--text-primary);">Online Profiles & Links</h3>
+                                <p class="text-xs mt-1" style="color: var(--text-secondary);">Add any professional or social profile links relevant to this mentor</p>
+                            </div>
+                            <button type="button" id="addProfileBtn"
+                                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition"
+                                    style="background: var(--light-purple); color: var(--purple);">
+                                <i class="fas fa-plus"></i> Add Profile
+                            </button>
+                        </div>
+
+                        <div id="profilesList" class="space-y-3">
+                            <div class="profile-row">
+                                <div class="icon-wrap"><i class="fab fa-linkedin" style="color: #0077b5;"></i></div>
+                                <select name="profile_platform[]" class="w-28 text-xs border-0 bg-transparent focus:ring-0">
+                                    <option value="linkedin" selected>LinkedIn</option>
+                                    <option value="twitter">X / Twitter</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="github">GitHub</option>
+                                    <option value="website">Website</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <input type="url" name="profile_url[]" placeholder="https://linkedin.com/in/..." class="flex-1">
+                                <button type="button" class="remove-profile-btn" title="Remove"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="profile-row">
+                                <div class="icon-wrap"><i class="fas fa-globe" style="color: var(--purple);"></i></div>
+                                <select name="profile_platform[]" class="w-28 text-xs border-0 bg-transparent focus:ring-0">
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="twitter">X / Twitter</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="github">GitHub</option>
+                                    <option value="website" selected>Website</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <input type="url" name="profile_url[]" placeholder="https://yourwebsite.com" class="flex-1">
+                                <button type="button" class="remove-profile-btn" title="Remove"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <p class="text-xs mt-3" style="color: var(--text-secondary);"><i class="fas fa-lightbulb mr-1" style="color: var(--orange);"></i> You can add as many profiles as needed — LinkedIn, GitHub, Facebook, personal websites, and more.</p>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div>
+                        <label for="notes" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Additional Notes (Internal)</label>
+                        <textarea name="notes" id="notes" rows="4"
+                                  placeholder="Add internal notes about this mentor — special training needs, recommendations, background context..."
+                                  class="block w-full px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
+                                  style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+                    </div>
+
+                    <!-- Notification Preferences -->
+                    <div class="p-4 rounded-lg" style="background: var(--light-purple); border: 1px solid var(--border-color);">
+                        <h4 class="font-semibold text-sm mb-3 flex items-center" style="color: var(--text-primary);">
+                            <i class="fas fa-bell mr-2" style="color: var(--purple);"></i> Notification Preferences
+                        </h4>
+                        <div class="space-y-3">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" name="notify_welcome" value="1" checked class="w-4 h-4 rounded focus:ring-2" style="accent-color: var(--purple);">
+                                <span class="ml-2 text-sm" style="color: var(--text-primary);">Send welcome email to mentor</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" name="notify_training" value="1" checked class="w-4 h-4 rounded focus:ring-2" style="accent-color: var(--purple);">
+                                <span class="ml-2 text-sm" style="color: var(--text-primary);">Notify about upcoming training sessions</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" name="notify_schedule_approved" value="1" checked class="w-4 h-4 rounded focus:ring-2" style="accent-color: var(--purple);">
+                                <span class="ml-2 text-sm" style="color: var(--text-primary);">Notify mentor when their schedule is approved or declined</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" name="notify_new_mentee" value="1" checked class="w-4 h-4 rounded focus:ring-2" style="accent-color: var(--purple);">
+                                <span class="ml-2 text-sm" style="color: var(--text-primary);">Notify mentor when a new mentee is matched with them</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="px-6 md:px-8 py-6 border-t flex flex-col sm:flex-row sm:justify-between gap-4" style="border-color: var(--border-color); background: var(--light-gray);">
+            <div class="flex gap-3">
+                <a href="{{ route('admin.mentors.index') }}"
+                   class="flex items-center justify-center px-6 py-2.5 border rounded-lg font-medium transition-colors"
+                   style="border-color: var(--border-color); color: var(--text-primary); background: var(--card-bg);">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </a>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" id="prevBtn"
+                        class="hidden sm:flex items-center justify-center px-6 py-2.5 border rounded-lg font-medium transition-colors"
+                        style="border-color: var(--border-color); color: var(--text-primary); background: var(--card-bg);">
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </button>
+                <button type="button" id="nextBtn"
+                        class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors"
+                        style="background: var(--purple);">
+                    Next <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+                <button type="submit" id="submitBtn"
+                        class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md"
+                        style="background: linear-gradient(135deg, var(--purple), var(--purple));">
+                    <i class="fas fa-check mr-2"></i> Create Mentor
+                </button>
+            </div>
+        </div>
+
+        <div class="sm:hidden px-6 py-4 border-t space-y-3" style="border-color: var(--border-color); background: var(--light-gray);">
+            <button type="button" id="mobileNextBtn"
+                    class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors"
+                    style="background: var(--purple);">
+                Continue <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+            <button type="submit"
+                    class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md"
+                    style="background: linear-gradient(135deg, var(--purple), var(--purple));">
+                <i class="fas fa-check mr-2"></i> Create Mentor
             </button>
         </div>
-    </nav>
-    <div class="p-5 m-3 rounded-xl mt-auto" style="background: #6d3661; border: 1px solid #af5c9c;">
-        <div class="flex items-center">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName ?? 'Admin User') }}&background=af5c9c&color=fff&size=40" class="w-10 h-10 rounded-full border-2 border-white" alt="{{ $adminName ?? 'Admin' }}">
-            <div class="ml-3 min-w-0">
-                <p class="text-sm font-semibold text-white truncate">{{ $adminName ?? 'Admin User' }}</p>
-                <p class="text-xs text-white/70 truncate">{{ $adminEmail ?? 'admin@tithandizane.org' }}</p>
-            </div>
-        </div>
-    </div>
-</aside>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col lg:ml-72 xl:ml-80">
-
-        <!-- Topbar -->
-        <header class="bg-white border-b shadow-sm sticky top-0 z-10" style="border-color: #E2E8F0;">
-            <div class="px-6 py-4 flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-gray-900">Add New Mentor</h1>
-                    <p class="text-sm text-gray-600 mt-0.5">Create and configure a professional mentor profile</p>
-                </div>
-                <div class="flex items-center space-x-5">
-                    <button type="button" class="text-gray-500 hover:text-[#874179] transition-colors">
-                        <i class="fas fa-bell text-xl"></i>
-                    </button>
-                    <button type="button" class="text-gray-500 hover:text-[#874179] transition-colors">
-                        <i class="fas fa-envelope text-xl"></i>
-                    </button>
-                    <div class="hidden sm:flex items-center space-x-3 pl-4 border-l" style="border-color: #E2E8F0;">
-                        <div class="text-right">
-                            <p class="text-sm font-medium text-gray-900">{{ $adminName ?? 'Admin User' }}</p>
-                            <p class="text-xs text-gray-500">{{ $adminEmail ?? 'admin@tithandizane.org' }}</p>
-                        </div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName ?? 'Admin User') }}&background=af5c9c&color=fff&size=48" class="w-10 h-10 rounded-full border-2 border-[#874179]" alt="{{ $adminName ?? 'Admin' }}">
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
-
-            <!-- Breadcrumb -->
-            <nav class="mb-8 text-sm" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="{{ route('admin.dashboard') }}" class="transition-colors flex items-center" style="color: #874179;">
-                        <i class="fas fa-home mr-1.5 text-xs"></i> Dashboard
-                    </a></li>
-                    <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li><a href="{{ route('admin.mentors.index') }}" class="transition-colors" style="color: #874179;">Mentors</a></li>
-                    <li class="text-gray-400"><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li class="text-gray-500 font-medium">Add New Mentor</li>
-                </ol>
-            </nav>
-
-            <!-- Session Messages -->
-            <div id="alertContainer"></div>
-            
-            <!-- Display validation errors -->
-            @if ($errors->any())
-                <div class="mb-4 p-4 rounded-lg bg-red-100 border-red-400 text-red-700 border">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <!-- Success Message -->
-            @if(session('success'))
-                <div class="mb-4 p-4 rounded-lg bg-green-100 border-green-400 text-green-700 border">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <!-- Form Card -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
-                <form id="mentorForm" action="{{ route('admin.mentors.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-
-                    <!-- Header -->
-                    <div class="px-6 md:px-8 py-6 border-b" style="background: linear-gradient(135deg, #F9F0F7 0%, #F3E6F1 100%); border-color: #E9D5FF;">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <h2 class="text-2xl font-bold" style="color: #874179;">Mentor Registration</h2>
-                                <p class="mt-2 text-sm text-gray-700">
-                                    Complete the form below to add a new mentor to the platform.
-                                    All fields marked with <span class="text-red-500 font-semibold">*</span> are required.
-                                </p>
-                            </div>
-                            <div class="hidden sm:block">
-                                <div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur px-4 py-2 rounded-lg border shadow-sm" style="border-color: #874179;">
-                                    <i class="fas fa-info-circle text-sm" style="color: #874179;"></i>
-                                    <span class="text-sm font-medium text-gray-700">
-                                        Step <span id="currentStep">1</span> of <span id="totalSteps">3</span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tab Navigation -->
-                    <div class="hidden md:block px-6 md:px-8 bg-gray-50 border-b border-gray-200">
-                        <div class="flex space-x-8">
-                            <button type="button" class="tab-button active py-4 px-1 font-medium border-b-2" data-tab="basic" style="border-color: #874179; color: #874179;">
-                                <i class="fas fa-user mr-2"></i> Basic Info
-                            </button>
-                            <button type="button" class="tab-button py-4 px-1 font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900" data-tab="professional">
-                                <i class="fas fa-briefcase mr-2"></i> Professional
-                            </button>
-                            <button type="button" class="tab-button py-4 px-1 font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900" data-tab="additional">
-                                <i class="fas fa-link mr-2"></i> Additional
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Form Content -->
-                    <div class="p-6 md:p-8 space-y-8">
-                        <!-- TAB 1: BASIC INFO -->
-                        <div id="basic" class="tab-content form-section active">
-                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                                <!-- Profile Photo -->
-                                <div class="lg:col-span-1">
-                                    <div class="sticky top-0">
-                                        <label class="block text-sm font-semibold text-gray-900 mb-4">Profile Photo</label>
-                                        <div class="relative">
-                                            <div id="photo-preview"
-                                                 class="w-full aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shadow-inner transition-all hover:border-[#874179] hover:from-purple-50 hover:to-purple-100">
-                                                <div class="text-center">
-                                                    <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
-                                                    <p class="text-xs text-gray-500">Click to upload</p>
-                                                </div>
-                                            </div>
-                                            <label class="file-input-label absolute inset-0 rounded-xl">
-                                                <input type="file" name="photo" id="photo" accept="image/*" class="w-full">
-                                            </label>
-                                        </div>
-                                        <p class="mt-3 text-xs text-gray-600 text-center">
-                                            <i class="fas fa-check-circle mr-1" style="color: var(--vibrant-green);"></i> PNG, JPG
-                                            <br><i class="fas fa-info-circle mr-1" style="color: #874179;"></i> Max 2MB
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Basic Fields -->
-                                <div class="lg:col-span-3 space-y-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label for="name" class="block text-sm font-semibold text-gray-900 mb-2">Full Name <span class="text-red-500">*</span></label>
-                                            <input type="text" name="name" id="name" required
-                                                   placeholder="e.g., Jane Smith"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                        <div>
-                                            <label for="email" class="block text-sm font-semibold text-gray-900 mb-2">Email Address <span class="text-red-500">*</span></label>
-                                            <input type="email" name="email" id="email" required
-                                                   placeholder="jane.smith@example.com"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                        <div>
-                                            <label for="phone" class="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
-                                            <input type="tel" name="phone" id="phone"
-                                                   placeholder="+265 99 123 4567"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                        <div>
-                                            <label for="location" class="block text-sm font-semibold text-gray-900 mb-2">Location</label>
-                                            <input type="text" name="location" id="location"
-                                                   placeholder="e.g., Lilongwe, Malawi"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                    </div>
-
-                                    <!-- Password Section -->
-                                    <div class="pt-6 border-t border-gray-200">
-                                        <h4 class="text-sm font-semibold text-gray-900 mb-1">Account Credentials</h4>
-                                        <p class="text-xs text-gray-500 mb-4">
-                                            Password must be at least 12 characters and include uppercase letters, lowercase letters, numbers, and special characters.
-                                        </p>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">Password <span class="text-red-500">*</span></label>
-                                                <div class="relative">
-                                                    <input type="password" name="password" id="password" required
-                                                           placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                                    <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password">
-                                                        <i class="fas fa-eye text-sm"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="mt-2 space-y-1">
-                                                    <div class="flex gap-1">
-                                                        <div class="strength-bar flex-1 bg-gray-200" id="bar1"></div>
-                                                        <div class="strength-bar flex-1 bg-gray-200" id="bar2"></div>
-                                                        <div class="strength-bar flex-1 bg-gray-200" id="bar3"></div>
-                                                        <div class="strength-bar flex-1 bg-gray-200" id="bar4"></div>
-                                                    </div>
-                                                    <p id="strength-label" class="text-xs text-gray-500"></p>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label for="password_confirmation" class="block text-sm font-semibold text-gray-900 mb-2">Confirm Password <span class="text-red-500">*</span></label>
-                                                <div class="relative">
-                                                    <input type="password" name="password_confirmation" id="password_confirmation" required
-                                                           placeholder="••••••••••••"
-                                                           class="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                                    <button type="button" class="toggle-pw absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" data-target="password_confirmation">
-                                                        <i class="fas fa-eye text-sm"></i>
-                                                    </button>
-                                                </div>
-                                                <div id="password-match" class="mt-2 text-xs text-gray-500"></div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-4 grid grid-cols-2 gap-1 text-xs" id="pw-reqs">
-                                            <span id="req-length" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> 12+ characters</span>
-                                            <span id="req-upper" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Uppercase letter</span>
-                                            <span id="req-lower" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Lowercase letter</span>
-                                            <span id="req-number" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Number</span>
-                                            <span id="req-special" class="flex items-center gap-1 text-gray-400"><i class="fas fa-circle-dot"></i> Special character</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB 2: PROFESSIONAL INFO -->
-                        <div id="professional" class="tab-content form-section">
-                            <div class="space-y-8">
-                                <!-- Areas of Expertise -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-900 mb-4">Areas of Expertise <span class="text-red-500">*</span></label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        @php
-                                        $expertiseOptions = [
-                                            'Career Development',
-                                            'Business & Entrepreneurship',
-                                            'Mental Health & Wellness',
-                                            'Financial Literacy',
-                                            'Leadership Skills',
-                                            'Technical Skills (IT/Tech)',
-                                            'Education & Training',
-                                            'Legal Advice',
-                                            'Health & Nutrition',
-                                            'Life Coaching',
-                                        ];
-                                        @endphp
-                                        @foreach($expertiseOptions as $option)
-                                        <label class="flex items-center cursor-pointer group">
-                                            <input type="checkbox" name="expertise[]" value="{{ $option }}"
-                                                   class="expertise-checkbox">
-                                            <span class="expertise-label group-hover:border-[#874179]">
-                                                <i class="fas fa-check text-[#874179] mr-2 hidden"></i>
-                                                {{ $option }}
-                                            </span>
-                                        </label>
-                                        @endforeach
-                                    </div>
-                                </div>
-
-                                <!-- Professional Bio -->
-                                <div>
-                                    <label for="bio" class="block text-sm font-semibold text-gray-900 mb-2">Professional Bio <span class="text-red-500">*</span></label>
-                                    <textarea name="bio" id="bio" rows="5" required
-                                              placeholder="Share your professional background, achievements, and what value you bring as a mentor..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"></textarea>
-                                    <div class="mt-2 flex justify-between items-center">
-                                        <p class="text-xs text-gray-600"><i class="fas fa-pen-fancy mr-1" style="color: #874179;"></i> 2–4 sentences recommended</p>
-                                        <span id="bio-count" class="text-xs text-gray-500">0 / 500 characters</span>
-                                    </div>
-                                </div>
-
-                                <!-- Status and Availability Description -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="status" class="block text-sm font-semibold text-gray-900 mb-2">Initial Status</label>
-                                        <select name="status" id="status"
-                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                            <option value="active">Active</option>
-                                            <option value="pending" selected>Pending Approval</option>
-                                            <option value="inactive">Inactive</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="availability" class="block text-sm font-semibold text-gray-900 mb-2">Availability Description</label>
-                                        <input type="text" name="availability" id="availability"
-                                               placeholder="e.g., Mon–Thu 9:00–14:00, Sat 10:00–13:00"
-                                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                    </div>
-                                </div>
-
-                                <!-- Detailed Schedule -->
-                                <div class="border-t border-gray-200 pt-6">
-                                    <h3 class="text-md font-semibold text-gray-900 mb-2">Detailed Schedule (Optional)</h3>
-                                    <p class="text-xs text-gray-500 mb-4">Set specific days and times for mentoring sessions</p>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div>
-                                            <label class="block text-sm font-semibold text-gray-900 mb-2">Available Days</label>
-                                            <select name="available_days[]" multiple 
-                                                    class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"
-                                                    size="7">
-                                                <option value="monday">Monday</option>
-                                                <option value="tuesday">Tuesday</option>
-                                                <option value="wednesday">Wednesday</option>
-                                                <option value="thursday">Thursday</option>
-                                                <option value="friday">Friday</option>
-                                                <option value="saturday">Saturday</option>
-                                                <option value="sunday">Sunday</option>
-                                            </select>
-                                            <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple days</p>
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="available_time_start" class="block text-sm font-semibold text-gray-900 mb-2">Start Time</label>
-                                            <input type="time" name="available_time_start" id="available_time_start"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="available_time_end" class="block text-sm font-semibold text-gray-900 mb-2">End Time</label>
-                                            <input type="time" name="available_time_end" id="available_time_end"
-                                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB 3: ADDITIONAL INFO -->
-                        <div id="additional" class="tab-content form-section">
-                            <div class="space-y-8">
-                                <!-- Social & Professional Profiles -->
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Social & Professional Profiles</h3>
-                                    <div class="space-y-4">
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
-                                            <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                                <i class="fab fa-linkedin text-2xl text-blue-700"></i>
-                                            </div>
-                                            <input type="url" name="linkedin_url" placeholder="https://linkedin.com/in/..."
-                                                   class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
-                                        </div>
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
-                                            <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                                <i class="fab fa-twitter text-2xl text-sky-500"></i>
-                                            </div>
-                                            <input type="url" name="twitter_url" placeholder="https://twitter.com/..."
-                                                   class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
-                                        </div>
-                                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-[#F3E6F1] hover:border-[#874179] transition-all">
-                                            <div class="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-globe text-2xl" style="color: #874179;"></i>
-                                            </div>
-                                            <input type="url" name="website_url" placeholder="https://yourwebsite.com"
-                                                   class="flex-1 bg-transparent border-0 focus:ring-0 text-sm placeholder-gray-500">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Additional Notes -->
-                                <div>
-                                    <label for="notes" class="block text-sm font-semibold text-gray-900 mb-2">Additional Notes (Internal)</label>
-                                    <textarea name="notes" id="notes" rows="4"
-                                              placeholder="Add any internal notes about this mentor, e.g., special training needs, recommendations..."
-                                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-[#874179] focus:ring-2 focus:ring-[#F3E6F1] transition-all"></textarea>
-                                </div>
-
-                                <!-- Notification Preferences -->
-                                <div class="p-4 rounded-lg" style="background: #F9F0F7; border: 1px solid #E9D5FF;">
-                                    <h4 class="font-semibold text-gray-900 text-sm mb-3 flex items-center">
-                                        <i class="fas fa-bell mr-2" style="color: #874179;"></i> Notification Preferences
-                                    </h4>
-                                    <div class="space-y-3">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="notify_welcome" value="1" class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]">
-                                            <span class="ml-2 text-sm text-gray-700">Send welcome email to mentor</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="notify_training" value="1" class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-[#874179]">
-                                            <span class="ml-2 text-sm text-gray-700">Notify about upcoming training sessions</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="px-6 md:px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between gap-4">
-                        <div class="flex gap-3">
-                            <a href="{{ route('admin.mentors.index') }}"
-                               class="flex items-center justify-center px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors">
-                                <i class="fas fa-times mr-2"></i> Cancel
-                            </a>
-                        </div>
-                        <div class="flex gap-3">
-                            <button type="button" id="prevBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors">
-                                <i class="fas fa-arrow-left mr-2"></i> Previous
-                            </button>
-                            <button type="button" id="nextBtn"
-                                    class="hidden sm:flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-lg transition-colors" style="background: #874179;">
-                                Next <i class="fas fa-arrow-right ml-2"></i>
-                            </button>
-                            <button type="submit" id="submitBtn"
-                                    class="hidden sm:flex items-center justify-center px-8 py-2.5 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c);">
-                                <i class="fas fa-check mr-2"></i> Create Mentor
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="sm:hidden px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
-                        <button type="button" id="mobileNextBtn"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-colors" style="background: #874179;">
-                            Continue <i class="fas fa-arrow-right ml-2"></i>
-                        </button>
-                        <button type="submit"
-                                class="w-full flex items-center justify-center px-6 py-3 text-white font-medium rounded-lg transition-all shadow-md" style="background: linear-gradient(135deg, #874179, #af5c9c);">
-                            <i class="fas fa-check mr-2"></i> Create Mentor
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
-    </div>
+    </form>
 </div>
 
 <!-- Success Modal -->
 <div id="successModal" class="modal-overlay">
-    <div class="success-modal">
-        <div class="checkmark-circle">
+    <div class="success-modal" style="background: var(--card-bg);">
+        <div class="checkmark-circle" style="background: linear-gradient(135deg, var(--purple), var(--purple));">
             <i class="fas fa-check checkmark"></i>
         </div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Mentor Created Successfully!</h2>
-        <p class="text-gray-600 mb-6">The mentor profile has been created and is now available in the system.</p>
+        <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">Mentor Created Successfully!</h2>
+        <p class="mb-6" style="color: var(--text-secondary);">The mentor profile has been created and is now available in the system.</p>
         <div class="success-buttons">
-            <button onclick="addAnotherMentor()" class="btn-secondary">
+            <button onclick="addAnotherMentor()" class="btn-secondary" style="background: var(--light-gray); color: var(--text-primary);">
                 <i class="fas fa-plus-circle"></i> Add Another Mentor
             </button>
-            <button onclick="viewMentors()" class="btn-primary">
+            <button onclick="viewMentors()" class="btn-primary" style="background: linear-gradient(135deg, var(--purple), var(--purple)); color: white;">
                 <i class="fas fa-eye"></i> View Mentors
             </button>
         </div>
     </div>
 </div>
+@endsection
 
-<script>
-    let lastCreatedMentorId = null;
+@push('styles')
+<style>
+    /* Form Section Animation */
+    .form-section {
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
     
-    // Toast notification
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Tab Button */
+    .tab-button {
+        transition: all 0.3s ease;
+    }
+    .tab-button.active {
+        border-bottom-width: 3px;
+    }
+    
+    /* Strength Bar */
+    .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+    
+    /* File Input Label */
+    .file-input-label {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    /* Expertise Tag */
+    .expertise-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1.5px solid var(--purple);
+        background: var(--light-purple);
+        color: var(--purple);
+    }
+    .expertise-tag button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 0;
+        opacity: 0.7;
+        color: var(--purple);
+    }
+    .expertise-tag button:hover { opacity: 1; }
+    
+    /* Profile Row */
+    .profile-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1.5px solid var(--border-color);
+        transition: all 0.2s;
+        background: var(--light-gray);
+    }
+    .profile-row:hover {
+        border-color: var(--purple);
+        background: var(--light-purple);
+    }
+    .profile-row .icon-wrap {
+        flex-shrink: 0;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        background: var(--card-bg);
+    }
+    .profile-row input {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+    }
+    .profile-row input:focus { outline: none; box-shadow: none; }
+    .remove-profile-btn {
+        cursor: pointer;
+        font-size: 0.85rem;
+        background: none;
+        border: none;
+        padding: 0 0.25rem;
+        color: var(--text-secondary);
+        transition: color 0.2s;
+    }
+    .remove-profile-btn:hover { color: var(--red); }
+    
+    /* Modal Overlay */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    
+    /* Success Modal */
+    .success-modal {
+        border-radius: 1.5rem;
+        max-width: 500px;
+        width: 90%;
+        padding: 2rem;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+        background: var(--card-bg);
+    }
+    @keyframes modalSlideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .checkmark-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--purple), var(--purple));
+    }
+    .checkmark { font-size: 3rem; color: white; }
+    .success-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; }
+    .btn-primary { padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(135,65,121,0.3); }
+    .btn-secondary { padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; }
+    .btn-secondary:hover { opacity: 0.8; }
+    
+    /* Toast */
+    .toast {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        font-size: 14px;
+        transform: translateX(-50%);
+        color: #fff;
+    }
+    .toast.show {
+        visibility: visible;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+</style>
+@endpush
+
+@push('scripts')
+<script>
     function showToast(message, isError = false) {
-        // Remove any existing toasts
-        const existingToasts = document.querySelectorAll('.toast');
-        existingToasts.forEach(toast => toast.remove());
-        
+        document.querySelectorAll('.toast').forEach(t => t.remove());
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
-        toast.style.backgroundColor = isError ? '#dc2626' : '#10b981';
+        toast.style.backgroundColor = isError ? '#dc2626' : '#22c55e';
         document.body.appendChild(toast);
-        
-        // Force reflow
         toast.offsetHeight;
-        
         toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
-    // Logout handler
-    window.handleLogout = function() {
-        showToast("✅ Logged out successfully.");
-        setTimeout(() => {
-            window.location.href = "{{ route('admin.login') }}";
-        }, 1000);
-    };
-
-    // Photo Preview - with null check
+    // Photo Preview
     const photoInput = document.getElementById('photo');
     if (photoInput) {
-        photoInput.addEventListener('change', function (e) {
+        photoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            if (!file.type.startsWith('image/')) { 
-                showToast('Please select an image file', true); 
-                return; 
-            }
-            if (file.size > 2 * 1024 * 1024) { 
-                showToast('File size must be less than 2MB', true); 
-                return; 
-            }
+            if (!file.type.startsWith('image/')) { showToast('Please select an image file', true); return; }
+            if (file.size > 2 * 1024 * 1024) { showToast('File size must be less than 2MB', true); return; }
             const reader = new FileReader();
             reader.onload = ev => {
                 const preview = document.getElementById('photo-preview');
-                if (preview) {
-                    preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" class="w-full h-full object-cover">`;
-                }
+                if (preview) preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" class="w-full h-full object-cover">`;
             };
             reader.readAsDataURL(file);
         });
@@ -789,36 +633,29 @@
     let currentTab = 'basic';
     const tabs = ['basic', 'professional', 'additional'];
 
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(btn => {
+    document.querySelectorAll('.tab-button').forEach(btn => {
         btn.addEventListener('click', () => showTab(btn.dataset.tab));
     });
 
     function showTab(name) {
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabContents.forEach(t => t.classList.remove('active'));
-        
-        const tabBtns = document.querySelectorAll('.tab-button');
-        tabBtns.forEach(b => {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(b => {
             b.classList.remove('active');
             b.style.borderColor = 'transparent';
-            b.style.color = '#6b7280';
+            b.style.color = 'var(--text-secondary)';
         });
-        
         const activeContent = document.getElementById(name);
         if (activeContent) activeContent.classList.add('active');
-        
         const activeBtn = document.querySelector(`[data-tab="${name}"]`);
         if (activeBtn) {
             activeBtn.classList.add('active');
-            activeBtn.style.borderColor = '#874179';
-            activeBtn.style.color = '#874179';
+            activeBtn.style.borderColor = 'var(--purple)';
+            activeBtn.style.color = 'var(--purple)';
         }
-        
         currentTab = name;
         const stepMap = { basic: 1, professional: 2, additional: 3 };
-        const currentStepSpan = document.getElementById('currentStep');
-        if (currentStepSpan) currentStepSpan.textContent = stepMap[name];
+        const el = document.getElementById('currentStep');
+        if (el) el.textContent = stepMap[name];
         updateNavButtons();
     }
 
@@ -827,86 +664,25 @@
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
-
-        if (prevBtn) {
-            if (idx === 0) {
-                prevBtn.classList.add('hidden');
-            } else {
-                prevBtn.classList.remove('hidden');
-            }
-        }
-        
-        if (nextBtn) {
-            if (idx === tabs.length - 1) {
-                nextBtn.classList.add('hidden');
-            } else {
-                nextBtn.classList.remove('hidden');
-            }
-        }
-        
-        if (submitBtn) {
-            if (idx === tabs.length - 1) {
-                submitBtn.classList.remove('hidden');
-            } else {
-                submitBtn.classList.add('hidden');
-            }
-        }
+        if (prevBtn) prevBtn.classList.toggle('hidden', idx === 0);
+        if (nextBtn) nextBtn.classList.toggle('hidden', idx === tabs.length - 1);
+        if (submitBtn) submitBtn.classList.toggle('hidden', idx !== tabs.length - 1);
     }
 
-    const nextBtn = document.getElementById('nextBtn');
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const idx = tabs.indexOf(currentTab);
-            if (idx < tabs.length - 1) { 
-                showTab(tabs[idx + 1]); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
-        });
-    }
-    
-    const prevBtn = document.getElementById('prevBtn');
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            const idx = tabs.indexOf(currentTab);
-            if (idx > 0) { 
-                showTab(tabs[idx - 1]); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
-        });
-    }
-    
-    const mobileNextBtn = document.getElementById('mobileNextBtn');
-    if (mobileNextBtn) {
-        mobileNextBtn.addEventListener('click', () => {
-            const idx = tabs.indexOf(currentTab);
-            if (idx < tabs.length - 1) { 
-                showTab(tabs[idx + 1]); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
-        });
-    }
-
-    // Password Show/Hide Toggle
-    const toggleButtons = document.querySelectorAll('.toggle-pw');
-    toggleButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const input = document.getElementById(btn.dataset.target);
-            const icon = btn.querySelector('i');
-            if (input && icon) {
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            }
-        });
+    document.getElementById('nextBtn')?.addEventListener('click', () => {
+        const idx = tabs.indexOf(currentTab);
+        if (idx < tabs.length - 1) { showTab(tabs[idx + 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    });
+    document.getElementById('prevBtn')?.addEventListener('click', () => {
+        const idx = tabs.indexOf(currentTab);
+        if (idx > 0) { showTab(tabs[idx - 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    });
+    document.getElementById('mobileNextBtn')?.addEventListener('click', () => {
+        const idx = tabs.indexOf(currentTab);
+        if (idx < tabs.length - 1) { showTab(tabs[idx + 1]); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     });
 
-    // Password Strength Meter
+    // Password Strength
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('password_confirmation');
     const matchEl = document.getElementById('password-match');
@@ -914,204 +690,253 @@
     const strengthLabel = document.getElementById('strength-label');
 
     const reqs = {
-        length: { el: document.getElementById('req-length'), test: v => v.length >= 12 },
-        upper: { el: document.getElementById('req-upper'), test: v => /[A-Z]/.test(v) },
-        lower: { el: document.getElementById('req-lower'), test: v => /[a-z]/.test(v) },
-        number: { el: document.getElementById('req-number'), test: v => /[0-9]/.test(v) },
+        length:  { el: document.getElementById('req-length'),  test: v => v.length >= 12 },
+        upper:   { el: document.getElementById('req-upper'),   test: v => /[A-Z]/.test(v) },
+        lower:   { el: document.getElementById('req-lower'),   test: v => /[a-z]/.test(v) },
+        number:  { el: document.getElementById('req-number'),  test: v => /[0-9]/.test(v) },
         special: { el: document.getElementById('req-special'), test: v => /[^A-Za-z0-9]/.test(v) },
     };
 
     const strengthConfig = [
-        { color: 'bg-red-500', label: 'Weak', labelClass: 'text-red-600' },
-        { color: 'bg-orange-400', label: 'Fair', labelClass: 'text-orange-500' },
-        { color: 'bg-yellow-400', label: 'Good', labelClass: 'text-yellow-600' },
-        { color: 'bg-green-500', label: 'Strong', labelClass: 'text-green-600' },
-        { color: 'bg-emerald-600', label: 'Very Strong', labelClass: 'text-emerald-700' },
+        { color: '#ef4444', label: 'Weak' },
+        { color: '#f97316', label: 'Fair' },
+        { color: '#eab308', label: 'Good' },
+        { color: '#22c55e', label: 'Strong' },
+        { color: '#10b981', label: 'Very Strong' },
     ];
 
     if (passwordInput) {
-        passwordInput.addEventListener('input', function () {
+        passwordInput.addEventListener('input', function() {
             const val = this.value;
-
             Object.values(reqs).forEach(({ el, test }) => {
-                if (el) {
-                    const pass = test(val);
-                    el.classList.toggle('text-green-600', pass);
-                    el.classList.toggle('text-gray-400', !pass);
-                    const icon = el.querySelector('i');
-                    if (icon) {
-                        icon.className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
-                    }
-                }
+                if (!el) return;
+                const pass = test(val);
+                el.style.color = pass ? '#22c55e' : 'var(--text-secondary)';
+                const icon = el.querySelector('i');
+                if (icon) icon.className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
             });
-
             const score = Object.values(reqs).filter(({ test }) => test(val)).length;
             bars.forEach((bar, i) => {
-                if (bar) {
-                    bar.className = `strength-bar flex-1 ${i < score ? strengthConfig[score - 1].color : 'bg-gray-200'}`;
-                }
+                if (bar) bar.style.background = i < score ? strengthConfig[score - 1].color : 'var(--border-color)';
             });
-            
             if (strengthLabel) {
-                if (val.length === 0) {
-                    strengthLabel.textContent = '';
-                } else {
-                    const cfg = strengthConfig[score - 1] || strengthConfig[0];
-                    strengthLabel.textContent = cfg.label;
-                    strengthLabel.className = `text-xs font-medium ${cfg.labelClass}`;
-                }
+                if (val.length === 0) { strengthLabel.textContent = ''; }
+                else { strengthLabel.textContent = strengthConfig[score - 1]?.label || 'Weak'; }
             }
             checkPasswordMatch();
         });
     }
 
     function checkPasswordMatch() {
-        if (!matchEl) return;
-        if (!confirmInput || !confirmInput.value) { 
-            matchEl.innerHTML = ''; 
-            return; 
-        }
+        if (!matchEl || !confirmInput || !confirmInput.value) { if (matchEl) matchEl.innerHTML = ''; return; }
         if (passwordInput && passwordInput.value === confirmInput.value) {
-            matchEl.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Passwords match';
-            matchEl.className = 'mt-2 text-xs text-green-600';
+            matchEl.innerHTML = '<i class="fas fa-check-circle mr-1" style="color: #22c55e;"></i> Passwords match';
+            matchEl.style.color = '#22c55e';
         } else {
-            matchEl.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Passwords do not match';
-            matchEl.className = 'mt-2 text-xs text-red-600';
+            matchEl.innerHTML = '<i class="fas fa-times-circle mr-1" style="color: #ef4444;"></i> Passwords do not match';
+            matchEl.style.color = '#ef4444';
         }
     }
-    
-    if (confirmInput) {
-        confirmInput.addEventListener('input', checkPasswordMatch);
-    }
+    confirmInput?.addEventListener('input', checkPasswordMatch);
 
-    // Bio character counter
+    // Bio Counter
     const bioField = document.getElementById('bio');
     const bioCount = document.getElementById('bio-count');
     if (bioField && bioCount) {
-        bioField.addEventListener('input', () => {
-            bioCount.textContent = `${bioField.value.length} / 500 characters`;
-        });
+        bioField.addEventListener('input', () => { bioCount.textContent = `${bioField.value.length} / 500 characters`; });
     }
 
-    // Expertise checkbox icon toggle
-    const expertiseCheckboxes = document.querySelectorAll('.expertise-checkbox');
-    expertiseCheckboxes.forEach(cb => {
-        const icon = cb.nextElementSibling?.querySelector('i');
-        const toggle = () => {
-            if (icon) {
-                if (cb.checked) {
-                    icon.classList.remove('hidden');
-                } else {
-                    icon.classList.add('hidden');
-                }
-            }
-        };
-        cb.addEventListener('change', toggle);
-        toggle();
+    // Expertise System
+    const selectedExpertise = new Set();
+
+    function renderExpertiseTags() {
+        const tagsContainer = document.getElementById('expertiseTags');
+        const hiddenContainer = document.getElementById('expertiseHiddenInputs');
+        const emptyHint = document.getElementById('expertiseEmptyHint');
+        if (!tagsContainer || !hiddenContainer) return;
+
+        Array.from(tagsContainer.children).forEach(c => { if (c.id !== 'expertiseEmptyHint') c.remove(); });
+        hiddenContainer.innerHTML = '';
+
+        if (selectedExpertise.size === 0) {
+            if (emptyHint) emptyHint.style.display = '';
+        } else {
+            if (emptyHint) emptyHint.style.display = 'none';
+            selectedExpertise.forEach(val => {
+                const tag = document.createElement('span');
+                tag.className = 'expertise-tag';
+                tag.innerHTML = `${val} <button type="button" data-val="${val}" title="Remove"><i class="fas fa-times"></i></button>`;
+                tag.querySelector('button').addEventListener('click', () => {
+                    selectedExpertise.delete(val);
+                    renderExpertiseTags();
+                });
+                tagsContainer.appendChild(tag);
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'expertise[]';
+                input.value = val;
+                hiddenContainer.appendChild(input);
+            });
+        }
+    }
+
+    document.getElementById('addExpertiseBtn')?.addEventListener('click', () => {
+        const dropdown = document.getElementById('expertiseDropdown');
+        if (!dropdown) return;
+        const val = dropdown.value.trim();
+        if (!val) { showToast('Please select an area of expertise first', true); return; }
+        if (selectedExpertise.has(val)) { showToast('Already added!', true); return; }
+        selectedExpertise.add(val);
+        renderExpertiseTags();
+        dropdown.value = '';
     });
 
-    // Show success modal and store mentor ID
-    function showSuccessModal(mentorId) {
-        lastCreatedMentorId = mentorId;
-        const modal = document.getElementById('successModal');
-        if (modal) {
-            modal.classList.add('active');
-        }
+    document.getElementById('showCustomExpertiseBtn')?.addEventListener('click', () => {
+        document.getElementById('customExpertiseWrap')?.classList.remove('hidden');
+        document.getElementById('customExpertiseInput')?.focus();
+    });
+
+    function addCustomExpertise() {
+        const input = document.getElementById('customExpertiseInput');
+        if (!input) return;
+        const val = input.value.trim();
+        if (!val) { showToast('Please type an area of expertise', true); return; }
+        if (selectedExpertise.has(val)) { showToast('Already added!', true); return; }
+        selectedExpertise.add(val);
+        renderExpertiseTags();
+        input.value = '';
+        document.getElementById('customExpertiseWrap')?.classList.add('hidden');
     }
-    
-    // Add another mentor - reset form
-    window.addAnotherMentor = function() {
+
+    document.getElementById('addCustomExpertiseBtn')?.addEventListener('click', addCustomExpertise);
+    document.getElementById('customExpertiseInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCustomExpertise(); } });
+    document.getElementById('cancelCustomExpertiseBtn')?.addEventListener('click', () => {
+        document.getElementById('customExpertiseWrap')?.classList.add('hidden');
+        const input = document.getElementById('customExpertiseInput');
+        if (input) input.value = '';
+    });
+
+    renderExpertiseTags();
+
+    // Dynamic Profile Rows
+    const platformIcons = {
+        linkedin: '<i class="fab fa-linkedin" style="color: #0077b5;"></i>',
+        twitter: '<i class="fab fa-twitter" style="color: #1DA1F2;"></i>',
+        facebook: '<i class="fab fa-facebook" style="color: #1877F2;"></i>',
+        instagram: '<i class="fab fa-instagram" style="color: #E4405F;"></i>',
+        youtube: '<i class="fab fa-youtube" style="color: #FF0000;"></i>',
+        tiktok: '<i class="fab fa-tiktok"></i>',
+        github: '<i class="fab fa-github"></i>',
+        website: '<i class="fas fa-globe" style="color: var(--purple);"></i>',
+        other: '<i class="fas fa-link"></i>',
+    };
+
+    const platformPlaceholders = {
+        linkedin: 'https://linkedin.com/in/...',
+        twitter: 'https://x.com/...',
+        facebook: 'https://facebook.com/...',
+        instagram: 'https://instagram.com/...',
+        youtube: 'https://youtube.com/@...',
+        tiktok: 'https://tiktok.com/@...',
+        github: 'https://github.com/...',
+        website: 'https://yourwebsite.com',
+        other: 'https://...',
+    };
+
+    function buildProfileRow(platform = 'other') {
+        const row = document.createElement('div');
+        row.className = 'profile-row';
+        row.innerHTML = `
+            <div class="icon-wrap">${platformIcons[platform] || platformIcons.other}</div>
+            <select name="profile_platform[]" class="w-28 text-xs border-0 bg-transparent focus:ring-0" style="color: var(--text-primary);">
+                ${Object.keys(platformIcons).map(k =>
+                    `<option value="${k}" ${k === platform ? 'selected' : ''}>${k.charAt(0).toUpperCase() + k.slice(1)}</option>`
+                ).join('')}
+            </select>
+            <input type="url" name="profile_url[]" placeholder="${platformPlaceholders[platform] || 'https://...'}" class="flex-1" style="background: transparent; color: var(--text-primary);">
+            <button type="button" class="remove-profile-btn" title="Remove"><i class="fas fa-times"></i></button>
+        `;
+
+        const select = row.querySelector('select');
+        const iconWrap = row.querySelector('.icon-wrap');
+        const urlInput = row.querySelector('input[type="url"]');
+        select.addEventListener('change', () => {
+            iconWrap.innerHTML = platformIcons[select.value] || platformIcons.other;
+            urlInput.placeholder = platformPlaceholders[select.value] || 'https://...';
+        });
+        row.querySelector('.remove-profile-btn').addEventListener('click', () => row.remove());
+        return row;
+    }
+
+    document.querySelectorAll('#profilesList .remove-profile-btn').forEach(btn => {
+        btn.addEventListener('click', () => btn.closest('.profile-row').remove());
+    });
+
+    document.querySelectorAll('#profilesList select').forEach(select => {
+        const row = select.closest('.profile-row');
+        const iconWrap = row.querySelector('.icon-wrap');
+        const urlInput = row.querySelector('input[type="url"]');
+        select.addEventListener('change', () => {
+            iconWrap.innerHTML = platformIcons[select.value] || platformIcons.other;
+            urlInput.placeholder = platformPlaceholders[select.value] || 'https://...';
+        });
+    });
+
+    document.getElementById('addProfileBtn')?.addEventListener('click', () => {
+        document.getElementById('profilesList').appendChild(buildProfileRow('other'));
+    });
+
+    // Success Modal
+    function showSuccessModal() {
         const modal = document.getElementById('successModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        
-        const form = document.getElementById('mentorForm');
-        if (form) {
-            form.reset();
-        }
-        
-        // Reset photo preview
+        if (modal) modal.classList.add('active');
+    }
+
+    window.addAnotherMentor = function() {
+        document.getElementById('successModal')?.classList.remove('active');
+        document.getElementById('mentorForm')?.reset();
         const photoPreview = document.getElementById('photo-preview');
         if (photoPreview) {
-            photoPreview.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-user text-5xl text-gray-400 mb-2"></i>
-                    <p class="text-xs text-gray-500">Click to upload</p>
-                </div>
-            `;
+            photoPreview.innerHTML = `<div class="text-center"><i class="fas fa-user text-5xl mb-2" style="color: var(--text-secondary);"></i><p class="text-xs" style="color: var(--text-secondary);">Click to upload</p></div>`;
         }
-        
-        // Reset password strength indicators
-        bars.forEach(bar => {
-            if (bar) bar.className = 'strength-bar flex-1 bg-gray-200';
-        });
+        bars.forEach(bar => { if (bar) bar.style.background = 'var(--border-color)'; });
         if (strengthLabel) strengthLabel.textContent = '';
-        
-        // Reset password match indicator
         if (matchEl) matchEl.innerHTML = '';
-        
-        // Reset bio counter
         if (bioCount) bioCount.textContent = '0 / 500 characters';
-        
-        // Uncheck all expertise checkboxes
-        expertiseCheckboxes.forEach(cb => {
-            cb.checked = false;
-            const icon = cb.nextElementSibling?.querySelector('i');
-            if (icon) icon.classList.add('hidden');
-        });
-        
-        // Reset tabs to first tab
+        document.querySelectorAll('input[name^="notify_"]').forEach(cb => cb.checked = true);
         showTab('basic');
-        
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        
         showToast('Ready to add another mentor!');
     };
-    
-    // View mentors - redirect to index page
+
     window.viewMentors = function() {
         window.location.href = "{{ route('admin.mentors.index') }}";
     };
-    
-    // Handle form submission with AJAX to show modal
+
+    // Form Submission
     const mentorForm = document.getElementById('mentorForm');
     if (mentorForm) {
         mentorForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Basic validation
+
             const name = document.getElementById('name')?.value || '';
             const email = document.getElementById('email')?.value || '';
             const password = document.getElementById('password')?.value || '';
             const passwordConfirm = document.getElementById('password_confirmation')?.value || '';
-            const expertiseChecked = document.querySelectorAll('input[name="expertise[]"]:checked');
+            const expertiseHidden = document.querySelectorAll('#expertiseHiddenInputs input');
             const bio = document.getElementById('bio')?.value || '';
-            
-            if (name.length === 0 || email.length === 0 || password.length < 12 || 
-                password !== passwordConfirm || expertiseChecked.length === 0 || bio.length === 0) {
+
+            if (!name || !email || password.length < 12 || password !== passwordConfirm || expertiseHidden.length === 0 || !bio) {
                 showToast('Please fill in all required fields correctly', true);
-                return false;
+                return;
             }
-            
-            // Show loading state
+
             const submitBtn = document.getElementById('submitBtn');
-            const mobileSubmitBtn = document.querySelector('.sm\\:hidden button[type="submit"]');
-            
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
-            }
-            
-            if (mobileSubmitBtn) {
-                mobileSubmitBtn.disabled = true;
-                mobileSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
-            }
-            
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...'; }
+
             try {
                 const formData = new FormData(this);
-                
                 const response = await fetch(this.action, {
                     method: 'POST',
                     body: formData,
@@ -1121,13 +946,9 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     }
                 });
-                
                 const data = await response.json();
-                
                 if (data.success) {
-                    lastCreatedMentorId = data.mentor?.id;
-                    showSuccessModal(lastCreatedMentorId);
-                    showToast('Mentor created successfully!');
+                    showSuccessModal();
                 } else {
                     showToast(data.message || 'Failed to create mentor', true);
                 }
@@ -1135,31 +956,15 @@
                 console.error('Error:', error);
                 showToast('An error occurred. Please try again.', true);
             } finally {
-                // Reset button state
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
-                }
-                if (mobileSubmitBtn) {
-                    mobileSubmitBtn.disabled = false;
-                    mobileSubmitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor';
-                }
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Create Mentor'; }
             }
         });
     }
 
-    // Close modal when clicking outside
-    const successModal = document.getElementById('successModal');
-    if (successModal) {
-        successModal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-            }
-        });
-    }
+    document.getElementById('successModal')?.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
 
-    // Initialize
     updateNavButtons();
 </script>
-</body>
-</html>
+@endpush
