@@ -14,7 +14,7 @@ import "../global.css";
 import "../src/i18n/i18n";
 
 // Prevent the splash screen from auto-hiding before we check Auth/Onboarding state
-SplashScreen.preventAutoHideAsync();
+//SplashScreen.preventAutoHideAsync();
 
 function Navigation() {
   const router = useRouter();

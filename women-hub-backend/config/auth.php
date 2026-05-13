@@ -55,7 +55,7 @@ return [
 
         'mentors' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Mentor::class,  //   points to Mentor model
+            'model' => App\Models\User::class,  //   points to Mentor model
         ],
     ],
 
