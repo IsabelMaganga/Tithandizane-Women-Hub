@@ -167,7 +167,7 @@ export default function UserDashboard() {
           {/* COMMUNITY HUB CARD*/}
           <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-6">
             <TouchableOpacity 
-              onPress={handleUnderConstruction}
+              onPress={()=>handleNavigation("/(protected)/community")}
               className="bg-slate-900 dark:bg-slate-800 p-6 rounded-[28px] flex-row items-center justify-between"
             >
               <View className="flex-row items-center">
@@ -176,10 +176,10 @@ export default function UserDashboard() {
                 </View>
                 <View className="ml-4">
                   <Text className="text-white font-bold text-base">Community Hub</Text>
-                  <Text className="text-slate-400 text-xs italic">Coming soon</Text>
+                  <Text className="text-slate-400 text-xs italic">space for all</Text>
                 </View>
               </View>
-              <MaterialIcons name="lock-outline" size={20} color="#94a3b8" />
+              
             </TouchableOpacity>
           </Animated.View>
 

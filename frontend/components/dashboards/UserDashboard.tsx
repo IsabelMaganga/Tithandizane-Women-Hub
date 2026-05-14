@@ -99,7 +99,7 @@ export default function UserDashboard() {
           </Animated.View>
 
           {/* --- STATUS ROW --- */}
-          <View className="flex-row px-6 mt-8 justify-between">
+          {/* <View className="flex-row px-6 mt-8 justify-between">
             <View className="bg-white dark:bg-slate-900 flex-1 mr-3 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
               <Text className="text-gray-400 text-[10px] font-bold uppercase">Cycle Day</Text>
               <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Day 14</Text>
@@ -110,7 +110,25 @@ export default function UserDashboard() {
               <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Secure</Text>
               <Text className="text-blue-500 text-[10px] font-bold mt-1">Hub Encrypted</Text>
             </View>
-          </View>
+          </View> */}
+          {/*  RECENT ACTIVITY / FORUM PREVIEW */}
+          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-8">
+            <TouchableOpacity 
+              className="bg-white dark:bg-slate-900 p-5 rounded-[32px] flex-row items-center justify-between border border-gray-100 dark:border-slate-800"
+              onPress={() => router.push("/(protected)/community")}
+            >
+              <View className="flex-row items-center">
+                <View className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-2xl items-center justify-center">
+                  <Ionicons name="people" size={24} color="#7c3aed" />
+                </View>
+                <View className="ml-4">
+                  <Text className="text-slate-900 dark:text-white font-bold text-base">Community Hub</Text>
+                  <Text className="text-gray-500 text-xs">Space for everyone</Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          </Animated.View>
 
           {/* --- SERVICES GRID --- */}
           <Text className="px-8 mt-10 text-slate-900 dark:text-white font-black text-xl mb-4">
@@ -147,24 +165,7 @@ export default function UserDashboard() {
             />
           </View>
 
-          {/*  RECENT ACTIVITY / FORUM PREVIEW */}
-          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-8">
-            <TouchableOpacity 
-              className="bg-white dark:bg-slate-900 p-5 rounded-[32px] flex-row items-center justify-between border border-gray-100 dark:border-slate-800"
-              onPress={() => router.push("/community")}
-            >
-              <View className="flex-row items-center">
-                <View className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-2xl items-center justify-center">
-                  <Ionicons name="people" size={24} color="#7c3aed" />
-                </View>
-                <View className="ml-4">
-                  <Text className="text-slate-900 dark:text-white font-bold text-base">Community Hub</Text>
-                  <Text className="text-gray-500 text-xs">8 mentors currently online</Text>
-                </View>
-              </View>
-              <Feather name="chevron-right" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-          </Animated.View>
+          
 
         </ScrollView>
 
@@ -199,7 +200,7 @@ const GridItem = ({ title, icon, color, family: IconFamily, onPress }: any) => (
     style={{ width: '50%', padding: 8 }}
     activeOpacity={0.7}
   >
-    <View className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-gray-100 dark:border-slate-800 shadow-sm items-center">
+    <View className=" p-6 rounded-[32px]  items-center">
       <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
         <IconFamily name={icon} size={26} color={color} />
       </View>
