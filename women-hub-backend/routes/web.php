@@ -55,9 +55,27 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     // Additional mentor routes
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
 
-    // Harassment Reports
-    Route::resource('reports', HarassmentReportController::class)->except(['edit', 'update']);
-    Route::patch('/reports/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('reports.update-status');
+    // ============================================
+    // HARASSMENT REPORTS ROUTES - UPDATED
+    // ============================================
+    Route::prefix('reports')->name('reports.')->group(function () {
+        // Export route (must come before {report} parameter)
+        Route::get('/export', [HarassmentReportController::class, 'export'])->name('export');
+        Route::get('/export/csv', [HarassmentReportController::class, 'export'])->name('export.csv'); // Alias for compatibility
+        
+        // JSON endpoint for AJAX - GET request
+        Route::get('/{id}/json', [HarassmentReportController::class, 'show'])->name('json');
+        
+        // Status update routes
+        Route::patch('/{id}/status', [HarassmentReportController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{id}/respond', [HarassmentReportController::class, 'respond'])->name('respond');
+        
+        // Regular show route (HTML view)
+        Route::get('/{id}', [HarassmentReportController::class, 'show'])->name('show');
+    });
+    
+    // Harassment Reports Resource route
+    Route::resource('reports', HarassmentReportController::class)->only(['index', 'destroy']);
 });
 
 // Auth mentors routes (guest only)
@@ -68,12 +86,9 @@ Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(func
 
 // Protected mentor routes
 Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(function () {
-
     // auth()->user()->markEmailAsVerified();
     Route::post('/logout', [MentorAuthController::class, 'logout'])->name('logout');
     Route::delete('/sessions', [MentorAuthController::class, 'logoutAllSessions'])->name('logoutAllSessions');
-
-    // Route::get('/auth/forgot',  [MentorAuthController::class, 'showForgotPassword'])->name('forgot');
 
     // dashboard
     Route::get('/dashboard',[MentorDashboardController::class, 'index'])->name('dashboard');
@@ -118,7 +133,6 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::put('/settings/profile', [MentorSecurityController::class, 'updateProfile'])->name('updateProfile');
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
-    // Route::get('/test-broadcast', [MentorDashboardController::class, 'testBroadcast']);
 });
 
 Route::fallback(function () {

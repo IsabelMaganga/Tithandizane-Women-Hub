@@ -1,7 +1,7 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
-use App\Http\Controllers\HarassmentController;
+use App\Http\Controllers\HarassmentReportController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
@@ -124,6 +124,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/groups/available', [MessageController::class, 'getAvailableGroups']);
         Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
     });
+
+    // Public routes (no authentication required)
+Route::post('/harassment-reports', [HarassmentReportController::class, 'store']);
+Route::post('/harassment-reports/anonymous', [HarassmentReportController::class, 'store']);
+
+// Protected routes (require authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/harassment-reports/my-reports', [HarassmentReportController::class, 'myReports']);
+});
 
 });
 

@@ -1,3 +1,4 @@
+// app/_layout.tsx
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 import { useEffect, useState, useCallback } from "react";
@@ -8,6 +9,7 @@ import Toast from "react-native-toast-message";
 
 // Context & Providers
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { LanguageProvider } from "../context/LanguageContext"; // Add this
 
 // Global Styles & i18n
 import "../global.css";
@@ -70,12 +72,12 @@ function Navigation() {
 
     // --- CASE C: AUTHENTICATED (USER LOGGED IN) ---
     if (user) {
-  // If user is logged in but hits Auth/Onboarding, send them to the Tab root
-  if (inAuthGroup || inOnboardingGroup) {
-    // Both roles now go to the same place!
-    router.replace("/(protected)/(tabs)");
-  }
-}
+      // If user is logged in but hits Auth/Onboarding, send them to the Tab root
+      if (inAuthGroup || inOnboardingGroup) {
+        // Both roles now go to the same place!
+        router.replace("/(protected)/(tabs)");
+      }
+    }
 
     // Final hide of splash screen once routing is settled
     SplashScreen.hideAsync();
@@ -91,7 +93,6 @@ function Navigation() {
       {/* Define explicit stacks if needed, otherwise Slot/Stack handles it */}
       <Stack.Screen name="(auth)" options={{ gestureEnabled: false }} />
       <Stack.Screen name="(protected)" options={{ gestureEnabled: false }} />
-
     </Stack>
   );
 }
@@ -99,9 +100,10 @@ function Navigation() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Navigation />
-      {/* Toast is outside Navigation so it stays mounted during redirects */}
-      <Toast position="top" topOffset={60} />
+      <LanguageProvider> {/* Wrap with LanguageProvider */}
+        <Navigation />
+        <Toast position="top" topOffset={60} />
+      </LanguageProvider>
     </AuthProvider>
   );
 }
