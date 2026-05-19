@@ -1,5 +1,3 @@
-// services/api.ts
-
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -89,15 +87,15 @@ export interface Message {
 
 export interface HarassmentReport {
   id: number;
-  title: string;
-  description: string;
-  location?: string;
-  status: 'pending' | 'investigating' | 'resolved';
+  incident_title: string;
+  incident_description: string;
+  incident_location?: string;
+  status: 'pending' | 'reviewing' | 'resolved' | 'dismissed';
   created_at: string;
 }
 
 // YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
-const COMPUTER_IP = '192.168.1.102'; // Use the same IP as Metro
+const COMPUTER_IP = '192.168.1.102'; 
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -107,9 +105,7 @@ const getBaseURL = (): string => {
     
     if (Platform.OS === 'android') {
       // For Android Emulator: use 10.0.2.2
-      // For Physical Android Device: use computer's network IP
-      
-      // ✅ FOR PHYSICAL ANDROID DEVICE (Same WiFi)
+     
       return `http://192.168.1.102:8000/api`;
       
       // For Android Emulator (comment the above, uncomment below):
@@ -120,11 +116,8 @@ const getBaseURL = (): string => {
       // For iOS Simulator: use localhost
       // For Physical iOS Device: use computer's network IP
       
-      // ✅ FOR PHYSICAL iOS DEVICE (Same WiFi)
       return `http://192.168.74.205:8000/api`;
       
-      // For iOS Simulator (comment the above, uncomment below):
-      // return 'http://localhost:8000/api';
     }
     
     // Default fallback
@@ -156,7 +149,7 @@ console.log(`   3. Can access ${api.defaults.baseURL}/mentors/active from phone 
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
     // Public routes that don't need authentication
-    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/'];
+    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/', '/harassment-reports'];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
     
     if (!isPublicRoute) {
@@ -167,6 +160,9 @@ api.interceptors.request.use(
     }
     
     console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    if (config.data) {
+      console.log('📦 Request data:', config.data);
+    }
     return config;
   },
   (error: AxiosError) => {
@@ -605,7 +601,7 @@ export const getMessages = async (conversationId: number): Promise<Message[]> =>
 };
 
 // ============================================
-// HARASSMENT REPORT FUNCTIONS
+// HARASSMENT REPORT FUNCTIONS - FIXED
 // ============================================
 
 // Get harassment reports
@@ -619,9 +615,10 @@ export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
   }
 };
 
-// Submit harassment report
+// Submit harassment report - FIXED to match Laravel expectations
 export const submitHarassmentReport = async (data: {
   incident_type: string;
+  incident_title: string;  // ADDED - required by Laravel
   description: string;
   incident_location?: string;
   incident_date?: string;
@@ -629,17 +626,37 @@ export const submitHarassmentReport = async (data: {
   is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
-    const response = await api.post<HarassmentReport>('/harassment-reports', data);
+    // Transform data to match Laravel model fillable fields
+    const requestData = {
+      incident_type: data.incident_type,
+      incident_title: data.incident_title,  // Map from frontend
+      incident_description: data.description,  // Map 'description' to 'incident_description'
+      incident_location: data.incident_location,
+      incident_date: data.incident_date,
+      perpetrator_info: data.perpetrator_info,
+      is_anonymous: data.is_anonymous === 'yes' ? 1 : 0,
+    };
+    
+    console.log('📤 Submitting harassment report with data:', requestData);
+    const response = await api.post<HarassmentReport>('/harassment-reports', requestData);
+    console.log('✅ Report submitted successfully:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('❌ Error submitting report:', error.message);
+    if (error.response?.data?.errors) {
+      console.error('Validation errors:', JSON.stringify(error.response.data.errors, null, 2));
+    }
+    if (error.response?.data?.message) {
+      console.error('Server message:', error.response.data.message);
+    }
     throw error;
   }
 };
 
-// Submit anonymous harassment report
+// Submit anonymous harassment report - FIXED
 export const submitHarassmentReportAnonymously = async (data: {
   incident_type: string;
+  incident_title: string;  // ADDED
   description: string;
   location?: string;
   incident_date?: string;
@@ -647,22 +664,38 @@ export const submitHarassmentReportAnonymously = async (data: {
   is_anonymous?: string;
 }): Promise<HarassmentReport> => {
   try {
-    const response = await api.post<HarassmentReport>('/harassment-reports/anonymous', data);
+    const requestData = {
+      incident_type: data.incident_type,
+      incident_title: data.incident_title,
+      incident_description: data.description,
+      incident_location: data.location,
+      incident_date: data.incident_date,
+      perpetrator_info: data.perpetrator_info,
+      is_anonymous: 1,  // Always anonymous
+    };
+    
+    console.log('📤 Submitting anonymous report with data:', requestData);
+    const response = await api.post<HarassmentReport>('/harassment-reports', requestData);
+    console.log('✅ Anonymous report submitted successfully:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('❌ Error submitting anonymous report:', error.message);
+    if (error.response?.data?.errors) {
+      console.error('Validation errors:', JSON.stringify(error.response.data.errors, null, 2));
+    }
     throw error;
   }
 };
 
-// Submit anonymous report (alias)
+// Submit anonymous report (alias) - FIXED
 export const submitAnonymousReport = async (data: {
   title: string;
   description: string;
   location?: string;
 }): Promise<HarassmentReport> => {
   return submitHarassmentReportAnonymously({
-    incident_type: data.title,
+    incident_type: 'other',  // Default type for simple anonymous reports
+    incident_title: data.title,  // Map 'title' to 'incident_title'
     description: data.description,
     location: data.location,
   });
