@@ -4,9 +4,10 @@ namespace App\Http\Controllers\mentor;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Hash, Log, Storage};
+use Illuminate\View\View;
+
 use App\Http\Controllers\Controller;
 use App\Models\{EmergencyContact, GeneralGuide, HygieneArticle, User};
-use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
@@ -325,17 +326,17 @@ class SecurityController extends Controller
     public function updateProfile(Request $request, User $user){
         try {
             // Get current mentor user info
-            $user = Auth::guard('usersl')->user();
+            // $user = Auth::guard('users')->user();
 
 
-            if (!$user) {
-                return back()->withErrors(['error' => 'No mentor is logged in.']);
-            }
+            // if (!$user) {
+            //     return back()->withErrors(['error' => 'No mentor is logged in.']);
+            // }
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email,' . $user->id,
+                // 'email' => 'required|string,email,' . $user->id,
                 'bio' => 'required|string|max:255',
                 'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
@@ -355,22 +356,39 @@ class SecurityController extends Controller
             // Update user with validated data
             $user->update($validated);
 
+            // Get current admin user info
+             $mentorUser = Auth::guard('mentor')->user();
+            $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
+            $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
+            $mentorPhone = $mentorUser->phone;
+            $mentorBio = $mentorUser->bio;
+            $mentorCreatedAt = $mentorUser->created_at->format('l, d F Y');
+            $mentorAvailable = $mentorUser->is_available;
 
-            return view('mentor.showProfile', compact('user'))
+
+            return view('mentor.settings.profile.index', compact(
+                'mentorName',
+                'mentorPhone',
+                'mentorEmail',
+                'mentorUser',
+                'mentorBio',
+                'mentorCreatedAt',
+                'mentorAvailable',
+            ))
                 ->with('success', 'Profile updated successfully.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Handle validation errors specifically
             return back()->withErrors($e->errors())->withInput();
 
-        } catch (\Exception $e) {
-            // Log error with more details for debugging
-            Log::error("Profile update failed for user ID: " . ($user->id ?? 'unknown') . " | Error: " . $e->getMessage());
-
-            return back()->withErrors([
-                'error' => 'Something went wrong. Please try again.'
-            ])->withInput();
         }
+        // catch (\Exception $e) {
+        //     Log::error("Profile update failed for user ID: " . ($user->id ?? 'unknown') . " | Error: " . $e->getMessage());
+
+        //     return back()->withErrors([
+        //         'error' => 'Something went wrong. Please try again.'
+        //     ])->withInput();
+        // }
     }
 
     public function showSecurity(){

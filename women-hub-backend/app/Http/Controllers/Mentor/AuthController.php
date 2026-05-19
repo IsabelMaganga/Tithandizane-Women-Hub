@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mentor;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Hash, Log, Mail, Notification, RateLimiter};
+
 use App\Http\Controllers\Controller;
 use App\Notifications\WelcomeNotification;
 
@@ -43,7 +44,7 @@ class AuthController extends Controller
             }
 
             // Optional: Send welcome notification (consider moving this to a listener)
-            // Notification::send($user, new WelcomeNotification($user));
+            Notification::send($user, new WelcomeNotification($user));
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');
