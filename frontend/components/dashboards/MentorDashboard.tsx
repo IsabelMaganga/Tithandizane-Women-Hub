@@ -205,7 +205,7 @@ const GridItem = ({ title, icon, color, onPress, isMaterial, isIonicons }: any) 
     style={{ width: '50%', padding: 8 }}
     activeOpacity={0.7}
   >
-    <View className=" dark:bg-slate-900 p-2 rounded-[32px]  items-center">
+    <View className="p-6  bg-white shadow-xl dark:bg-slate-900  rounded-[32px]  items-center">
       <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
         {isMaterial ? (
           <MaterialCommunityIcons name={icon} size={26} color={color} />
