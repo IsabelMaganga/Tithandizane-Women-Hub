@@ -200,7 +200,7 @@ const GridItem = ({ title, icon, color, family: IconFamily, onPress }: any) => (
     style={{ width: '50%', padding: 8 }}
     activeOpacity={0.7}
   >
-    <View className=" p-6 rounded-[32px]  items-center">
+    <View className=" p-6 rounded-[32px]  bg-white shadow-xl items-center">
       <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
         <IconFamily name={icon} size={26} color={color} />
       </View>
