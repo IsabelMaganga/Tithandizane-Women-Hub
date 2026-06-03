@@ -3,7 +3,7 @@
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
-use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController};
+use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
 use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 
 // Home page
@@ -54,6 +54,26 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
 
     // Additional mentor routes
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
+
+    // ============================================
+    // USER MANAGEMENT ROUTES - ADDED
+    // ============================================
+    Route::prefix('users')->name('users.')->group(function () {
+        // Main index route (display all users)
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        
+        // Get user details for AJAX (must come before {id} parameter)
+        Route::get('/{id}/json', [UserController::class, 'show'])->name('json');
+        
+        // Update user status
+        Route::put('/{id}/status', [UserController::class, 'updateStatus'])->name('update-status');
+        
+        // Delete user
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+        
+        // Regular show route (if you want a detailed view page)
+        Route::get('/{id}', [UserController::class, 'show'])->name('show');
+    });
 
     // ============================================
     // HARASSMENT REPORTS ROUTES - UPDATED

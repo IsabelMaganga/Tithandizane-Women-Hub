@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '../../context/LanguageContext';
 import { submitHarassmentReport, submitAnonymousReport } from '../../services/api';
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Types for form data
@@ -33,42 +33,47 @@ interface ReportFormData {
   victim_phone: string;
 }
 
-// Incident types with bilingual labels and icons
+// Incident types with bilingual labels and icons - Matching the emojis/icons
 const INCIDENT_TYPES = {
   physical: { 
     en: 'Physical Harassment', 
     ny: 'Kuzunzidwa Kwakuthupi',
     icon: 'fist',
     iconSet: 'material',
-    color: '#EF4444'
+    color: '#EF4444',
+    emoji: '👊'
   },
   verbal: { 
     en: 'Verbal Harassment', 
     ny: 'Kuzunzidwa Pakamwa',
     icon: 'chatbubbles',
     iconSet: 'ion',
-    color: '#F59E0B'
+    color: '#F59E0B',
+    emoji: '💬'
   },
   sexual: { 
     en: 'Sexual Harassment', 
     ny: 'Kuzunzidwa Kogonana',
     icon: 'heart-dislike',
     iconSet: 'ion',
-    color: '#EC4899'
+    color: '#EC4899',
+    emoji: '💔'
   },
   cyber: { 
     en: 'Cyber Harassment', 
     ny: 'Kuzunzidwa Pa Intaneti',
     icon: 'laptop',
     iconSet: 'ion',
-    color: '#06B6D4'
+    color: '#06B6D4',
+    emoji: '💻'
   },
   other: { 
     en: 'Other', 
     ny: 'Zina',
     icon: 'help-circle',
     iconSet: 'ion',
-    color: '#6B7280'
+    color: '#6B7280',
+    emoji: '❓'
   },
 };
 
@@ -145,7 +150,7 @@ export default function HarassmentReportScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission - FIXED with incident_title included
+  // Handle form submission - UPDATED to work with new API
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -154,7 +159,7 @@ export default function HarassmentReportScreen() {
       let response;
       
       if (formData.is_anonymous) {
-        // For anonymous reports - using submitAnonymousReport
+        // For anonymous reports - use submitAnonymousReport
         response = await submitAnonymousReport({
           title: formData.incident_title.trim(),
           description: formData.incident_description.trim(),
@@ -162,24 +167,30 @@ export default function HarassmentReportScreen() {
         });
         console.log('Anonymous report submitted:', response);
       } else {
-        // For non-anonymous reports - include incident_title
+        // For non-anonymous reports - include all contact information
         response = await submitHarassmentReport({
           incident_type: formData.incident_type,
           incident_title: formData.incident_title.trim(),
-          description: formData.incident_description.trim(),
+          incident_description: formData.incident_description.trim(),
           incident_location: formData.incident_location.trim(),
           incident_date: formData.incident_date,
-          perpetrator_info: formData.perpetrator_info.trim() || undefined,
-          is_anonymous: 'no',
+          perpetrator_info: formData.perpetrator_info.trim() || null,
+          is_anonymous: false,
+          victim_name: formData.victim_name.trim(),
+          victim_email: formData.victim_email.trim(),
+          // victim_phone: formData.victim_phone.trim() || null,
         });
         console.log('Non-anonymous report submitted:', response);
       }
 
+      // Get reference number from response
+      const referenceNumber = response?.data?.reference_number || response?.reference_number;
+      
       Alert.alert(
         translate('Report Submitted', 'Lipoti Latumizidwa'),
         translate(
-          'Your report has been submitted successfully. An administrator will review it and respond shortly.',
-          'Lipoti lanu latumizidwa bwino. Woyang\'anira adzaliwunika ndikuyankha posachedwa.'
+          `Your report has been submitted successfully.${referenceNumber ? `\n\nReference Number: ${referenceNumber}\n\nPlease save this reference number to check your report status.` : ''}\n\nAn administrator will review it and respond shortly.`,
+          `Lipoti lanu latumizidwa bwino.${referenceNumber ? `\n\nNambala Yofufuzira: ${referenceNumber}\n\nChonde sungani nambalayi kuti mudzafufuze lipoti lanu.` : ''}\n\nWoyang'anira adzaliwunika ndikuyankha posachedwa.`
         ),
         [
           {
@@ -232,7 +243,7 @@ export default function HarassmentReportScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        {/* Header - Updated with purple accent */}
+        {/* Header */}
         <View className="bg-white px-4 py-4 border-b border-gray-200">
           <View className="flex-row items-center">
             <TouchableOpacity onPress={() => router.back()} className="mr-4 p-1">
@@ -256,7 +267,7 @@ export default function HarassmentReportScreen() {
           className="flex-1 px-4 pt-4"
           showsVerticalScrollIndicator={false}
         >
-          {/* Anonymous Switch Section - Updated with purple track color */}
+          {/* Anonymous Switch Section */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
             <View className="flex-row justify-between items-center">
               <View className="flex-1">
@@ -281,7 +292,7 @@ export default function HarassmentReportScreen() {
             </View>
           </View>
 
-          {/* Incident Type - NEW CARD DESIGN WITH ICONS */}
+          {/* Incident Type Selection */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
             <Text className="text-base font-semibold text-gray-900 mb-3">
               {translate('Type of Harassment', 'Mtundu wa Nkhanza')} <Text className="text-red-500">*</Text>
@@ -306,11 +317,9 @@ export default function HarassmentReportScreen() {
                       elevation: isSelected ? 3 : 1,
                     }}
                   >
-                    {/* Icon centered */}
                     <View className="items-center justify-center flex-1">
                       {renderIcon(key, config.color, isSelected)}
                     </View>
-                    {/* Label below icon */}
                     <Text
                       className={`text-center text-xs font-medium mt-2 ${
                         isSelected ? 'text-white' : 'text-gray-700'
@@ -434,7 +443,7 @@ export default function HarassmentReportScreen() {
             />
           </View>
 
-          {/* PURPLE SECTION - Contact Information */}
+          {/* Contact Information - Only shown when not anonymous */}
           {!formData.is_anonymous && (
             <View className="bg-violet-50 rounded-xl p-4 mb-4 border border-violet-200">
               <Text className="text-base font-semibold text-violet-800 mb-3">
@@ -499,7 +508,7 @@ export default function HarassmentReportScreen() {
             </View>
           )}
 
-          {/* GREEN SECTION - Privacy Notice */}
+          {/* Privacy Notice */}
           <View className="bg-green-50 rounded-xl p-4 mb-6 border border-green-200">
             <View className="flex-row items-start">
               <Ionicons name="shield-checkmark" size={20} color="#059669" />
