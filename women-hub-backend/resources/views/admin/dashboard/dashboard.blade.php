@@ -2,7 +2,7 @@
 
 @section('title', 'Admin Dashboard')
 @section('page-title', 'Welcome back, ' . Auth::guard('admin')->user()->name ?? 'Admin')
-@section('page-subtitle', 'Empowering women through mentorship & safety — Here\'s your live snapshot')
+@section('page-subtitle', 'Empowering women through mentorship & safety Here\'s your live snapshot')
 
 @push('styles')
 <style>
@@ -271,7 +271,7 @@
         const newMentors = mentors.filter(m => new Date(m.created_at) >= weekAgo).slice(0, 4);
 
         if (!newMentors || newMentors.length === 0) {
-            container.innerHTML = '<div class="p-5 text-center" style="color: var(--text-secondary);">✨ No new mentors this week</div>';
+            container.innerHTML = '<div class="p-5 text-center" style="color: var(--text-secondary);"> No new mentors this week</div>';
             return;
         }
 
@@ -319,28 +319,32 @@
     }
 
     function renderRecentReports(reports) {
-        const container = document.getElementById('reportsListContainer');
+    const container = document.getElementById('reportsListContainer');
 
-        if (!reports || reports.length === 0) {
-            container.innerHTML = '<div class="p-6 text-center" style="color: var(--text-secondary);">✅ No pending reports</div>';
-            return;
-        }
-
-        container.innerHTML = reports.map(r => `
-            <div class="p-4 transition">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span class="font-mono text-sm font-bold" style="color: var(--text-primary);">#${escapeHtml(r.id)}</span>
-                        ${r.status === 'new' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-red); color: var(--red);">New</span>' : ''}
-                        ${r.status === 'in_review' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-orange); color: var(--orange);">Review</span>' : ''}
-                    </div>
-                    <span class="text-xs" style="color: var(--text-secondary);">${new Date(r.created_at).toLocaleDateString()}</span>
-                </div>
-                <p class="text-sm mt-1 line-clamp-2" style="color: var(--text-secondary);">${escapeHtml(r.description?.substring(0, 80) || 'No description')}${r.description?.length > 80 ? '…' : ''}</p>
-                <div class="mt-2"><span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--light-gray); color: var(--text-secondary);">${escapeHtml(r.report_type || 'harassment')}</span></div>
-            </div>
-        `).join('');
+    if (!reports || reports.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center" style="color: var(--text-secondary);"> No pending reports</div>';
+        return;
     }
+
+    container.innerHTML = reports.map(r => `
+        <div class="p-4 transition hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/admin/reports/${r.id}'">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="font-mono text-sm font-bold" style="color: var(--text-primary);">#${escapeHtml(r.reference_number || r.id)}</span>
+                    ${r.status === 'pending' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-red); color: var(--red);">New</span>' : ''}
+                    ${r.status === 'reviewing' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-orange); color: var(--orange);">Review</span>' : ''}
+                    ${r.status === 'assigned' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-purple); color: var(--purple);">Assigned</span>' : ''}
+                </div>
+                <span class="text-xs" style="color: var(--text-secondary);">${new Date(r.created_at).toLocaleDateString()}</span>
+            </div>
+            <p class="text-sm mt-1 line-clamp-2" style="color: var(--text-secondary);">${escapeHtml(r.incident_title || r.incident_description?.substring(0, 80) || 'No description')}</p>
+            <div class="mt-2 flex justify-between items-center">
+                <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--light-gray); color: var(--text-secondary);">${escapeHtml(r.incident_type || 'harassment')}</span>
+                ${r.assigned_mentor_id ? '<span class="text-xs text-green-600"><i class="fas fa-user-check"></i> Assigned</span>' : '<span class="text-xs text-yellow-600"><i class="fas fa-clock"></i> Pending</span>'}
+            </div>
+        </div>
+    `).join('');
+}
 
     // Load total users count for stat card
     function loadTotalUsersStat() {
@@ -375,7 +379,7 @@
         loadTotalUsersStat();
         
         document.getElementById('scheduleTrainingBtn')?.addEventListener('click', () => {
-            alert('📅 Schedule training: Calendar integration ready.');
+            alert(' Schedule training: Calendar integration ready.');
         });
     });
 </script>

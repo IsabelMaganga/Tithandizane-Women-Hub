@@ -317,7 +317,7 @@
             <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'active-nav' : '' }}" data-page="reports" style="color: var(--sidebar-text);">
                 <i class="fas fa-flag w-5"></i>
                 <span class="ml-3">Harassment Reports</span>
-                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style="background: var(--red); color: white;" id="pendingReportsBadge">0</span>
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"></span>
             </a>
             <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: var(--sidebar-text);">
                 <i class="fas fa-book-open w-5"></i>
@@ -326,7 +326,7 @@
             <a href="{{ route('admin.users.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active-nav' : '' }}" data-page="users" style="color: var(--sidebar-text);">
                 <i class="fas fa-user-circle w-5"></i>
                 <span class="ml-3">Users</span>
-                <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background: var(--dark-blue); color: white;" id="totalUsersBadge">0</span>
+                <span class="ml-auto text-xs px-2 py-0.5 rounded-full" ></span>
             </a>
             <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);">
                 <i class="fas fa-cog w-5"></i>

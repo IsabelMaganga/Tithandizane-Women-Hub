@@ -119,7 +119,8 @@ const getBaseURL = (): string => {
     }
     
     // Default fallback
-    return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
+    //return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
+    return `http://127.0.0.1:8000/api/v1`;
   } else {
     // Production environment
     return 'https://your-production-api.com/api';
