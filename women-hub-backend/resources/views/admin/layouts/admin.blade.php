@@ -65,6 +65,41 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
         
+        /* SIDEBAR SCROLL STYLES - Makes only the sidebar scrollable */
+        .sidebar-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: hidden;
+        }
+        
+        /* Make the navigation area scrollable while header and footer stay fixed */
+        .sidebar-nav-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar for sidebar */
+        .sidebar-nav-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .sidebar-nav-scroll::-webkit-scrollbar-track {
+            background: #2c3e50;
+            border-radius: 10px;
+        }
+        
+        .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+            background: var(--blue);
+            border-radius: 10px;
+        }
+        
+        .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--teal-green);
+        }
+        
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: var(--light-gray); border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--dark-blue); border-radius: 10px; }
@@ -78,7 +113,7 @@
             transition: all 0.2s ease;
         }
         
-        /* ACTIVE NAVIGATION STYLES - ADD THIS */
+        /* ACTIVE NAVIGATION STYLES */
         .active-nav {
             background: var(--blue) !important;
             color: #FFFFFF !important;
@@ -293,9 +328,11 @@
 
 <div class="flex h-screen overflow-hidden">
 
-    <!-- Sidebar -->
-    <div class="w-64 flex flex-col shadow-xl" style="background: var(--sidebar-bg); border-right: 1px solid #2c3e50;">
-        <div class="p-6 border-b" style="border-color: #2c3e50;">
+    <!-- Sidebar - MADE SCROLLABLE -->
+    <div class="w-64 flex flex-col shadow-xl sidebar-wrapper" style="background: var(--sidebar-bg); border-right: 1px solid #2c3e50;">
+        
+        <!-- Sidebar Header (fixed, does not scroll) -->
+        <div class="p-6 border-b flex-shrink-0" style="border-color: #2c3e50;">
             <div class="flex items-center gap-3">
                 <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
                 <div>
@@ -305,37 +342,59 @@
             </div>
         </div>
 
-        <nav class="flex-1 mt-6 space-y-1 px-3" id="sidebar-nav">
-            <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.dashboard') ? 'active-nav' : '' }}" data-page="dashboard" style="color: {{ request()->routeIs('admin.dashboard') ? '#FFFFFF' : 'var(--sidebar-text)' }};">
-                <i class="fas fa-home w-5"></i>
-                <span class="ml-3 font-medium">Dashboard</span>
-            </a>
-            <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.mentors.*') ? 'active-nav' : '' }}" data-page="mentors" style="color: var(--sidebar-text);">
-                <i class="fas fa-chalkboard-user w-5"></i>
-                <span class="ml-3">Mentors</span>
-            </a>
-            <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'active-nav' : '' }}" data-page="reports" style="color: var(--sidebar-text);">
-                <i class="fas fa-flag w-5"></i>
-                <span class="ml-3">Harassment Reports</span>
-                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"></span>
-            </a>
-            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: var(--sidebar-text);">
-                <i class="fas fa-book-open w-5"></i>
-                <span class="ml-3">Guidance Content</span>
-            </a>
-            <a href="{{ route('admin.users.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active-nav' : '' }}" data-page="users" style="color: var(--sidebar-text);">
-                <i class="fas fa-user-circle w-5"></i>
-                <span class="ml-3">Users</span>
-                <span class="ml-auto text-xs px-2 py-0.5 rounded-full" ></span>
-            </a>
-            <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);">
-                <i class="fas fa-cog w-5"></i>
-                <span class="ml-3">Settings</span>
-            </a>
-        </nav>
+        <!-- SCROLLABLE NAVIGATION AREA -->
+        <div class="sidebar-nav-scroll">
+            <nav class="mt-6 space-y-1 px-3 pb-4" id="sidebar-nav">
+                <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.dashboard') ? 'active-nav' : '' }}" data-page="dashboard" style="color: {{ request()->routeIs('admin.dashboard') ? '#FFFFFF' : 'var(--sidebar-text)' }};">
+                    <i class="fas fa-home w-5"></i>
+                    <span class="ml-3 font-medium">Dashboard</span>
+                </a>
+                <a href="{{ route('admin.mentors.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.mentors.*') ? 'active-nav' : '' }}" data-page="mentors" style="color: var(--sidebar-text);">
+                    <i class="fas fa-chalkboard-user w-5"></i>
+                    <span class="ml-3">Mentors</span>
+                </a>
+                <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'active-nav' : '' }}" data-page="reports" style="color: var(--sidebar-text);">
+                    <i class="fas fa-flag w-5"></i>
+                    <span class="ml-3">Harassment Reports</span>
+                    <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-red-500 text-white" id="pendingReportsBadge"></span>
+                </a>
+                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: var(--sidebar-text);">
+                    <i class="fas fa-book-open w-5"></i>
+                    <span class="ml-3">Guidance Content</span>
+                </a>
+                <a href="{{ route('admin.users.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active-nav' : '' }}" data-page="users" style="color: var(--sidebar-text);">
+                    <i class="fas fa-user-circle w-5"></i>
+                    <span class="ml-3">Users</span>
+                    <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-500 text-white" id="totalUsersBadge"></span>
+                </a>
+                <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);">
+                    <i class="fas fa-cog w-5"></i>
+                    <span class="ml-3">Settings</span>
+                </a>
+                
+                <!-- Analytics Reports Link - UPDATED with proper route -->
+                <div class="mt-4 pt-2 border-t border-gray-700"></div>
+                <a href="{{ route('admin.analytics.index') }}" 
+                   class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.analytics.*') ? 'active-nav' : '' }}" 
+                   data-page="analytics" 
+                   style="color: var(--sidebar-text);">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span class="ml-3">Analytics Reports</span>
+                </a>
+                
+                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group opacity-80" style="color: var(--sidebar-text);">
+                    <i class="fas fa-calendar-alt w-5"></i>
+                    <span class="ml-3">Events Calendar</span>
+                </a>
+                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group opacity-80" style="color: var(--sidebar-text);">
+                    <i class="fas fa-bell w-5"></i>
+                    <span class="ml-3">Notifications</span>
+                </a>
+            </nav>
+        </div>
 
-        <!-- Admin user card - stays at bottom -->
-        <div class="p-5 m-3 rounded-xl mb-6" style="background: var(--dark-blue); border: 1px solid #34495e;">
+        <!-- Admin user card - fixed at bottom (does not scroll) -->
+        <div class="flex-shrink-0 p-5 m-3 rounded-xl mb-6" style="background: var(--dark-blue); border: 1px solid #34495e;">
             <div class="flex items-center">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('admin')->user()->name ?? 'Admin User') }}&background=3498db&color=fff&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white" id="adminAvatarImg">
                 <div class="ml-3">
@@ -465,9 +524,7 @@
     
     // Load pending reports count for badge
     function loadPendingReportsCount() {
-        const url = '{{ route("admin.reports.index") }}';
-        
-        fetch(url, {
+        fetch('{{ route("admin.reports.index") }}', {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -487,9 +544,7 @@
     
     // Load total users count
     function loadTotalUsersCount() {
-        const url = '{{ route("admin.users.index") }}';
-        
-        fetch(url, {
+        fetch('{{ route("admin.users.index") }}', {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',

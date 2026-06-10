@@ -188,6 +188,12 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
 });
+// Analytics Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
+    Route::get('/analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/export-pdf', [App\Http\Controllers\Admin\AnalyticsController::class, 'exportPdf'])->name('analytics.export-pdf');
+    Route::get('/analytics/export-excel', [App\Http\Controllers\Admin\AnalyticsController::class, 'exportExcel'])->name('analytics.export-excel');
+});
 
 // Fallback route for 404 errors
 Route::fallback(function () {

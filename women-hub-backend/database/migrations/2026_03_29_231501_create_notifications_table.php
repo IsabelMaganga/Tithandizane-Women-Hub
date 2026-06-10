@@ -8,8 +8,12 @@ class CreateNotificationsTable extends Migration
 {
     public function up()
     {
+        // First, check if table exists and drop it to recreate properly
+        Schema::dropIfExists('notifications');
+        
+        // Create fresh table with correct schema
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // This creates AUTO_INCREMENT primary key
             $table->string('type');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('report_id')->nullable();
@@ -20,6 +24,7 @@ class CreateNotificationsTable extends Migration
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
             
+            // Add foreign key constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('report_id')->references('id')->on('harassment_reports')->onDelete('cascade');
         });
