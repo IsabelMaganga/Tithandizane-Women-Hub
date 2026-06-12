@@ -92,7 +92,7 @@ export default function Community() {
       {/* Header */}
       <View className="bg-white px-6 py-4 border-b border-slate-100 flex-row justify-between items-center">
         <View>
-          <Text className="text-2xl font-bold text-rose-500">Tithandizane</Text>
+          <Text className="text-2xl font-bold text-purple-600">Tithandizane</Text>
           <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Safe Community</Text>
         </View>
         <Ionicons name="lock-closed" size={18} color="#94a3b8" />
@@ -129,7 +129,7 @@ export default function Community() {
               <TouchableOpacity 
                 onPress={handlePost}
                 disabled={!postText.trim()}
-                className={`${postText.trim() ? 'bg-rose-500' : 'bg-rose-200'} px-6 py-2 rounded-full`}
+                className={`${postText.trim() ? 'bg-purple-500' : 'bg-purple-200'} px-6 py-2 rounded-full`}
               >
                 <Text className="text-white font-bold">Post</Text>
               </TouchableOpacity>

@@ -95,7 +95,7 @@ export interface HarassmentReport {
 }
 
 // YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
-const COMPUTER_IP = '192.168.43.103'; 
+const COMPUTER_IP = '192.168.58.103'; 
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -106,7 +106,7 @@ const getBaseURL = (): string => {
     if (Platform.OS === 'android') {
       // For Android Emulator: use 10.0.2.2
      
-      return `http://192.168.43.103:8000/api/v1`;
+      return `http://192.168.58.103:8000/api/v1`;
       
       // For Android Emulator (comment the above, uncomment below):
       // return 'http://10.0.2.2:8000/api';
@@ -116,7 +116,7 @@ const getBaseURL = (): string => {
       // For iOS Simulator: use localhost
       // For Physical iOS Device: use computer's network IP
       
-      return `http://192.168.74.205:8000/api`;
+      return `http://192.168.58.103:8000/api`;
       
     }
     

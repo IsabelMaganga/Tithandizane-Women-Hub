@@ -186,13 +186,13 @@ export default function UserDashboard() {
         </ScrollView>
 
         {/*EMERGENCY FAB */}
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           activeOpacity={0.9}
           onPress={() => handleNavigation("/(protected)/emergencyScreen")}
           className="absolute bottom-10 right-6 w-16 h-16 bg-rose-600 rounded-full items-center justify-center shadow-2xl border-4 border-white dark:border-slate-900"
         >
           <MaterialIcons name="sos" size={32} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </SafeAreaView>
     </View>
   );

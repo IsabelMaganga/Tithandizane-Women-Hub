@@ -104,7 +104,7 @@ const ArticlesScreen = () => {
     <View className="mt-[-30px]">
       {/* Search Bar */}
       <View className="flex-row items-center bg-white rounded-2xl px-4 mb-5 mt-10 border border-slate-200 shadow-sm mx-5">
-        <Feather name="search" size={18} color="#059669" />
+        <Feather name="search" size={18} color="#05966" />
         <TextInput
           placeholder="Search articles..."
           placeholderTextColor="#94a3b8"
@@ -125,7 +125,7 @@ const ArticlesScreen = () => {
           onPress={() => setActiveSource('hygiene')}
           className={`flex-1 py-3 rounded-xl items-center ${activeSource === 'hygiene' ? 'bg-white shadow-sm' : ''}`}
         >
-          <Text className={`font-bold text-xs ${activeSource === 'hygiene' ? 'text-emerald-700' : 'text-slate-500'}`}>
+          <Text className={`font-bold text-xs ${activeSource === 'hygiene' ? 'text-purple-500' : 'text-slate-500'}`}>
             Hygiene Tips
           </Text>
         </Pressable>
@@ -133,7 +133,7 @@ const ArticlesScreen = () => {
           onPress={() => setActiveSource('general')}
           className={`flex-1 py-3 rounded-xl items-center ${activeSource === 'general' ? 'bg-white shadow-sm' : ''}`}
         >
-          <Text className={`font-bold text-xs ${activeSource === 'general' ? 'text-emerald-700' : 'text-slate-500'}`}>
+          <Text className={`font-bold text-xs ${activeSource === 'general' ? 'text-purple-500' : 'text-slate-500'}`}>
             General Guides
           </Text>
         </Pressable>
@@ -172,9 +172,9 @@ const ArticlesScreen = () => {
       <StatusBar style="light" />
       
       {/* Header*/}
-      <View className="bg-emerald-600 pt-16 pb-6 px-6 rounded-b-[48px] z-10">
+      <View className="bg-purple-600 pt-16 pb-6 px-6 rounded-b-[48px] z-10">
         <Text className="text-white text-3xl font-black tracking-tight">Health & Education</Text>
-        <Text className="text-emerald-100 text-sm mt-1 font-medium">Expert advice for your wellbeing</Text>
+        <Text className="text-purple-100 text-sm mt-1 font-medium">Expert advice for your wellbeing</Text>
       </View>
 
       {/* ARTICLES LIST */}
@@ -214,7 +214,7 @@ const CategoryPill = ({ label, isActive, onPress }: { label: string, isActive: b
     onPress={onPress}
     className={`px-6 py-3 mr-2 rounded-[18px] border ${
       isActive 
-        ? 'bg-emerald-600 border-emerald-600 shadow-md shadow-emerald-100' 
+        ? 'bg-purple-600 border-purple-600 shadow-md shadow-emerald-100' 
         : 'bg-white border-slate-200 shadow-sm'
     }`}
   >
@@ -236,15 +236,15 @@ const ArticleCard = ({ item, onPress }: { item: Article, onPress: () => void }) 
         resizeMode="cover"
       />
     ) : (
-      <View className="w-full h-52 bg-emerald-50 items-center justify-center">
-        <Feather name="image" size={32} color="#10b981" />
+      <View className="w-full h-52 bg-purple-50 items-center justify-center">
+        <Feather name="image" size={32} color="purple" />
       </View>
     )}
 
     <View className="p-6">
       <View className="flex-row items-center mb-3">
-        <View className="bg-emerald-50 px-3 py-1 rounded-full">
-          <Text className="text-emerald-700 text-[10px] font-black uppercase tracking-widest">
+        <View className="bg-purple-50 px-3 py-1 rounded-full">
+          <Text className="text-purple-700 text-[10px] font-black uppercase tracking-widest">
             {item.category || "General"}
           </Text>
         </View>
@@ -264,8 +264,8 @@ const ArticleCard = ({ item, onPress }: { item: Article, onPress: () => void }) 
           <Text className="text-slate-400 text-xs ml-1.5 font-medium">5 min read</Text>
         </View>
         <View className="flex-row items-center">
-          <Text className="text-emerald-600 font-bold text-sm mr-1">Continue</Text>
-          <Feather name="arrow-right" size={14} color="#059669" />
+          <Text className="text-purple-600 font-bold text-sm mr-1">Continue</Text>
+          <Feather name="arrow-right" size={14} color="purple" />
         </View>
       </View>
     </View>
