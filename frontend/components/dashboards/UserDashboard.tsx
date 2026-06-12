@@ -157,7 +157,7 @@ export default function UserDashboard() {
               onPress={() => router.push("/menstrualHealthScreen")} 
             />
             <GridItem 
-              title="Reports" 
+              title="Report an Incident" 
               icon="report-problem" 
               color="#f59e0b" 
               family={MaterialIcons}

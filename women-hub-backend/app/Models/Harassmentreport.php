@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class HarassmentReport extends Model
 {
@@ -27,280 +26,286 @@ class HarassmentReport extends Model
         'status',
         'admin_response',
         'responded_at',
-        'responded_by',
-        'user_id',
+        'assigned_mentor_id',
+        'user_id'  // Add this to fillable
     ];
 
     protected $casts = [
-        'is_anonymous' => 'boolean',
         'incident_date' => 'date',
+        'is_anonymous' => 'boolean',
         'responded_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
-    // Status constants for easier management
-    const STATUS_PENDING = 'pending';
-    const STATUS_REVIEWING = 'reviewing';
-    const STATUS_RESOLVED = 'resolved';
-    const STATUS_DISMISSED = 'dismissed';
-
-    // Incident type constants
-    const TYPE_PHYSICAL = 'physical';
-    const TYPE_VERBAL = 'verbal';
-    const TYPE_SEXUAL = 'sexual';
-    const TYPE_CYBER = 'cyber';
-    const TYPE_OTHER = 'other';
-
-    // Generate reference number before creating
     protected static function boot()
     {
         parent::boot();
-
+        
         static::creating(function ($report) {
-            // More robust reference number generation
-            $latest = static::latest('id')->first();
-            $nextId = $latest ? $latest->id + 1 : 1;
-            $report->reference_number = 'HR-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+            // Generate reference number if not already set
+            if (!$report->reference_number) {
+                $latest = static::latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $report->reference_number = 'HR-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+            }
         });
     }
 
-    // Accessor for formatted reference number
-    public function getFormattedReferenceAttribute()
+    // ============================================
+    // RELATIONSHIPS
+    // ============================================
+    
+    /**
+     * Get the mentor assigned to this report
+     */
+    public function assignedMentor()
     {
-        return $this->reference_number ?? 'HR-' . str_pad($this->id, 6, '0', STR_PAD_LEFT);
+        return $this->belongsTo(User::class, 'assigned_mentor_id');
     }
 
-    // Accessor for status badge color
-    public function getStatusBadgeColorAttribute()
+    /**
+     * Get the user who submitted this report (if not anonymous and logged in)
+     */
+    public function user()
     {
-        return match($this->status) {
-            self::STATUS_PENDING => 'yellow',
-            self::STATUS_REVIEWING => 'blue',
-            self::STATUS_RESOLVED => 'green',
-            self::STATUS_DISMISSED => 'red',
-            default => 'gray',
-        };
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Accessor for incident type badge color
-    public function getTypeBadgeColorAttribute()
+    /**
+     * Get all notifications for this report
+     */
+    public function notifications()
     {
-        return match($this->incident_type) {
-            self::TYPE_PHYSICAL => 'purple',
-            self::TYPE_VERBAL => 'red',
-            self::TYPE_SEXUAL => 'orange',
-            self::TYPE_CYBER => 'teal',
-            self::TYPE_OTHER => 'gray',
-            default => 'gray',
-        };
+        return $this->hasMany(Notification::class, 'report_id');
     }
 
-    // Check if report is anonymous
-    public function getIsAnonymousAttribute($value)
+    // ============================================
+    // ACCESSORS
+    // ============================================
+    
+    /**
+     * Get the status color for badges
+     */
+    public function getStatusColorAttribute()
     {
-        return (bool) $value;
+        return [
+            'pending' => 'yellow',
+            'reviewing' => 'blue',
+            'assigned' => 'purple',
+            'resolved' => 'green',
+            'dismissed' => 'red',
+        ][$this->status] ?? 'gray';
     }
 
-    // Get reporter display name
-    public function getReporterNameAttribute()
+    /**
+     * Get the type color for badges
+     */
+    public function getTypeColorAttribute()
+    {
+        return [
+            'physical' => 'purple',
+            'verbal' => 'red',
+            'sexual' => 'orange',
+            'cyber' => 'teal',
+            'other' => 'gray',
+        ][$this->incident_type] ?? 'gray';
+    }
+
+    /**
+     * Get the status badge HTML
+     */
+    public function getStatusBadgeAttribute()
+    {
+        $colors = [
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'reviewing' => 'bg-blue-100 text-blue-800',
+            'assigned' => 'bg-purple-100 text-purple-800',
+            'resolved' => 'bg-green-100 text-green-800',
+            'dismissed' => 'bg-red-100 text-red-800',
+        ];
+        
+        $color = $colors[$this->status] ?? 'bg-gray-100 text-gray-800';
+        
+        return "<span class='px-2 py-1 text-xs font-semibold rounded-full {$color}'>" . ucfirst($this->status) . "</span>";
+    }
+
+    /**
+     * Get the incident type badge HTML
+     */
+    public function getTypeBadgeAttribute()
+    {
+        $colors = [
+            'physical' => 'bg-purple-100 text-purple-800',
+            'verbal' => 'bg-red-100 text-red-800',
+            'sexual' => 'bg-orange-100 text-orange-800',
+            'cyber' => 'bg-teal-100 text-teal-800',
+            'other' => 'bg-gray-100 text-gray-800',
+        ];
+        
+        $color = $colors[$this->incident_type] ?? 'bg-gray-100 text-gray-800';
+        
+        return "<span class='px-2 py-1 text-xs font-semibold rounded-full {$color}'>" . ucfirst($this->incident_type) . "</span>";
+    }
+
+    /**
+     * Get the submitter name (either anonymous or actual name)
+     */
+    public function getSubmitterNameAttribute()
     {
         if ($this->is_anonymous) {
             return 'Anonymous';
         }
         
+        if ($this->user) {
+            return $this->user->name;
+        }
+        
         return $this->victim_name ?? 'Unknown';
     }
 
-    // Get reporter contact info
-    public function getReporterContactAttribute()
+    /**
+     * Get the submitter email (or null if anonymous)
+     */
+    public function getSubmitterEmailAttribute()
     {
         if ($this->is_anonymous) {
             return null;
         }
         
-        return [
-            'name' => $this->victim_name,
-            'email' => $this->victim_email,
-            'phone' => $this->victim_phone,
-        ];
+        if ($this->user) {
+            return $this->user->email;
+        }
+        
+        return $this->victim_email;
     }
 
-    // Check if report has been responded to
-    public function getHasResponseAttribute()
-    {
-        return !is_null($this->admin_response);
-    }
-
-    // Check if report is resolved
-    public function getIsResolvedAttribute()
-    {
-        return $this->status === self::STATUS_RESOLVED;
-    }
-
-    // Relationships
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function respondedBy()
-    {
-        return $this->belongsTo(User::class, 'responded_by');
-    }
-
-    // Scopes
+    // ============================================
+    // SCOPES
+    // ============================================
+    
+    /**
+     * Scope a query to only include pending reports
+     */
     public function scopePending($query)
     {
-        return $query->where('status', self::STATUS_PENDING);
+        return $query->where('status', 'pending');
     }
 
-    public function scopeReviewing($query)
+    /**
+     * Scope a query to only include reports assigned to a specific mentor
+     */
+    public function scopeAssignedToMentor($query, $mentorId)
     {
-        return $query->where('status', self::STATUS_REVIEWING);
+        return $query->where('assigned_mentor_id', $mentorId);
     }
 
+    /**
+     * Scope a query to only include reports that need attention
+     */
+    public function scopeNeedsAttention($query)
+    {
+        return $query->whereIn('status', ['pending', 'reviewing', 'assigned']);
+    }
+
+    /**
+     * Scope a query to only include resolved reports
+     */
     public function scopeResolved($query)
     {
-        return $query->where('status', self::STATUS_RESOLVED);
+        return $query->where('status', 'resolved');
     }
 
-    public function scopeDismissed($query)
-    {
-        return $query->where('status', self::STATUS_DISMISSED);
-    }
-
+    /**
+     * Scope a query to only include anonymous reports
+     */
     public function scopeAnonymous($query)
     {
         return $query->where('is_anonymous', true);
     }
 
+    /**
+     * Scope a query to only include non-anonymous reports
+     */
     public function scopeNonAnonymous($query)
     {
         return $query->where('is_anonymous', false);
     }
 
-    public function scopeByType($query, $type)
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+    
+    /**
+     * Check if the report is assigned to a mentor
+     */
+    public function isAssigned()
     {
-        return $query->where('incident_type', $type);
+        return !is_null($this->assigned_mentor_id);
     }
 
-    public function scopeByStatus($query, $status)
+    /**
+     * Check if the report can be assigned
+     */
+    public function canBeAssigned()
     {
-        return $query->where('status', $status);
+        return in_array($this->status, ['pending', 'reviewing']);
     }
 
-    public function scopeDateRange($query, $from, $to)
+    /**
+     * Check if the report is resolved
+     */
+    public function isResolved()
     {
-        if ($from) {
-            $query->whereDate('incident_date', '>=', $from);
-        }
-        if ($to) {
-            $query->whereDate('incident_date', '<=', $to);
-        }
-        return $query;
+        return $this->status === 'resolved';
     }
 
-    public function scopeSubmittedBetween($query, $from, $to)
+    /**
+     * Check if the report is dismissed
+     */
+    public function isDismissed()
     {
-        if ($from) {
-            $query->whereDate('created_at', '>=', $from);
-        }
-        if ($to) {
-            $query->whereDate('created_at', '<=', $to);
-        }
-        return $query;
+        return $this->status === 'dismissed';
     }
 
-    public function scopeSearch($query, $search)
+    /**
+     * Mark the report as assigned to a mentor
+     */
+    public function markAsAssigned($mentorId)
     {
-        return $query->where(function($q) use ($search) {
-            $q->where('incident_title', 'LIKE', "%{$search}%")
-              ->orWhere('incident_description', 'LIKE', "%{$search}%")
-              ->orWhere('reference_number', 'LIKE', "%{$search}%")
-              ->orWhere('incident_location', 'LIKE', "%{$search}%")
-              ->orWhere('victim_name', 'LIKE', "%{$search}%")
-              ->orWhere('victim_email', 'LIKE', "%{$search}%");
-        });
+        $this->update([
+            'assigned_mentor_id' => $mentorId,
+            'status' => 'assigned'
+        ]);
     }
 
-    // Helper methods
-    public function markAsReviewing()
-    {
-        $this->update(['status' => self::STATUS_REVIEWING]);
-    }
-
+    /**
+     * Mark the report as resolved
+     */
     public function markAsResolved($response = null)
     {
         $this->update([
-            'status' => self::STATUS_RESOLVED,
-            'admin_response' => $response ?? $this->admin_response,
-            'responded_at' => now(),
+            'status' => 'resolved',
+            'admin_response' => $response,
+            'responded_at' => now()
         ]);
     }
 
+    /**
+     * Mark the report as dismissed
+     */
     public function markAsDismissed($reason = null)
     {
         $this->update([
-            'status' => self::STATUS_DISMISSED,
-            'admin_response' => $reason ?? $this->admin_response,
-            'responded_at' => now(),
+            'status' => 'dismissed',
+            'admin_response' => $reason,
+            'responded_at' => now()
         ]);
     }
 
-    public function addResponse($response, $status = null)
+    /**
+     * Get the time elapsed since the report was created
+     */
+    public function getTimeElapsedAttribute()
     {
-        $data = [
-            'admin_response' => $response,
-            'responded_at' => now(),
-            'responded_by' => auth()->id(),
-        ];
-
-        if ($status && in_array($status, [self::STATUS_REVIEWING, self::STATUS_RESOLVED, self::STATUS_DISMISSED])) {
-            $data['status'] = $status;
-        }
-
-        $this->update($data);
-    }
-
-    // Get statistics helper
-    public static function getStatistics()
-    {
-        return [
-            'total' => self::count(),
-            'pending' => self::pending()->count(),
-            'reviewing' => self::reviewing()->count(),
-            'resolved' => self::resolved()->count(),
-            'dismissed' => self::dismissed()->count(),
-            'anonymous' => self::anonymous()->count(),
-            'physical' => self::byType(self::TYPE_PHYSICAL)->count(),
-            'verbal' => self::byType(self::TYPE_VERBAL)->count(),
-            'sexual' => self::byType(self::TYPE_SEXUAL)->count(),
-            'cyber' => self::byType(self::TYPE_CYBER)->count(),
-            'other' => self::byType(self::TYPE_OTHER)->count(),
-        ];
-    }
-
-    // Get available statuses for dropdowns
-    public static function getStatuses()
-    {
-        return [
-            self::STATUS_PENDING => 'Pending',
-            self::STATUS_REVIEWING => 'Reviewing',
-            self::STATUS_RESOLVED => 'Resolved',
-            self::STATUS_DISMISSED => 'Dismissed',
-        ];
-    }
-
-    // Get available types for dropdowns
-    public static function getTypes()
-    {
-        return [
-            self::TYPE_PHYSICAL => 'Physical',
-            self::TYPE_VERBAL => 'Verbal',
-            self::TYPE_SEXUAL => 'Sexual',
-            self::TYPE_CYBER => 'Cyber',
-            self::TYPE_OTHER => 'Other',
-        ];
+        return $this->created_at->diffForHumans();
     }
 }

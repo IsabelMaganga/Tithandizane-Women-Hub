@@ -3,8 +3,10 @@
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
-use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController};
+use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
 use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Admin\ReportManagementController;
+use App\Http\Controllers\HarassmentReportController as UserHarassmentReportController;
 
 // Home page
 Route::get('/', fn() => view('welcome'))->name('welcome');
@@ -15,6 +17,20 @@ Route::get('/test-css', fn() => view('test-css'))->name('test.css');
 // Get started route
 Route::get('/get-started', fn() => view('get-started'))->name('get.started');
 Route::get('/login?redirect/', fn() => view('get-started'))->name('login');
+
+// ============================================
+// USER HARASSMENT REPORT ROUTES (Public/API)
+// ============================================
+Route::prefix('api')->name('api.')->group(function () {
+    // User report submission routes
+    Route::post('/harassment-report', [UserHarassmentReportController::class, 'store'])->name('harassment-report.store');
+    Route::post('/anonymous-report', [UserHarassmentReportController::class, 'submitAnonymousReport'])->name('anonymous-report.store');
+    
+    // Protected user report routes (requires authentication)
+    Route::middleware('auth:web')->group(function () {
+        Route::get('/my-reports', [UserHarassmentReportController::class, 'userReports'])->name('my-reports');
+    });
+});
 
 // Auth admin routes (guest only)
 Route::middleware('guest:admin')->prefix('admin')->name('admin.')->group(function () {
@@ -56,27 +72,65 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
 
     // ============================================
-    // HARASSMENT REPORTS ROUTES - UPDATED
+    // USER MANAGEMENT ROUTES
+    // ============================================
+    Route::prefix('users')->name('users.')->group(function () {
+        // Main index route (display all users)
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        
+        // Get user details for AJAX (must come before {id} parameter)
+        Route::get('/{id}/json', [UserController::class, 'show'])->name('json');
+        
+        // Update user status
+        Route::put('/{id}/status', [UserController::class, 'updateStatus'])->name('update-status');
+        
+        // Delete user
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+        
+        // Regular show route (if you want a detailed view page)
+        Route::get('/{id}', [UserController::class, 'show'])->name('show');
+    });
+
+    // ============================================
+    // HARASSMENT REPORTS ROUTES - FIXED
     // ============================================
     Route::prefix('reports')->name('reports.')->group(function () {
-        // Export route (must come before {report} parameter)
-        Route::get('/export', [HarassmentReportController::class, 'export'])->name('export');
-        Route::get('/export/csv', [HarassmentReportController::class, 'export'])->name('export.csv'); // Alias for compatibility
+        // Main index route (GET)
+        Route::get('/', [HarassmentReportController::class, 'index'])->name('index');
         
-        // JSON endpoint for AJAX - GET request
-        Route::get('/{id}/json', [HarassmentReportController::class, 'show'])->name('json');
+        // Export routes (must come before {report} parameter)
+        Route::get('/export', [HarassmentReportController::class, 'exportReports'])->name('export');
+        Route::get('/export/csv', [HarassmentReportController::class, 'exportReports'])->name('export.csv');
         
-        // Status update routes
-        Route::patch('/{id}/status', [HarassmentReportController::class, 'updateStatus'])->name('update-status');
-        Route::post('/{id}/respond', [HarassmentReportController::class, 'respond'])->name('respond');
+        // Get available mentors for assignment (AJAX)
+        Route::get('/available-mentors', [HarassmentReportController::class, 'getAvailableMentors'])->name('mentors');
         
-        // Regular show route (HTML view)
-        Route::get('/{id}', [HarassmentReportController::class, 'show'])->name('show');
+        // JSON endpoint for AJAX - GET request (must come before {report} parameter)
+        Route::get('/{report}/json', [HarassmentReportController::class, 'show'])->name('json');
+        
+        // Assign mentor to report (POST)
+        Route::post('/{report}/assign', [HarassmentReportController::class, 'assignMentor'])->name('assign');
+        
+        // Respond to report (POST)
+        Route::post('/{report}/respond', [HarassmentReportController::class, 'respondToReport'])->name('respond');
+        
+        // Update report status (PATCH)
+        Route::patch('/{report}/status', [HarassmentReportController::class, 'updateStatus'])->name('update-status');
+        
+        // Regular show route (HTML view) - must come after other routes with parameters
+        Route::get('/{report}', [HarassmentReportController::class, 'show'])->name('show');
+        
+        // Delete report (DELETE)
+        Route::delete('/{report}', [HarassmentReportController::class, 'destroy'])->name('destroy');
     });
     
-    // Harassment Reports Resource route
-    Route::resource('reports', HarassmentReportController::class)->only(['index', 'destroy']);
+    // Harassment Reports Resource route (for any remaining methods)
+    Route::resource('reports', HarassmentReportController::class)->only(['index', 'show', 'destroy']);
 });
+
+// ============================================
+// MENTOR ROUTES
+// ============================================
 
 // Auth mentors routes (guest only)
 Route::middleware('guest:mentor')->prefix('mentor')->name('mentor.')->group(function () {
@@ -134,7 +188,14 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
 });
+// Analytics Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
+    Route::get('/analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/export-pdf', [App\Http\Controllers\Admin\AnalyticsController::class, 'exportPdf'])->name('analytics.export-pdf');
+    Route::get('/analytics/export-excel', [App\Http\Controllers\Admin\AnalyticsController::class, 'exportExcel'])->name('analytics.export-excel');
+});
 
+// Fallback route for 404 errors
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });

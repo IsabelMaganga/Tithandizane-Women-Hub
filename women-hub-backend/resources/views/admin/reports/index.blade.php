@@ -1,411 +1,422 @@
-
 @extends('admin.layouts.admin')
-
 @section('title', 'Harassment Reports')
-
 @section('page-title', 'Harassment Reports Management')
-@section('page-subtitle', 'View and respond to harassment reports')
+@section('page-subtitle', 'View and manage all harassment reports')
+
+@push('styles')
+<style>
+    /* Status Badges - Using CSS Variables */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-pending { background: var(--light-orange); color: var(--orange); }
+    .status-reviewing { background: var(--light-blue); color: var(--blue); }
+    .status-assigned { background: var(--light-purple); color: var(--purple); }
+    .status-resolved { background: var(--light-teal); color: var(--teal-green); }
+    .status-dismissed { background: var(--light-red); color: var(--red); }
+    
+    /* Type Badges - Using CSS Variables */
+    .type-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .type-physical { background: var(--light-purple); color: var(--purple); }
+    .type-verbal { background: var(--light-red); color: var(--red); }
+    .type-sexual { background: var(--light-orange); color: var(--orange); }
+    .type-cyber { background: var(--light-blue); color: var(--blue); }
+    .type-other { background: var(--light-gray); color: var(--text-secondary); }
+    
+    /* Stats Cards - Using CSS Variables */
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Filter Section */
+    .filter-section {
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    
+    /* Table Styles */
+    .reports-table {
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .reports-table thead th {
+        background: var(--light-gray);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .reports-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.2s ease;
+    }
+    
+    .reports-table tbody tr:hover {
+        background: var(--light-gray);
+    }
+    
+    .reports-table td {
+        color: var(--text-primary);
+    }
+    
+    /* Report Card */
+    .report-card {
+        transition: all 0.3s ease;
+    }
+    
+    /* Form Inputs */
+    .form-input, 
+    .form-select,
+    input[type="text"],
+    input[type="date"],
+    select {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+    }
+    
+    .form-input:focus,
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+        border-color: var(--purple);
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+        outline: none;
+    }
+    
+    /* Button Styles */
+    .btn-purple {
+        background: var(--purple);
+        color: white;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-purple:hover {
+        background: #7c3aed;
+        transform: translateY(-1px);
+    }
+    
+    .btn-gray {
+        background: var(--light-gray);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+    }
+    
+    .btn-gray:hover {
+        background: var(--border-color);
+        transform: translateY(-1px);
+    }
+    
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+    }
+    
+    .pagination .page-item {
+        list-style: none;
+    }
+    
+    .pagination .page-link {
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid var(--border-color);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: var(--purple);
+        color: white;
+        border-color: var(--purple);
+    }
+    
+    .pagination .page-link:hover {
+        background: var(--light-gray);
+        transform: translateY(-1px);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="space-y-6">
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+<div class="container mx-auto px-4">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <!-- Pending -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--orange);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Total Reports</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['total'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Pending</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['pending'] }}</p>
                 </div>
-                <i class="fas fa-flag fa-2x text-blue-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-orange);">
+                    <i class="fas fa-clock" style="color: var(--orange);"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <div class="w-full rounded-full h-1" style="background: var(--light-orange);">
+                    <div class="h-1 rounded-full" style="width: {{ $stats['total'] > 0 ? ($stats['pending'] / $stats['total']) * 100 : 0 }}%; background: var(--orange);"></div>
+                </div>
             </div>
         </div>
-        
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+
+        <!-- Reviewing -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--blue);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Pending</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['pending'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Reviewing</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['reviewing'] }}</p>
                 </div>
-                <i class="fas fa-clock fa-2x text-yellow-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-blue);">
+                    <i class="fas fa-search" style="color: var(--blue);"></i>
+                </div>
             </div>
         </div>
-        
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+
+        <!-- Assigned -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--purple);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Reviewing</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['reviewing'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Assigned</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['assigned'] }}</p>
                 </div>
-                <i class="fas fa-search fa-2x text-blue-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-purple);">
+                    <i class="fas fa-user-check" style="color: var(--purple);"></i>
+                </div>
             </div>
         </div>
-        
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+
+        <!-- Resolved -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--teal-green);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Resolved</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['resolved'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Resolved</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['resolved'] }}</p>
                 </div>
-                <i class="fas fa-check-circle fa-2x text-green-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-teal);">
+                    <i class="fas fa-check-circle" style="color: var(--teal-green);"></i>
+                </div>
             </div>
         </div>
-        
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+
+        <!-- Dismissed -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--red);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Dismissed</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['dismissed'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Dismissed</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['dismissed'] }}</p>
                 </div>
-                <i class="fas fa-ban fa-2x text-red-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-red);">
+                    <i class="fas fa-times-circle" style="color: var(--red);"></i>
+                </div>
             </div>
         </div>
-        
-        <div class="card-bg rounded-xl p-5 shadow-sm border border-color">
-            <div class="flex items-center justify-between">
+
+        <!-- Anonymous -->
+        <div class="stat-card p-4 border-l-4" style="border-left-color: var(--text-secondary);">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-secondary-color text-sm">Anonymous</p>
-                    <h3 class="text-2xl font-bold text-primary-color mt-1">{{ $stats['anonymous'] ?? 0 }}</h3>
+                    <p class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Anonymous</p>
+                    <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ $stats['anonymous'] }}</p>
                 </div>
-                <i class="fas fa-user-secret fa-2x text-purple-500 opacity-50"></i>
+                <div class="p-2 rounded-lg" style="background: var(--light-gray);">
+                    <i class="fas fa-user-secret" style="color: var(--text-secondary);"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card-bg rounded-xl shadow-sm border border-color">
-        <div class="p-6 border-b border-color">
-            <h3 class="text-lg font-semibold text-primary-color">
-                <i class="fas fa-filter mr-2"></i> Filter Reports
-            </h3>
-        </div>
-        <div class="p-6">
-            <form method="GET" action="{{ route('admin.reports.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">Search</label>
-                    <input type="text" name="search" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg" 
-                           placeholder="Search reports..." value="{{ request('search') }}">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg">
-                        <option value="">All Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="reviewing" {{ request('status') == 'reviewing' ? 'selected' : '' }}>Reviewing</option>
-                        <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
-                        <option value="dismissed" {{ request('status') == 'dismissed' ? 'selected' : '' }}>Dismissed</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">Type</label>
-                    <select name="type" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg">
-                        <option value="">All Types</option>
-                        <option value="physical" {{ request('type') == 'physical' ? 'selected' : '' }}>Physical</option>
-                        <option value="verbal" {{ request('type') == 'verbal' ? 'selected' : '' }}>Verbal</option>
-                        <option value="sexual" {{ request('type') == 'sexual' ? 'selected' : '' }}>Sexual</option>
-                        <option value="cyber" {{ request('type') == 'cyber' ? 'selected' : '' }}>Cyber</option>
-                        <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Other</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">From Date</label>
-                    <input type="date" name="from_date" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg" 
-                           value="{{ request('from_date') }}">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">To Date</label>
-                    <input type="date" name="to_date" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg" 
-                           value="{{ request('to_date') }}">
-                </div>
-                
-                <div class="md:col-span-5 flex gap-2">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-search mr-2"></i> Apply Filters
-                    </button>
-                    <a href="{{ route('admin.reports.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
-                        <i class="fas fa-undo mr-2"></i> Reset
-                    </a>
-                    <a href="{{ route('admin.reports.export', request()->query()) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        <i class="fas fa-download mr-2"></i> Export CSV
-                    </a>
-                </div>
-            </form>
-        </div>
+    <!-- Filters -->
+    <div class="filter-section mb-6 p-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Search</label>
+                <input type="text" name="search" placeholder="Search by reference, title..." 
+                       value="{{ request('search') }}" 
+                       class="form-input w-full rounded-lg px-3 py-2 text-sm">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Status</label>
+                <select name="status" class="form-select w-full rounded-lg px-3 py-2 text-sm">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="reviewing" {{ request('status') == 'reviewing' ? 'selected' : '' }}>Reviewing</option>
+                    <option value="assigned" {{ request('status') == 'assigned' ? 'selected' : '' }}>Assigned</option>
+                    <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                    <option value="dismissed" {{ request('status') == 'dismissed' ? 'selected' : '' }}>Dismissed</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Type</label>
+                <select name="type" class="form-select w-full rounded-lg px-3 py-2 text-sm">
+                    <option value="">All Types</option>
+                    <option value="physical" {{ request('type') == 'physical' ? 'selected' : '' }}>Physical</option>
+                    <option value="verbal" {{ request('type') == 'verbal' ? 'selected' : '' }}>Verbal</option>
+                    <option value="sexual" {{ request('type') == 'sexual' ? 'selected' : '' }}>Sexual</option>
+                    <option value="cyber" {{ request('type') == 'cyber' ? 'selected' : '' }}>Cyber</option>
+                    <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Other</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">From Date</label>
+                <input type="date" name="from_date" value="{{ request('from_date') }}"
+                       class="form-input w-full rounded-lg px-3 py-2 text-sm">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">To Date</label>
+                <input type="date" name="to_date" value="{{ request('to_date') }}"
+                       class="form-input w-full rounded-lg px-3 py-2 text-sm">
+            </div>
+            
+            <div class="md:col-span-2 lg:col-span-5 flex justify-end gap-2 mt-2">
+                <button type="submit" class="btn-purple px-5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{{ route('admin.reports.index') }}" class="btn-gray px-5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
+            </div>
+        </form>
     </div>
 
     <!-- Reports Table -->
-    <div class="card-bg rounded-xl shadow-sm border border-color">
-        <div class="p-6 border-b border-color">
-            <h3 class="text-lg font-semibold text-primary-color">
-                <i class="fas fa-table mr-2"></i> Reports List
-            </h3>
-        </div>
+    <div class="reports-table">
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                    <tr class="border-b border-color">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Reference</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Title</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Reporter</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary-color uppercase tracking-wider">Actions</th>
+            <table class="min-w-full">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ref #</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Title</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Assigned To</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-color">
+                <tbody class="divide-y" style="border-color: var(--border-color);">
                     @forelse($reports as $report)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                        <td class="px-6 py-4 text-sm text-primary-color">{{ $report->id }}</td>
-                        <td class="px-6 py-4 text-sm font-mono text-primary-color">HR-{{ str_pad($report->id, 6, '0', STR_PAD_LEFT) }}</td>
-                        <td class="px-6 py-4 text-sm text-primary-color">{{ Str::limit($report->incident_title, 40) }}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full 
-                                @if($report->incident_type == 'physical') bg-purple-100 text-purple-700
-                                @elseif($report->incident_type == 'verbal') bg-red-100 text-red-700
-                                @elseif($report->incident_type == 'sexual') bg-orange-100 text-orange-700
-                                @elseif($report->incident_type == 'cyber') bg-teal-100 text-teal-700
-                                @else bg-gray-100 text-gray-700 @endif">
+                    <tr class="report-card transition" style="cursor: pointer;" onclick="window.location.href='{{ route('admin.reports.show', $report->id) }}'">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-mono text-sm font-medium" style="color: var(--text-primary);">{{ $report->reference_number }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="type-badge type-{{ $report->incident_type }}">
                                 {{ ucfirst($report->incident_type) }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full
-                                @if($report->status == 'pending') bg-yellow-100 text-yellow-700
-                                @elseif($report->status == 'reviewing') bg-blue-100 text-blue-700
-                                @elseif($report->status == 'resolved') bg-green-100 text-green-700
-                                @else bg-red-100 text-red-700 @endif">
+                            <div class="text-sm font-medium max-w-xs truncate" style="color: var(--text-primary);">{{ $report->incident_title }}</div>
+                            @if($report->is_anonymous)
+                                <span class="text-xs" style="color: var(--text-secondary);">
+                                    <i class="fas fa-user-secret"></i> Anonymous
+                                </span>
+                            @else
+                                <span class="text-xs" style="color: var(--text-secondary);">
+                                    <i class="fas fa-user"></i> {{ $report->victim_name ?? $report->user?->name ?? 'N/A' }}
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge status-{{ $report->status }}">
                                 {{ ucfirst($report->status) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-primary-color">
-                            @if($report->is_anonymous)
-                                <i class="fas fa-user-secret text-gray-400"></i> Anonymous
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($report->assignedMentor)
+                                <span class="text-sm" style="color: var(--text-primary);">{{ $report->assignedMentor->name }}</span>
                             @else
-                                <i class="fas fa-user text-blue-500"></i> {{ Str::limit($report->victim_name ?? 'N/A', 20) }}
+                                <span class="text-sm" style="color: var(--text-secondary);">Not assigned</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm text-primary-color">{{ $report->created_at->format('Y-m-d H:i') }}</td>
-                        <td class="px-6 py-4 text-sm">
-                            <button onclick="viewReport({{ $report->id }})" class="text-blue-600 hover:text-blue-800 mr-3" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button onclick="respondToReport({{ $report->id }})" class="text-green-600 hover:text-green-800" title="Respond">
-                                <i class="fas fa-reply"></i>
-                            </button>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-secondary);">
+                            {{ $report->created_at->format('M d, Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a href="{{ route('admin.reports.show', $report->id) }}" 
+                               class="transition mr-3" style="color: var(--purple);">
+                                <i class="fas fa-eye"></i> View
+                            </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center text-secondary-color">
-                            <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
-                            <p>No reports found</p>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p class="mt-2">No reports found</p>
+                            <p class="text-sm mt-1">Try adjusting your filters or check back later</p>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="p-6 border-t border-color">
+        
+        @if($reports->hasPages())
+        <div class="border-t" style="border-color: var(--border-color);">
             {{ $reports->links() }}
         </div>
+        @endif
     </div>
 </div>
-
-<!-- View Report Modal -->
-<div id="viewReportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="card-bg rounded-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-color flex justify-between items-center sticky top-0 bg-card-bg">
-            <h3 class="text-xl font-semibold text-primary-color">Report Details</h3>
-            <button onclick="closeViewModal()" class="text-secondary-color hover:text-primary-color">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div class="p-6" id="reportDetails">
-            <div class="text-center py-8">
-                <i class="fas fa-spinner fa-spin fa-2x text-blue-500"></i>
-                <p class="mt-2 text-secondary-color">Loading...</p>
-            </div>
-        </div>
-        <div class="p-6 border-t border-color flex justify-end sticky bottom-0 bg-card-bg">
-            <button onclick="closeViewModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Respond Modal -->
-<div id="respondModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="card-bg rounded-xl max-w-2xl w-full mx-4">
-        <form id="respondForm" method="POST" action="">
-            @csrf
-            <div class="p-6 border-b border-color flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-primary-color">Respond to Report</h3>
-                <button type="button" onclick="closeRespondModal()" class="text-secondary-color hover:text-primary-color">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">Your Response *</label>
-                    <textarea name="response" rows="6" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg text-primary-color" 
-                              placeholder="Provide guidance, support, or next steps for the victim..." required></textarea>
-                    <p class="text-xs text-secondary-color mt-1">Minimum 10 characters</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">Update Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-color rounded-lg bg-card-bg text-primary-color" required>
-                        <option value="reviewing">Mark as Reviewing</option>
-                        <option value="resolved">Mark as Resolved</option>
-                        <option value="dismissed">Dismiss</option>
-                    </select>
-                </div>
-            </div>
-            <div class="p-6 border-t border-color flex justify-end gap-3">
-                <button type="button" onclick="closeRespondModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Send Response
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-@endsection
 
 @push('scripts')
 <script>
-    let currentReportId = null;
-    
-    function viewReport(id) {
-        currentReportId = id;
-        const modal = document.getElementById('viewReportModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
-        fetch(`/admin/reports/${id}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const report = data.data;
-                const html = `
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-medium text-secondary-color">Reference Number</label>
-                                <p class="text-primary-color font-mono">HR-${String(report.id).padStart(6, '0')}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium text-secondary-color">Status</label>
-                                <p class="text-primary-color capitalize">${report.status}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-secondary-color">Title</label>
-                            <p class="text-primary-color">${escapeHtml(report.incident_title)}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-medium text-secondary-color">Type</label>
-                                <p class="text-primary-color capitalize">${report.incident_type}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium text-secondary-color">Incident Date</label>
-                                <p class="text-primary-color">${report.incident_date}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-secondary-color">Location</label>
-                            <p class="text-primary-color">${escapeHtml(report.incident_location)}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-secondary-color">Description</label>
-                            <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                <p class="text-primary-color whitespace-pre-wrap">${escapeHtml(report.incident_description)}</p>
-                            </div>
-                        </div>
-                        ${report.perpetrator_info ? `
-                        <div>
-                            <label class="text-sm font-medium text-secondary-color">Perpetrator Information</label>
-                            <p class="text-primary-color">${escapeHtml(report.perpetrator_info)}</p>
-                        </div>
-                        ` : ''}
-                        ${!report.is_anonymous ? `
-                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                            <label class="text-sm font-medium text-secondary-color">Victim Contact Information</label>
-                            <div class="mt-2 space-y-1">
-                                <p class="text-primary-color"><strong>Name:</strong> ${escapeHtml(report.victim_name)}</p>
-                                <p class="text-primary-color"><strong>Email:</strong> ${escapeHtml(report.victim_email)}</p>
-                                ${report.victim_phone ? `<p class="text-primary-color"><strong>Phone:</strong> ${escapeHtml(report.victim_phone)}</p>` : ''}
-                            </div>
-                        </div>
-                        ` : ''}
-                        ${report.admin_response ? `
-                        <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                            <label class="text-sm font-medium text-secondary-color">Your Response</label>
-                            <p class="text-primary-color mt-1">${escapeHtml(report.admin_response)}</p>
-                            <p class="text-xs text-secondary-color mt-2">Responded on: ${new Date(report.responded_at).toLocaleString()}</p>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-                document.getElementById('reportDetails').innerHTML = html;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('reportDetails').innerHTML = '<div class="text-center text-red-500">Failed to load report details</div>';
-        });
-    }
-    
-    function closeViewModal() {
-        const modal = document.getElementById('viewReportModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.getElementById('reportDetails').innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin fa-2x text-blue-500"></i><p class="mt-2 text-secondary-color">Loading...</p></div>';
-    }
-    
-    function respondToReport(id) {
-        currentReportId = id;
-        const modal = document.getElementById('respondModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.getElementById('respondForm').action = `/admin/reports/${id}/respond`;
-    }
-    
-    function closeRespondModal() {
-        const modal = document.getElementById('respondModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.getElementById('respondForm').reset();
-    }
-    
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-    // Close modals when clicking outside
-    document.getElementById('viewReportModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeViewModal();
-    });
-    
-    document.getElementById('respondModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeRespondModal();
+    // Add click handler for table rows to make them clickable
+    document.querySelectorAll('.report-card').forEach(row => {
+        const viewLink = row.querySelector('a[href*="reports/"]');
+        if (viewLink) {
+            const url = viewLink.getAttribute('href');
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', (e) => {
+                // Don't trigger if clicking on the link itself
+                if (!e.target.closest('a')) {
+                    window.location.href = url;
+                }
+            });
+        }
     });
 </script>
 @endpush
+@endsection

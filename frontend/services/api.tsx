@@ -87,10 +87,17 @@ export interface Message {
 
 export interface HarassmentReport {
   id: number;
+  reference_number?: string;
+  incident_type: string;
   incident_title: string;
   incident_description: string;
   incident_location?: string;
+  incident_date?: string;
+  perpetrator_info?: string;
+  is_anonymous: boolean;
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed';
+  admin_response?: string;
+  responded_at?: string;
   created_at: string;
 }
 
@@ -104,24 +111,16 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
     
     if (Platform.OS === 'android') {
-      // For Android Emulator: use 10.0.2.2
-     
-      return `http://192.168.58.103:8000/api/v1`;
-      
-      // For Android Emulator (comment the above, uncomment below):
-      // return 'http://10.0.2.2:8000/api';
+      return `http://192.168.43.103:8000/api/v1`;
     } 
     
     if (Platform.OS === 'ios') {
-      // For iOS Simulator: use localhost
-      // For Physical iOS Device: use computer's network IP
-      
-      return `http://192.168.58.103:8000/api`;
-      
+      return `http://192.168.74.205:8000/api`;
     }
     
     // Default fallback
-    return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
+    //return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
+    return `http://127.0.0.1:8000/api/v1`;
   } else {
     // Production environment
     return 'https://your-production-api.com/api';
@@ -149,7 +148,7 @@ console.log(`   3. Can access ${api.defaults.baseURL}/mentors/active from phone 
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
     // Public routes that don't need authentication
-    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/', '/harassment-reports'];
+    const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/', '/harassment-reports', '/anonymous-reports'];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
     
     if (!isPublicRoute) {
@@ -333,7 +332,7 @@ export const getEmergencyContacts = async (): Promise<EmergencyContact[]> => {
 };
 
 // ============================================
-// MENTOR API FUNCTIONS - FIXED
+// MENTOR API FUNCTIONS
 // ============================================
 
 /**
@@ -601,10 +600,10 @@ export const getMessages = async (conversationId: number): Promise<Message[]> =>
 };
 
 // ============================================
-// HARASSMENT REPORT FUNCTIONS - FIXED
+// HARASSMENT REPORT FUNCTIONS - COMPLETELY FIXED
 // ============================================
 
-// Get harassment reports
+// Get harassment reports for the current user
 export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
   try {
     const response = await api.get<HarassmentReport[]>('/harassment-reports/my-reports');
@@ -615,30 +614,40 @@ export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
   }
 };
 
-// Submit harassment report - FIXED to match Laravel expectations
+// Submit harassment report - Works for both anonymous and non-anonymous
 export const submitHarassmentReport = async (data: {
   incident_type: string;
-  incident_title: string;  // ADDED - required by Laravel
-  description: string;
-  incident_location?: string;
-  incident_date?: string;
-  perpetrator_info?: string;
-  is_anonymous?: string;
-}): Promise<HarassmentReport> => {
+  incident_title: string;
+  incident_description: string;
+  incident_location: string;
+  incident_date: string;
+  perpetrator_info?: string | null;
+  is_anonymous: boolean;
+  victim_name?: string;
+  victim_email?: string;
+  victim_phone?: string;
+}): Promise<any> => {
   try {
-    // Transform data to match Laravel model fillable fields
-    const requestData = {
+    // Prepare data exactly as Laravel expects
+    const requestData: any = {
       incident_type: data.incident_type,
-      incident_title: data.incident_title,  // Map from frontend
-      incident_description: data.description,  // Map 'description' to 'incident_description'
+      incident_title: data.incident_title,
+      incident_description: data.incident_description,
       incident_location: data.incident_location,
       incident_date: data.incident_date,
-      perpetrator_info: data.perpetrator_info,
-      is_anonymous: data.is_anonymous === 'yes' ? 1 : 0,
+      perpetrator_info: data.perpetrator_info || null,
+      is_anonymous: data.is_anonymous ? 1 : 0,
     };
     
-    console.log('📤 Submitting harassment report with data:', requestData);
-    const response = await api.post<HarassmentReport>('/harassment-reports', requestData);
+    // Only add contact info if NOT anonymous
+    if (!data.is_anonymous) {
+      requestData.victim_name = data.victim_name;
+      requestData.victim_email = data.victim_email;
+      requestData.victim_phone = data.victim_phone || null;
+    }
+    
+    console.log('📤 Submitting harassment report:', JSON.stringify(requestData, null, 2));
+    const response = await api.post('/harassment-reports', requestData);
     console.log('✅ Report submitted successfully:', response.data);
     return response.data;
   } catch (error: any) {
@@ -653,29 +662,25 @@ export const submitHarassmentReport = async (data: {
   }
 };
 
-// Submit anonymous harassment report - FIXED
-export const submitHarassmentReportAnonymously = async (data: {
-  incident_type: string;
-  incident_title: string;  // ADDED
+// Submit anonymous report - Simplified version for anonymous reports
+export const submitAnonymousReport = async (data: {
+  title: string;
   description: string;
   location?: string;
-  incident_date?: string;
-  perpetrator_info?: string;
-  is_anonymous?: string;
-}): Promise<HarassmentReport> => {
+}): Promise<any> => {
   try {
     const requestData = {
-      incident_type: data.incident_type,
-      incident_title: data.incident_title,
+      incident_type: 'other',
+      incident_title: data.title,
       incident_description: data.description,
-      incident_location: data.location,
-      incident_date: data.incident_date,
-      perpetrator_info: data.perpetrator_info,
-      is_anonymous: 1,  // Always anonymous
+      incident_location: data.location || 'Not specified',
+      incident_date: new Date().toISOString().split('T')[0],
+      perpetrator_info: null,
+      is_anonymous: 1, // Always anonymous
     };
     
-    console.log('📤 Submitting anonymous report with data:', requestData);
-    const response = await api.post<HarassmentReport>('/harassment-reports', requestData);
+    console.log('📤 Submitting anonymous report:', JSON.stringify(requestData, null, 2));
+    const response = await api.post('/harassment-reports', requestData);
     console.log('✅ Anonymous report submitted successfully:', response.data);
     return response.data;
   } catch (error: any) {
@@ -687,18 +692,15 @@ export const submitHarassmentReportAnonymously = async (data: {
   }
 };
 
-// Submit anonymous report (alias) - FIXED
-export const submitAnonymousReport = async (data: {
-  title: string;
-  description: string;
-  location?: string;
-}): Promise<HarassmentReport> => {
-  return submitHarassmentReportAnonymously({
-    incident_type: 'other',  // Default type for simple anonymous reports
-    incident_title: data.title,  // Map 'title' to 'incident_title'
-    description: data.description,
-    location: data.location,
-  });
+// Get report by reference number
+export const getReportByReference = async (referenceNumber: string): Promise<HarassmentReport | null> => {
+  try {
+    const response = await api.get(`/harassment-reports/reference/${referenceNumber}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error fetching report by reference:', error.message);
+    return null;
+  }
 };
 
 // Fetch general guides
@@ -816,7 +818,7 @@ export const getGroups = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    console.error("❌ Error fetching groups:", error);
+    console.error("Error fetching groups:", error);
     throw error;
   }
 };
@@ -829,7 +831,7 @@ export const joinGroup = async (token: string, conversationID: number) => {
     });
     return response.data;
   } catch (error) {
-    console.error("❌ Error joining group:", error);
+    console.error("Error joining group:", error);
     throw error;
   }
 };
@@ -841,10 +843,10 @@ export const testConnection = async (): Promise<boolean> => {
     const response = await api.get('/mentors/active', { 
       validateStatus: (status) => status < 500 
     });
-    console.log('✅ Connection successful! Server responded with status:', response.status);
+    console.log('Connection successful! Server responded with status:', response.status);
     return true;
   } catch (error: any) {
-    console.error('❌ Connection failed:', error.message);
+    console.error(' Connection failed:', error.message);
     return false;
   }
 };
