@@ -1,7 +1,7 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
-use App\Http\Controllers\HarassmentReportController;
+use App\Http\Controllers\Admin\HarassmentReportController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
