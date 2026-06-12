@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, Pressable, Image, TextInput } from 'react-native';
 import { getActiveMentors } from '@/services/api';
 import { LegendList } from '@legendapp/list';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -33,6 +33,7 @@ type Mentor = {
 
 const MentorshipScreen = () => {
   const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
   const router = useRouter();
@@ -47,10 +48,10 @@ const MentorshipScreen = () => {
       console.log('🔄 Fetching mentors...');
       
       const data = await getActiveMentors();
+      const safeData = Array.isArray(data) ? data : [];
+      console.log('📊 Received mentors:', safeData.length);
       
-      console.log('📊 Received mentors:', data.length);
-      
-      if (data.length === 0) {
+      if (safeData.length === 0) {
         console.warn('⚠️ No mentors received');
         Toast.show({
           type: 'info',
@@ -58,11 +59,9 @@ const MentorshipScreen = () => {
           text2: 'Check back later for expert mentors',
           position: 'top',
         });
-      } else {
-        console.log('✅ First mentor:', data[0].name, 'Expertise:', data[0].expertise);
       }
       
-      setMentors(data);
+      setMentors(safeData);
     } catch (error: any) {
       console.error("❌ fetchMentors error:", error?.message || error);
       Toast.show({
@@ -75,6 +74,52 @@ const MentorshipScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const filteredMentors = useMemo(() => {
+    if (!searchQuery.trim()) return mentors;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return mentors.filter((mentor) => {
+      if (!mentor) return false;
+      const nameMatch = mentor.name?.toLowerCase().includes(query) ?? false;
+      const bioMatch = mentor.bio?.toLowerCase().includes(query) ?? false;
+      const expertiseMatch = Array.isArray(mentor.expertise) && mentor.expertise.some(exp => 
+        exp?.toLowerCase().includes(query)
+      );
+      
+      return nameMatch || bioMatch || expertiseMatch;
+    });
+  }, [searchQuery, mentors]);
+
+  // Helper component to render 5 purple hearts safely
+  const RenderHeartRating = ({ rating }: { rating: number | null | undefined }) => {
+    if (!rating) {
+      return (
+        <View className="bg-purple-50 px-2 py-0.5 rounded-md">
+          <Text className="text-purple-600 text-[11px] font-bold">New Mentor</Text>
+        </View>
+      );
+    }
+
+    const roundedRating = Math.round(rating);
+    
+    return (
+      <View className="flex-row items-center space-x-0.5">
+        {[1, 2, 3, 4, 5].map((starIndex) => (
+          <FontAwesome5
+            key={starIndex}
+            name="heart"
+            size={12}
+            color="#8A4FFF"
+            solid={starIndex <= roundedRating}
+          />
+        ))}
+        <Text className="text-slate-500 text-xs font-bold ml-1.5">
+          ({Number(rating).toFixed(1)})
+        </Text>
+      </View>
+    );
   };
 
   if (loading) {
@@ -93,38 +138,62 @@ const MentorshipScreen = () => {
 
   return (
     <View className="flex-1 bg-slate-50">
-      {/* Header Info */}
-      <View className="bg-violet-600 pt-14 pb-10 px-6 rounded-b-[40px] shadow-xl">
-        <View className='text-blue-50 color-white'><BackButton /></View>
-        <Text className="text-white text-2xl font-bold">{t("Expert Mentors")}</Text>
+      {/* Header Panel */}
+      <View className="bg-violet-600 pt-8 pb-8 px-6 rounded-b-[40px] shadow-xl z-10">
+        <View className="text-blue-50 flex flex-row justify-between items-center color-white mb-2">
+          <BackButton />
+          <Text className="text-white text-2xl font-bold">{t("Expert Mentors")}</Text>
         <Text className="text-violet-100 text-sm mt-1">Connect with leaders to guide your journey</Text>
-        <Pressable
-            onPress={() => router.push('/(protected)/sessionsDashboard')}
-            className="flex-row items-center bg-purple-50 px-3 py-2 mt-2 rounded-xl border border-purple-100 active:bg-purple-100"
-          >
-            <MaterialCommunityIcons name="calendar-clock" size={18} color="#8A4FFF" />
-            <Text className="text-purple-600 font-bold text-xs ml-2">My Sessions</Text>
-          </Pressable>
+          <Pressable
+          onPress={() => router.push('/(protected)/sessionsDashboard')}
+          className="flex-row items-center self-start bg-purple-50 px-3 py-2 mt-4 rounded-xl border border-purple-100 active:bg-purple-100"
+        >
+          <MaterialCommunityIcons name="calendar-clock" size={18} color="#8A4FFF" />
+          <Text className="text-purple-600 font-bold text-xs ml-2">My Sessions</Text>
+        </Pressable>
+        </View>
+        
+        
+        {/* Search Architecture Box */}
+        <View className="flex-row items-center bg-white/10 mt-5 px-4 py-3 rounded-2xl border border-white/20">
+          <Feather name="search" size={18} color="#ddd6fe" />
+          <TextInput
+            className="flex-1 ml-3 text-white placeholder-violet-200 text-sm h-6 p-0"
+            placeholder="Tell us what's going on..."
+            placeholderTextColor="#ddd6fe"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} className="p-1">
+              <Feather name="x" size={16} color="#ddd6fe" />
+            </Pressable>
+          )}
+        </View>
+
+        
       </View>
 
       <LegendList
-        data={mentors}
+        data={filteredMentors}
         estimatedItemSize={250}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ padding: 20, paddingTop: 10 }}
+        keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
+        contentContainerStyle={{ padding: 20, paddingTop: 15 }}
         renderItem={({ item }) => {
-          // Get expertise area
-          const expertiseArea = item.expertise && item.expertise.length > 0 
+          if (!item) return null;
+
+          const expertiseArea = Array.isArray(item.expertise) && item.expertise.length > 0 
             ? item.expertise.join(', ') 
             : 'Mentor';
           
-          // Get avatar URL
-          const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=8b5cf6&color=fff`;
+          const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name || 'M')}&background=8b5cf6&color=fff`;
 
           return (
             <View className="bg-white rounded-3xl mb-5 overflow-hidden shadow-sm border border-slate-100">
               <View className="p-5">
-                {/* Header: Avatar & Info */}
+                {/* Identity Frame */}
                 <View className="flex-row items-start justify-between">
                   <View className="flex-row flex-1 items-center">
                     <View className="relative">
@@ -140,28 +209,34 @@ const MentorshipScreen = () => {
                       <Text className="text-slate-900 text-lg font-bold" numberOfLines={1}>
                         {item.name}
                       </Text>
-                      <View className="bg-violet-50 self-start px-2 py-0.5 rounded-md mt-1">
-                        <Text className="text-violet-600 text-[10px] font-bold uppercase tracking-wider">
+                      
+                      {/* Heart Ratings Insertion */}
+                      <View className="mt-1">
+                        <RenderHeartRating rating={item.rating} />
+                      </View>
+
+                      <View className="bg-violet-50 self-start px-2 py-0.5 rounded-md mt-2">
+                        <Text className="text-violet-600 text-[10px] font-bold uppercase tracking-wider" numberOfLines={1}>
                           {expertiseArea}
                         </Text>
                       </View>
                     </View>
                   </View>
                   
-                  <Pressable className="bg-slate-50 p-2 rounded-full">
+                  <Pressable className="bg-slate-50 p-2 rounded-full active:bg-slate-100">
                     <Feather name="bookmark" size={18} color="#64748b" />
                   </Pressable>
                 </View>
 
-                {/* Bio */}
+                {/* Profile Bio */}
                 {item.bio && (
                   <Text className="text-slate-600 text-sm mt-4 leading-5" numberOfLines={3}>
                     {item.bio}
                   </Text>
                 )}
 
-                {/* Schedule & Days */}
-                <View className="mt-4 pt-4 border-t border-slate-50">
+                {/* Calendars */}
+                <View className="mt-4 pt-4 border-t border-slate-100">
                   <View className="flex-row items-center mb-3">
                     <MaterialCommunityIcons name="calendar-clock" size={18} color="#8b5cf6" />
                     <Text className="text-slate-500 text-xs ml-2 font-medium">
@@ -169,7 +244,7 @@ const MentorshipScreen = () => {
                     </Text>
                   </View>
 
-                  {item.available_days && item.available_days.length > 0 && (
+                  {Array.isArray(item.available_days) && item.available_days.length > 0 && (
                     <View className="flex-row flex-wrap gap-2">
                       {item.available_days.map((day, index) => (
                         <View key={index} className="bg-slate-100 px-3 py-1 rounded-lg">
@@ -180,19 +255,19 @@ const MentorshipScreen = () => {
                   )}
                 </View>
 
-                {/* Action */}
+                {/* Action Button */}
                 <Pressable
-                    className="bg-purple-600 h-16 rounded-2xl flex-row justify-center items-center space-x-3 border-2 border-purple-600 active:bg-purple-50 mt-4"
-                    onPress={() => {
-                      router.push({
-                        pathname: '/mentorship-request',
-                        params: {
-                          mentorId: item.id.toString(),
-                          mentorName: item.name
-                        }
-                      });
-                    }}
-                  >
+                  className="bg-purple-600 h-14 rounded-2xl flex-row justify-center items-center border border-purple-600 active:opacity-85 mt-4"
+                  onPress={() => {
+                    router.push({
+                      pathname: '/mentorship-request',
+                      params: {
+                        mentorId: item.id.toString(),
+                        mentorName: item.name
+                      }
+                    });
+                  }}
+                >
                   <Text className="text-white text-center font-bold text-base">Book Free Session</Text>
                 </Pressable>
               </View>
@@ -204,15 +279,24 @@ const MentorshipScreen = () => {
             <View className="bg-slate-100 p-6 rounded-full">
               <FontAwesome5 name="user-slash" size={40} color="#cbd5e1" />
             </View>
-            <Text className="text-slate-800 font-bold text-lg mt-4">No Mentors Yet</Text>
+            <Text className="text-slate-800 font-bold text-lg mt-4">
+              {searchQuery ? "No Matches Found" : "No Mentors Yet"}
+            </Text>
             <Text className="text-slate-400 text-center mt-2 leading-5">
-              We're currently onboarding new experts. Please check back later!
+              {searchQuery 
+                ? "Try adjusting your spelling or searching for clear alternative skills." 
+                : "We're currently onboarding new experts. Please check back later!"}
             </Text>
             <Pressable 
-              onPress={fetchMentors}
-              className="mt-6 bg-purple-600 px-6 py-3 rounded-full"
+              onPress={() => {
+                setSearchQuery('');
+                fetchMentors();
+              }}
+              className="mt-6 bg-purple-600 px-6 py-3 rounded-full active:opacity-90"
             >
-              <Text className="text-white font-semibold">Refresh</Text>
+              <Text className="text-white font-semibold">
+                {searchQuery ? "Clear Search" : "Refresh"}
+              </Text>
             </Pressable>
           </View>
         )}
