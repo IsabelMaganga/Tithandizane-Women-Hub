@@ -7,6 +7,7 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\MentorController;
+use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +58,9 @@ Route::prefix('v1')->group(function () {
     // Anonymous harassment report (public)
     Route::post('/harassment-reports/anonymous', [HarassmentReportController::class, 'store']);
     Route::post('/harassment-reports', [HarassmentReportController::class, 'store']);
+
+    //inteligency apache_child_terminate
+    Route::post('/ask',[IncidentController::class,'incident']);
     
     // ============================================
     // PROTECTED ROUTES (Authentication Required)

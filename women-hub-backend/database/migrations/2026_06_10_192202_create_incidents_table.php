@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
+            $table->text('content');
+            $table->string('expertise_assigned')->nullable();
+            $table->string('risk_level')->default('Low');
+            $table->float('confidence_score')->default(0.0);
             $table->timestamps();
         });
     }

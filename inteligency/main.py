@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import joblib
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -14,10 +15,22 @@ HIGH_RISK_PHRASES = [
 ]
 
 
-@app.post("/analyze")
-def analyze(data: dict):
 
-    text = data["text"]
+
+
+
+# 1. Define the expected request body structure
+class AnalyzeRequest(BaseModel):
+    text: str
+
+# ... your models and phrases here ...
+
+# 2. Use the schema in your route
+@app.post("/analyze")
+def analyze(data: AnalyzeRequest):
+
+    # Access the property directly via dot notation
+    text = data.text 
 
     for phrase in HIGH_RISK_PHRASES:
         if phrase in text.lower():
@@ -39,3 +52,7 @@ def analyze(data: dict):
         "risk_level": risk,
         "confidence": float(confidence)
     }
+
+@app.get("/test")
+def test():
+    return {"status": "working"}
