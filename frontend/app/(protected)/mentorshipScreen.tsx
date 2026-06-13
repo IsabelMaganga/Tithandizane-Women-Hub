@@ -185,6 +185,8 @@ export default function MentorshipScreen() {
         data={filteredMentors}
         estimatedItemSize={280}
         keyExtractor={item => item?.id?.toString() || Math.random().toString()}
+        extraData={isDark}
+        style={{ backgroundColor: T.bg }}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         renderItem={({ item }) => {
           if (!item) return null;

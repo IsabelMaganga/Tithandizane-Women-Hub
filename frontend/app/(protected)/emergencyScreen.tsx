@@ -79,7 +79,7 @@ export default function EmergencyScreen() {
 
       {/* Header gradient */}
       <LinearGradient
-        colors={['#f43f5e', '#be123c']}
+        colors={['#7c3aed', '#6d28d9']}
         style={{ paddingBottom: 32, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden' }}
       >
         <SafeAreaView edges={['top']}>
@@ -112,13 +112,13 @@ export default function EmergencyScreen() {
       {/* Safety notice */}
       <View style={{ marginHorizontal: 20, marginTop: 20, marginBottom: 8 }}>
         <View style={{
-          backgroundColor: isDark ? '#2d1515' : '#fff1f2',
+          backgroundColor: isDark ? '#2d1b69' : '#f5f3ff',
           borderRadius: 16, padding: 14,
           flexDirection: 'row', alignItems: 'center', gap: 10,
-          borderWidth: 1, borderColor: isDark ? '#7f1d1d' : '#fecdd3',
+          borderWidth: 1, borderColor: isDark ? '#4c1d95' : '#ddd6fe',
         }}>
-          <Ionicons name="shield-checkmark" size={18} color="#f43f5e" />
-          <Text style={{ color: isDark ? '#fca5a5' : '#be123c', fontSize: 12, fontWeight: '600', flex: 1 }}>
+          <Ionicons name="shield-checkmark" size={18} color="#7c3aed" />
+          <Text style={{ color: isDark ? '#a78bfa' : '#7c3aed', fontSize: 12, fontWeight: '600', flex: 1 }}>
             All calls are confidential. Reach out whenever you need help.
           </Text>
         </View>
@@ -128,6 +128,8 @@ export default function EmergencyScreen() {
         data={helplines}
         estimatedItemSize={90}
         keyExtractor={item => item.id.toString()}
+        extraData={isDark}
+        style={{ backgroundColor: T.bg }}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         ListEmptyComponent={
           <View style={{ alignItems: 'center', marginTop: 60 }}>
@@ -148,7 +150,7 @@ export default function EmergencyScreen() {
               backgroundColor: T.card, padding: 18, marginBottom: 12, borderRadius: 24,
               flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
               borderWidth: 1, borderColor: T.border,
-              shadowColor: '#f43f5e',
+              shadowColor: '#7c3aed',
               shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.15 : 0.08,
               shadowRadius: 8, elevation: 3,
               opacity: pressed ? 0.85 : 1,
@@ -156,10 +158,10 @@ export default function EmergencyScreen() {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View style={{
-                backgroundColor: isDark ? '#2d1515' : '#fff1f2',
+                backgroundColor: isDark ? '#2d1b69' : '#f5f3ff',
                 padding: 14, borderRadius: 18, marginRight: 14,
               }}>
-                <Feather name="shield" size={22} color="#f43f5e" />
+                <Feather name="shield" size={22} color="#7c3aed" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: T.text, fontSize: 15, fontWeight: '700' }} numberOfLines={1}>{item.name}</Text>
@@ -188,8 +190,8 @@ export default function EmergencyScreen() {
           }}>
             <View style={{ width: 40, height: 4, backgroundColor: T.border, borderRadius: 2, marginBottom: 24 }} />
 
-            <View style={{ backgroundColor: isDark ? '#2d1515' : '#fff1f2', padding: 22, borderRadius: 999, marginBottom: 16 }}>
-              <Ionicons name="alert-circle" size={44} color="#f43f5e" />
+            <View style={{ backgroundColor: isDark ? '#2d1b69' : '#f5f3ff', padding: 22, borderRadius: 999, marginBottom: 16 }}>
+              <Ionicons name="alert-circle" size={44} color="#7c3aed" />
             </View>
 
             <Text style={{ color: T.text, fontSize: 20, fontWeight: '800', textAlign: 'center' }}>

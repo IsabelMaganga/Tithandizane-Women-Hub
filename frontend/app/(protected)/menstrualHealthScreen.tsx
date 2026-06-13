@@ -63,7 +63,7 @@ export default function MenstrualHealthScreen() {
 
       {/* Header gradient */}
       <LinearGradient
-        colors={['#ec4899', '#be185d']}
+        colors={['#7c3aed', '#6d28d9']}
         style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden' }}
       >
         <SafeAreaView edges={['top']}>
@@ -182,21 +182,21 @@ export default function MenstrualHealthScreen() {
         {/* See a doctor banner */}
         <Animated.View entering={FadeInDown.delay(700)} style={{ paddingHorizontal: 20, marginTop: 24 }}>
           <LinearGradient
-            colors={isDark ? ['#1a1a2e', '#16213e'] : ['#fce7f3', '#fdf2f8']}
+            colors={isDark ? ['#1a1a2e', '#16213e'] : ['#f5f3ff', '#ede9fe']}
             style={{
               borderRadius: 22, padding: 20,
-              borderWidth: 1, borderColor: isDark ? '#4c1d95' : '#fbcfe8',
+              borderWidth: 1, borderColor: isDark ? '#4c1d95' : '#ddd6fe',
               flexDirection: 'row', alignItems: 'center', gap: 14,
             }}
           >
             <View style={{
-              backgroundColor: isDark ? '#831843' : '#fce7f3',
+              backgroundColor: isDark ? '#2d1b69' : '#ede9fe',
               padding: 12, borderRadius: 16,
             }}>
-              <Ionicons name="medkit" size={24} color="#ec4899" />
+              <Ionicons name="medkit" size={24} color="#7c3aed" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: isDark ? '#f9a8d4' : '#be185d', fontWeight: '800', fontSize: 14 }}>
+              <Text style={{ color: isDark ? '#a78bfa' : '#7c3aed', fontWeight: '800', fontSize: 14 }}>
                 When to see a doctor
               </Text>
               <Text style={{ color: T.subtext, fontSize: 12, marginTop: 4, lineHeight: 18 }}>
