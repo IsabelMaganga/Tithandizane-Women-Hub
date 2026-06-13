@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mentor;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Controller;
 
@@ -10,7 +11,8 @@ class NotificationController extends Controller
 {
     public function markAsRead($id)
     {
-        $notification = auth()->user()->notifications()->find($id);
+        $mentor = Auth::guard('mentor')->user();
+        $notification = $mentor ? $mentor->notifications()->find($id) : null;
 
         if ($notification) {
             $notification->markAsRead();
@@ -22,13 +24,19 @@ class NotificationController extends Controller
 
     public function markAllAsRead()
     {
-        auth()->user()->unreadNotifications->markAsRead();
+        $mentor = Auth::guard('mentor')->user();
+        if ($mentor) {
+            $mentor->unreadNotifications->markAsRead();
+        }
+
         return back();
     }
 
     public function getMyNotification()
     {
-        $notifications = auth()->user()->notifications()->latest()->get();
+        $mentor = Auth::guard('mentor')->user();
+        $notifications = $mentor ? $mentor->notifications()->latest()->get() : collect();
+
         return view('mentor.notifications.index', compact('notifications'));
     }
 
