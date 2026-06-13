@@ -33,56 +33,56 @@ interface ReportFormData {
   victim_phone: string;
 }
 
-// ─── Incident type options with unique colors and improved icons ─────────────────
+// ─── Incident type options ────────────────────────────────────────────────────
 const INCIDENT_TYPES = [
-  { 
-    key: 'physical', 
-    en: 'Physical Harassment',  
-    ny: 'Kuzunzidwa Kwakuthupi',   
+  {
+    key: 'physical',
+    en: 'Physical Harassment',
+    ny: 'Kuzunzidwa Kwakuthupi',
     icon: 'body-outline',
     iconFamily: 'Ionicons',
-    color: '#EF4444', // Red
+    color: '#EF4444',
     bgColor: '#FEE2E2'
   },
-  { 
-    key: 'verbal',   
-    en: 'Verbal Harassment',    
-    ny: 'Kuzunzidwa Pakamwa',      
+  {
+    key: 'verbal',
+    en: 'Verbal Harassment',
+    ny: 'Kuzunzidwa Pakamwa',
     icon: 'message-circle',
     iconFamily: 'Feather',
-    color: '#F59E0B', // Amber
+    color: '#F59E0B',
     bgColor: '#FEF3C7'
   },
-  { 
-    key: 'sexual',   
-    en: 'Sexual Harassment',    
-    ny: 'Kuzunzidwa Kogonana',     
+  {
+    key: 'sexual',
+    en: 'Sexual Harassment',
+    ny: 'Kuzunzidwa Kogonana',
     icon: 'heart-dislike',
     iconFamily: 'Ionicons',
-    color: '#EC4899', 
+    color: '#EC4899',
     bgColor: '#FCE7F3'
   },
-  { 
-    key: 'cyber',    
-    en: 'Cyber Harassment',     
-    ny: 'Kuzunzidwa Pa Intaneti',  
+  {
+    key: 'cyber',
+    en: 'Cyber Harassment',
+    ny: 'Kuzunzidwa Pa Intaneti',
     icon: 'smartphone',
     iconFamily: 'Feather',
-    color: '#06B6D4', 
+    color: '#06B6D4',
     bgColor: '#CFFAFE'
   },
-  { 
-    key: 'other',    
-    en: 'Other',                
-    ny: 'Zina',                    
+  {
+    key: 'other',
+    en: 'Other',
+    ny: 'Zina',
     icon: 'help-circle',
     iconFamily: 'Feather',
-    color: '#8B5CF6', // Violet
+    color: '#8B5CF6',
     bgColor: '#EDE9FE'
   },
 ];
 
-// ─── Colours - Using the purple from your dashboard (violet-600: #7c3aed) ──────────
+// ─── Colours ──────────────────────────────────────────────────────────────────
 const PRIMARY_PURPLE = '#7c3aed';
 const PRIMARY_PURPLE_DARK = '#6d28d9';
 const PURPLE_LIGHT = '#8b5cf6';
@@ -91,6 +91,148 @@ const PURPLE_BORDER = '#D8B4FE';
 const DEEP_PURPLE = '#5b21b6';
 const SOFT_PURPLE = '#FAF5FF';
 
+// ─── Sub-components defined OUTSIDE the screen to prevent focus loss ──────────
+// Defining components inside a render function recreates them as new types on
+// every state change, causing React to unmount/remount them and steal focus.
+
+const inputStyle = (hasError?: boolean) => ({
+  borderWidth: 1.5,
+  borderColor: hasError ? '#EF4444' : '#E5E7EB',
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 13,
+  fontSize: 14,
+  color: '#1a1a2e',
+  backgroundColor: '#FAFAFA',
+});
+
+const Card = ({ children, style }: { children: React.ReactNode; style?: any }) => (
+  <View style={{
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    ...style,
+  }}>
+    {children}
+  </View>
+);
+
+const FieldLabel = ({ label, required, hint }: { label: string; required?: boolean; hint?: string }) => (
+  <View style={{ marginBottom: 6 }}>
+    <Text style={{ fontSize: 14, fontWeight: '600', color: '#2d2d2d' }}>
+      {label}{required && <Text style={{ color: '#EF4444' }}> *</Text>}
+    </Text>
+    {hint && <Text style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{hint}</Text>}
+  </View>
+);
+
+const SectionHeader = ({ icon, title, subtitle }: { icon: any; title: string; subtitle?: string }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+    <View style={{
+      width: 40, height: 40, borderRadius: 12,
+      backgroundColor: PURPLE_BG, alignItems: 'center', justifyContent: 'center', marginRight: 12,
+    }}>
+      <Ionicons name={icon} size={20} color={PRIMARY_PURPLE} />
+    </View>
+    <View>
+      <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a2e' }}>{title}</Text>
+      {subtitle && <Text style={{ fontSize: 12, color: '#888', marginTop: 1 }}>{subtitle}</Text>}
+    </View>
+  </View>
+);
+
+const renderIcon = (type: typeof INCIDENT_TYPES[0], size: number, color: string, selected: boolean) => {
+  const iconColor = selected ? '#FFFFFF' : color;
+  switch (type.iconFamily) {
+    case 'Feather':
+      // @ts-ignore
+      return <Feather name={type.icon} size={size} color={iconColor} />;
+    case 'MaterialCommunityIcons':
+      // @ts-ignore
+      return <MaterialCommunityIcons name={type.icon} size={size} color={iconColor} />;
+    case 'FontAwesome5':
+      // @ts-ignore
+      return <FontAwesome5 name={type.icon} size={size} color={iconColor} />;
+    default:
+      // @ts-ignore
+      return <Ionicons name={type.icon} size={size} color={iconColor} />;
+  }
+};
+
+const SquareCard = ({
+  type,
+  selected,
+  onPress,
+  language,
+}: {
+  type: typeof INCIDENT_TYPES[0];
+  selected: boolean;
+  onPress: () => void;
+  language: string;
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.7}
+    style={{
+      width: '31%',
+      aspectRatio: 0.9,
+      borderRadius: 16,
+      borderWidth: selected ? 2 : 1,
+      borderColor: selected ? type.color : '#E5E7EB',
+      backgroundColor: selected ? type.bgColor : '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+      marginBottom: 10,
+      shadowColor: selected ? type.color : '#000',
+      shadowOffset: { width: 0, height: selected ? 4 : 2 },
+      shadowOpacity: selected ? 0.25 : 0.08,
+      shadowRadius: selected ? 8 : 4,
+      elevation: selected ? 6 : 2,
+      transform: [{ scale: selected ? 1.02 : 1 }],
+    }}
+  >
+    <View style={{
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: selected ? type.color : type.bgColor,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 8,
+    }}>
+      {renderIcon(type, 22, type.color, selected)}
+    </View>
+    <Text style={{
+      fontSize: 11,
+      fontWeight: selected ? '700' : '500',
+      color: selected ? type.color : '#4A4A4A',
+      textAlign: 'center',
+    }}>
+      {language === 'en' ? type.en : type.ny}
+    </Text>
+    {selected && (
+      <View style={{
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        backgroundColor: type.color,
+        borderRadius: 10,
+        padding: 2,
+      }}>
+        <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+      </View>
+    )}
+  </TouchableOpacity>
+);
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HarassmentReportScreen() {
   const router = useRouter();
   const { language } = useLanguage();
@@ -112,7 +254,7 @@ export default function HarassmentReportScreen() {
     victim_phone: '',
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ReportFormData, string>>>({});
+  const [errors] = useState<Partial<Record<keyof ReportFormData, string>>>({});
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
   const t = (en: string, ny: string) => (language === 'en' ? en : ny);
@@ -131,32 +273,8 @@ export default function HarassmentReportScreen() {
     }
   };
 
-  // ─── Validation ───────────────────────────────────────────────────────────────
-  const validate = (): boolean => {
-    const e: Partial<Record<keyof ReportFormData, string>> = {};
-    if (!formData.incident_type)            e.incident_type        = t('Please select a type', 'Sankhani mtundu');
-    if (!formData.incident_title.trim())    e.incident_title       = t('Title is required', 'Mutu ukufunika');
-    if (!formData.incident_description.trim()) e.incident_description = t('Description is required', 'Kufotokozera kukufunika');
-    if (!formData.incident_date)            e.incident_date        = t('Date is required', 'Tsiku likufunika');
-    if (!formData.incident_location.trim()) e.incident_location    = t('Location is required', 'Malo akufunika');
-
-    if (!formData.is_anonymous) {
-      if (!formData.victim_name.trim())  e.victim_name  = t('Name is required', 'Dzina likufunika');
-      if (!formData.victim_email.trim()) e.victim_email = t('Email is required', 'Imelo ikufunika');
-      else if (!/\S+@\S+\.\S+/.test(formData.victim_email))
-        e.victim_email = t('Valid email required', 'Imelo yovomerezeka ikufunika');
-    }
-
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
   // ─── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    // if (!validate()) {
-    //   console.log('❌ Validation failed');
-    //   return;
-    // }
     console.log('📤 Submit button pressed, form data:', formData);
     setLoading(true);
     try {
@@ -200,144 +318,6 @@ export default function HarassmentReportScreen() {
       setLoading(false);
     }
   };
-
-  // ─── UI Pieces ────────────────────────────────────────────────────────────────
-  const SectionHeader = ({ icon, title, subtitle }: { icon: any; title: string; subtitle?: string }) => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-      <View style={{
-        width: 40, height: 40, borderRadius: 12,
-        backgroundColor: PURPLE_BG, alignItems: 'center', justifyContent: 'center', marginRight: 12,
-      }}>
-        <Ionicons name={icon} size={20} color={PRIMARY_PURPLE} />
-      </View>
-      <View>
-        <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a2e' }}>{title}</Text>
-        {subtitle && <Text style={{ fontSize: 12, color: '#888', marginTop: 1 }}>{subtitle}</Text>}
-      </View>
-    </View>
-  );
-
-  const FieldLabel = ({ label, required, hint }: { label: string; required?: boolean; hint?: string }) => (
-    <View style={{ marginBottom: 6 }}>
-      <Text style={{ fontSize: 14, fontWeight: '600', color: '#2d2d2d' }}>
-        {label}{required && <Text style={{ color: '#EF4444' }}> *</Text>}
-      </Text>
-      {hint && <Text style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{hint}</Text>}
-    </View>
-  );
-
-  const inputStyle = (hasError?: boolean) => ({
-    borderWidth: 1.5,
-    borderColor: hasError ? '#EF4444' : '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 14,
-    color: '#1a1a2e',
-    backgroundColor: '#FAFAFA',
-  });
-
-  const Card = ({ children, style }: { children: React.ReactNode; style?: any }) => (
-    <View style={{
-      backgroundColor: '#fff',
-      borderRadius: 24,
-      padding: 16,
-      marginBottom: 16,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
-      shadowRadius: 12,
-      elevation: 4,
-      ...style,
-    }}>
-      {children}
-    </View>
-  );
-
-  // Helper function to render the appropriate icon component
-  const renderIcon = (type: typeof INCIDENT_TYPES[0], size: number, color: string, selected: boolean) => {
-    const iconColor = selected ? '#FFFFFF' : color;
-    switch (type.iconFamily) {
-      case 'Feather':
-        // @ts-ignore
-        return <Feather name={type.icon} size={size} color={iconColor} />;
-      case 'MaterialCommunityIcons':
-        // @ts-ignore
-        return <MaterialCommunityIcons name={type.icon} size={size} color={iconColor} />;
-      case 'FontAwesome5':
-        // @ts-ignore
-        return <FontAwesome5 name={type.icon} size={size} color={iconColor} />;
-      default:
-        // @ts-ignore
-        return <Ionicons name={type.icon} size={size} color={iconColor} />;
-    }
-  };
-
-  // Square Card for Harassment Types - Smaller size, unique colors
-  const SquareCard = ({ 
-    type, 
-    selected, 
-    onPress, 
-  }: { 
-    type: typeof INCIDENT_TYPES[0]; 
-    selected: boolean; 
-    onPress: () => void; 
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      style={{
-        width: '31%',
-        aspectRatio: 0.9,
-        borderRadius: 16,
-        borderWidth: selected ? 2 : 1,
-        borderColor: selected ? type.color : '#E5E7EB',
-        backgroundColor: selected ? type.bgColor : '#FFFFFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 8,
-        marginBottom: 10,
-        shadowColor: selected ? type.color : '#000',
-        shadowOffset: { width: 0, height: selected ? 4 : 2 },
-        shadowOpacity: selected ? 0.25 : 0.08,
-        shadowRadius: selected ? 8 : 4,
-        elevation: selected ? 6 : 2,
-        transform: [{ scale: selected ? 1.02 : 1 }],
-      }}
-    >
-      <View style={{
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        backgroundColor: selected ? type.color : type.bgColor,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
-      }}>
-        {renderIcon(type, 22, type.color, selected)}
-      </View>
-      <Text style={{
-        fontSize: 11,
-        fontWeight: selected ? '700' : '500',
-        color: selected ? type.color : '#4A4A4A',
-        textAlign: 'center',
-      }}>
-        {language === 'en' ? type.en : type.ny}
-      </Text>
-      {selected && (
-        <View style={{
-          position: 'absolute',
-          top: 6,
-          right: 6,
-          backgroundColor: type.color,
-          borderRadius: 10,
-          padding: 2,
-        }}>
-          <Ionicons name="checkmark" size={10} color="#FFFFFF" />
-        </View>
-      )}
-    </TouchableOpacity>
-  );
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -394,7 +374,7 @@ export default function HarassmentReportScreen() {
 
         <ScrollView style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }} showsVerticalScrollIndicator={false}>
 
-          {/* ── Hero Banner with Gradient (matching dashboard style) ── */}
+          {/* ── Hero Banner ── */}
           <LinearGradient
             colors={[PRIMARY_PURPLE, PRIMARY_PURPLE_DARK]}
             start={{ x: 0, y: 0 }}
@@ -522,7 +502,7 @@ export default function HarassmentReportScreen() {
               subtitle={t('Please provide as much detail as you can.', 'Chonde perekani zambiri mwatsatanetsatane.')}
             />
 
-            {/* Type of Harassment - Square Cards Grid (3 columns, smaller cards) */}
+            {/* Type of Harassment */}
             <View style={{ marginBottom: 20 }}>
               <FieldLabel label={t('Type of Harassment', 'Mtundu wa Nkhanza')} required />
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
@@ -532,6 +512,7 @@ export default function HarassmentReportScreen() {
                     type={type}
                     selected={formData.incident_type === type.key}
                     onPress={() => setFormData(prev => ({ ...prev, incident_type: type.key }))}
+                    language={language}
                   />
                 ))}
               </View>
@@ -557,7 +538,7 @@ export default function HarassmentReportScreen() {
 
             {/* Date */}
             <View style={{ marginBottom: 16 }}>
-              <FieldLabel label={t('Date  of Incident', 'Tsiku yochitika')} required />
+              <FieldLabel label={t('Date of Incident', 'Tsiku yochitika')} required />
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
                 style={{
@@ -633,7 +614,7 @@ export default function HarassmentReportScreen() {
             <SectionHeader
               icon="attach-outline"
               title={t('Additional Information', 'Zambiri Zowonjezera')}
-              subtitle={t('Optional  add any extra details that might help.', 'Mwasankha onjezani zambiri zinazo zingathende.')}
+              subtitle={t('Optional - add any extra details that might help.', 'Mwasankha onjezani zambiri zinazo zingathende.')}
             />
 
             <View>
@@ -652,8 +633,6 @@ export default function HarassmentReportScreen() {
               />
             </View>
           </Card>
-
-          
 
           {/* ── Safety Notice ── */}
           <View style={{

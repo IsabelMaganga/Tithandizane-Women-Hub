@@ -105,6 +105,62 @@ class HarassmentReportController extends Controller
         }
     }
 
+    /**
+     * Store a new harassment report submitted from the mobile app.
+     */
+    public function store(Request $request)
+    {
+        try {
+            $isAnonymous = filter_var($request->input('is_anonymous', true), FILTER_VALIDATE_BOOLEAN);
+
+            $rules = [
+                'incident_type'        => 'required|string|in:physical,verbal,sexual,cyber,other',
+                'incident_title'       => 'required|string|max:255',
+                'incident_description' => 'required|string',
+                'incident_date'        => 'required|date',
+                'incident_location'    => 'required|string|max:255',
+                'perpetrator_info'     => 'nullable|string',
+                'is_anonymous'         => 'required',
+            ];
+
+            if (!$isAnonymous) {
+                $rules['victim_name']  = 'required|string|max:255';
+                $rules['victim_email'] = 'required|email|max:255';
+                $rules['victim_phone'] = 'nullable|string|max:20';
+            }
+
+            $validated = $request->validate($rules);
+            $validated['is_anonymous'] = $isAnonymous;
+            $validated['status'] = 'pending';
+
+            if ($isAnonymous) {
+                unset($validated['victim_name'], $validated['victim_email'], $validated['victim_phone']);
+            }
+
+            $report = HarassmentReport::create($validated);
+
+            return response()->json([
+                'success'          => true,
+                'message'          => 'Report submitted successfully',
+                'reference_number' => $report->reference_number,
+                'data'             => $report,
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Failed to submit harassment report: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit report: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     //display reports
     public function show($id)
     {
