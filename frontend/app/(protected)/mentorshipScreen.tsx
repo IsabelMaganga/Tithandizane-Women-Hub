@@ -171,6 +171,11 @@ const MentorshipScreen = () => {
               <Feather name="x" size={16} color="#ddd6fe" />
             </Pressable>
           )}
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} className="p-1">
+              <Feather name="search" size={16} color="#ddd6fe" />
+            </Pressable>
+          )}
         </View>
 
         

@@ -29,7 +29,15 @@ class IncidentController extends Controller
 
             $analysis = $response->json();
 
-            // 3. Persist the incident tracking data to the database
+            // 🔥 FIX: Intercept the low confidence fallback message from FastAPI
+            if (isset($analysis['message'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $analysis['message']
+                ], 422); // 422 is perfect for semantic validation rejections
+            }
+
+            // 3. Persist the valid incident tracking data to the database
             $incident = Incident::create([
                 'content'            => $request->input('content'),
                 'expertise_assigned' => $analysis['expertise'] ?? 'Unclassified',
