@@ -162,10 +162,6 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::post('/events/store', [CalenderController::class, 'store'])->name('events.store');
     Route::delete('/events/{id}', [CalenderController::class, 'destroy'])->name('events.destroy');
 
-    // assigned harassment reports for mentors
-    Route::get('/assigned-reports',[ReportController::class, 'assignedReports'])->name('assigned.reports');
-    Route::get('/assigned-reports/{id}',[ReportController::class, 'showAssignedReport'])->name('assigned.reports.show');
-
     // reports
     Route::get('/reports',[ReportController::class, 'showReports'])->name('reports');
     Route::post('/reports',[ReportController::class, 'SubmitReport'])->name('submit.report');

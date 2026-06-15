@@ -1,235 +1,209 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  View, Text, Image, Pressable, ActivityIndicator,
-  ScrollView, KeyboardAvoidingView, Platform, Alert, useWindowDimensions,
-} from 'react-native';
-import { TextInput } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../../context/AuthContext';
-import { useThemeToggle } from '../../hooks/useTheme';
-import { LinearGradient } from 'expo-linear-gradient';
+  View,
+  Text,
+  Image,
+  Pressable,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { TextInput, IconButton } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../context/AuthContext"; // Assuming your context path
 
 export default function EditProfile() {
   const router = useRouter();
-  const { user, updateUser } = useAuth() as any;
-  const { colorScheme } = useThemeToggle();
-  const { width } = useWindowDimensions();
-  const isDark  = colorScheme === 'dark';
-  const isTablet = width >= 768;
+  const { user, updateUser } = useAuth(); // Assuming updateUser exists in context
 
-  const [name,    setName]    = useState(user?.name  || '');
-  const [email,   setEmail]   = useState(user?.email || '');
-  const [bio,     setBio]     = useState(user?.bio   || '');
-  const [image,   setImage]   = useState<string | null>(user?.profile_url || null);
+  // Form State
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [image, setImage] = useState<string | null>(user?.profile_url || null);
   const [loading, setLoading] = useState(false);
 
-  const T = {
-    bg:       isDark ? '#0f172a' : '#f8fafc',
-    card:     isDark ? '#1e293b' : '#ffffff',
-    border:   isDark ? '#334155' : '#e2e8f0',
-    text:     isDark ? '#f1f5f9' : '#111827',
-    subtext:  isDark ? '#94a3b8' : '#6b7280',
-    inputBg:  isDark ? '#0f172a'  : '#f9fafb',
-    inputOut: isDark ? '#334155' : '#e5e7eb',
-  };
-
+  // --- Image Picker Logic ---
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need access to your photos.');
+    
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "We need access to your photos to change your profile picture.");
       return;
     }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true, aspect: [1, 1], quality: 0.7,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
     });
-    if (!result.canceled) setImage(result.assets[0].uri);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
 
+  // --- Save Logic ---
   const handleSave = async () => {
+    // Basic Validation
     if (!name.trim() || !email.trim()) {
-      Alert.alert('Error', 'Name and Email are required.');
+      Alert.alert("Error", "Name and Email are required.");
       return;
     }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address.');
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
       return;
     }
+
     try {
       setLoading(true);
-      await new Promise(r => setTimeout(r, 1600));
-      Alert.alert('Success', 'Profile updated successfully!', [
-        { text: 'OK', onPress: () => router.back() },
+
+      // 🔥 Replace with your actual API/Firebase logic
+      // e.g., await updateUser({ name, email, bio, image });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      Alert.alert("Success", "Profile updated successfully!", [
+        { text: "OK", onPress: () => router.back() }
       ]);
-    } catch {
-      Alert.alert('Update Failed', 'Something went wrong. Please try again.');
+    } catch (error) {
+      Alert.alert("Update Failed", "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-
-      {/* Header */}
-      <View style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 14,
-        borderBottomWidth: 1, borderBottomColor: T.border,
-        backgroundColor: T.card,
-      }}>
-        <Pressable
-          onPress={() => router.back()}
-          style={({ pressed }) => ({
-            width: 38, height: 38, borderRadius: 12,
-            backgroundColor: isDark ? '#334155' : '#f1f5f9',
-            alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1,
-          })}
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Custom Header */}
+      <View className="flex-row items-center justify-between px-4 py-2 border-b border-gray-100">
+        <Pressable 
+          onPress={() => router.back()} 
+          className="p-2 -ml-2 active:opacity-60"
         >
-          <Feather name="chevron-left" size={22} color={T.text} />
+          <Feather name="chevron-left" size={28} color="#1F2937" />
         </Pressable>
-        <Text style={{ fontSize: 17, fontWeight: '800', color: T.text }}>Edit Profile</Text>
-        <View style={{ width: 38 }} />
+        <Text className="text-lg font-bold text-gray-900">Edit Profile</Text>
+        <View className="w-10" /> 
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 48 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Avatar section */}
-          <LinearGradient
-            colors={isDark ? ['#2d1b69', '#1e293b'] : ['#f5f3ff', '#f8fafc']}
-            style={{ alignItems: 'center', paddingVertical: isTablet ? 48 : 36 }}
-          >
-            <View style={{ position: 'relative' }}>
-              <View style={{
-                width: 120, height: 120, borderRadius: 60,
-                borderWidth: 4, borderColor: isDark ? '#4c1d95' : '#ede9fe',
-                overflow: 'hidden', backgroundColor: isDark ? '#334155' : '#e5e7eb',
-                shadowColor: '#7c3aed', shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.25, shadowRadius: 12, elevation: 6,
-              }}>
+          {/* PROFILE IMAGE SECTION */}
+          <View className="items-center my-8">
+            <View className="relative">
+              <View className="w-32 h-32 rounded-full border-4 border-violet-50 overflow-hidden bg-gray-100 shadow-sm">
                 <Image
-                  source={{ uri: image || `https://ui-avatars.com/api/?name=${name}&background=7C3AED&color=fff` }}
-                  style={{ width: '100%', height: '100%' }}
+                  source={{
+                    uri: image || `https://ui-avatars.com/api/?name=${name}&background=7C3AED&color=fff`,
+                  }}
+                  className="w-full h-full"
                 />
               </View>
+              
               <Pressable
                 onPress={pickImage}
-                style={({ pressed }) => ({
-                  position: 'absolute', bottom: 0, right: 0,
-                  backgroundColor: '#7c3aed', width: 38, height: 38, borderRadius: 19,
-                  alignItems: 'center', justifyContent: 'center',
-                  borderWidth: 3, borderColor: isDark ? '#0f172a' : '#fff',
-                  opacity: pressed ? 0.8 : 1,
-                })}
+                className="absolute bottom-0 right-0 bg-violet-600 w-10 h-10 rounded-full items-center justify-center border-4 border-white shadow-lg active:bg-violet-700"
               >
-                <MaterialCommunityIcons name="camera-outline" size={18} color="white" />
+                <MaterialCommunityIcons name="camera-outline" size={20} color="white" />
               </Pressable>
             </View>
-            <Pressable onPress={pickImage} style={{ marginTop: 12 }}>
-              <Text style={{ color: '#7c3aed', fontWeight: '600', fontSize: 13 }}>Change Profile Photo</Text>
-            </Pressable>
-          </LinearGradient>
-
-          {/* Form */}
-          <View style={{ paddingHorizontal: isTablet ? 48 : 20, marginTop: 24 }}>
-            <Text style={{
-              fontSize: 11, fontWeight: '700', color: T.subtext,
-              letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14, marginLeft: 4,
-            }}>
-              Personal Information
+            <Text className="text-violet-600 font-semibold mt-4 text-sm">
+              Change Profile Photo
             </Text>
+          </View>
 
-            <View style={{ gap: 14 }}>
+          {/* FORM SECTION */}
+          <View className="px-6 space-y-5">
+            <View>
+              <Text className="text-gray-500 font-medium mb-1 ml-1 text-xs uppercase tracking-widest">
+                Personal Information
+              </Text>
               <TextInput
                 label="Full Name"
                 value={name}
                 onChangeText={setName}
                 mode="outlined"
-                outlineColor={T.inputOut}
-                activeOutlineColor="#7c3aed"
-                textColor={T.text}
-                style={{ backgroundColor: T.inputBg, fontSize: 15 }}
-                outlineStyle={{ borderRadius: 14 }}
-                left={<TextInput.Icon icon="account-outline" color={T.subtext} />}
-                theme={{ colors: { onSurfaceVariant: T.subtext } }}
-              />
-
-              <TextInput
-                label="Email Address"
-                value={email}
-                onChangeText={setEmail}
-                mode="outlined"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                outlineColor={T.inputOut}
-                activeOutlineColor="#7c3aed"
-                textColor={T.text}
-                style={{ backgroundColor: T.inputBg }}
-                outlineStyle={{ borderRadius: 14 }}
-                left={<TextInput.Icon icon="email-outline" color={T.subtext} />}
-                theme={{ colors: { onSurfaceVariant: T.subtext } }}
-              />
-
-              <TextInput
-                label="Bio"
-                value={bio}
-                onChangeText={setBio}
-                mode="outlined"
-                multiline
-                numberOfLines={4}
-                placeholder="Tell us about yourself…"
-                outlineColor={T.inputOut}
-                activeOutlineColor="#7c3aed"
-                textColor={T.text}
-                style={{ backgroundColor: T.inputBg }}
-                outlineStyle={{ borderRadius: 14 }}
-                contentStyle={{ paddingTop: 10 }}
-                theme={{ colors: { onSurfaceVariant: T.subtext } }}
+                outlineColor="#F3F4F6"
+                activeOutlineColor="#7C3AED"
+                className="bg-gray-50 text-base"
+                outlineStyle={{ borderRadius: 12 }}
+                left={<TextInput.Icon icon="account-outline" color="#9CA3AF" />}
               />
             </View>
 
-            {/* Privacy note */}
-            <View style={{
-              flexDirection: 'row', alignItems: 'center', gap: 10,
-              backgroundColor: isDark ? '#1e2d3d' : '#eff6ff',
-              padding: 14, borderRadius: 14, marginTop: 6,
-              borderWidth: 1, borderColor: isDark ? '#1e40af' : '#bfdbfe',
-            }}>
-              <Ionicons name="information-circle-outline" size={18} color="#3b82f6" />
-              <Text style={{ color: isDark ? '#93c5fd' : '#2563eb', fontSize: 12, flex: 1, lineHeight: 18 }}>
+            <TextInput
+              label="Email Address"
+              value={email}
+              onChangeText={setEmail}
+              mode="outlined"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              outlineColor="#F3F4F6"
+              activeOutlineColor="#7C3AED"
+              className="bg-gray-50"
+              outlineStyle={{ borderRadius: 12 }}
+              left={<TextInput.Icon icon="email-outline" color="#9CA3AF" />}
+            />
+
+            <TextInput
+              label="Bio"
+              value={bio}
+              onChangeText={setBio}
+              mode="outlined"
+              multiline
+              numberOfLines={4}
+              placeholder="Tell us about yourself..."
+              outlineColor="#F3F4F6"
+              activeOutlineColor="#7C3AED"
+              className="bg-gray-50"
+              outlineStyle={{ borderRadius: 12 }}
+              contentStyle={{ paddingTop: 10 }}
+            />
+
+            {/* Privacy Note */}
+            <View className="flex-row items-center bg-blue-50 p-4 rounded-xl mt-2">
+              <Feather name="info" size={16} color="#3B82F6" />
+              <Text className="text-blue-600 text-xs ml-2 flex-1">
                 Your email is used for account security and won't be shown publicly.
               </Text>
             </View>
+          </View>
 
-            {/* Save button */}
+          {/* ACTION BUTTONS */}
+          <View className="px-6 mt-10">
             <Pressable
               onPress={handleSave}
               disabled={loading}
-              style={({ pressed }) => ({
-                marginTop: 28, height: 56, borderRadius: 20,
-                backgroundColor: loading ? '#a78bfa' : '#7c3aed',
-                alignItems: 'center', justifyContent: 'center',
-                opacity: pressed ? 0.85 : 1,
-                shadowColor: '#7c3aed', shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.35, shadowRadius: 12, elevation: 6,
-              })}
+              className={`h-14 rounded-2xl items-center justify-center shadow-sm ${
+                loading ? "bg-violet-300" : "bg-violet-600 active:bg-violet-700"
+              }`}
             >
-              {loading
-                ? <ActivityIndicator color="white" />
-                : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Update Profile</Text>
-              }
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-lg">Update Profile</Text>
+              )}
             </Pressable>
 
-            <Pressable onPress={() => router.back()} style={{ marginTop: 14, alignItems: 'center', paddingVertical: 8 }}>
-              <Text style={{ color: T.subtext, fontWeight: '500', fontSize: 14 }}>Cancel Changes</Text>
+            <Pressable 
+              onPress={() => router.back()}
+              className="mt-4 py-2 items-center"
+            >
+              <Text className="text-gray-400 font-medium">Cancel Changes</Text>
             </Pressable>
           </View>
         </ScrollView>

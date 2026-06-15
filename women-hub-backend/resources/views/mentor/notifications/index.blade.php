@@ -69,11 +69,9 @@
 
                         @foreach ($notifications as $notification)
                         <tr class="divide-y">
-                            <td class="px-5 py-4 truncate text-sm text-gray-900">{{ $notification->id ?? 'N/A' }}</td>
-                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900">{{ auth()->user()->name }}</td>
-                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $notification->message ?? $notification->data['message'] ?? 'No message available' }}
-                            </td>
+                            <td class="px-5 py-4 truncate text-sm text-gray-900">{{ $notification->id ? 1 : 'N/A' }}</td>
+                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900">{{ auth()->user()->name   }}</td>
+                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900">{{ $notification->data['message'] }}</td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900">{{ $notification->read_at ? $notification->read_at->format('Y-m-d H:i:s') : 'null' }}</td>
                             <td class=" whitespace-nowrap h-full w-full bg-green-500">
                                 <form action="{{ route('mentor.notification.read', $notification->id) }}" method="POST" class="  text-white font-bold hover:text-gray-100 cursor-pointer transition-all delay-75 text-[10px]  px-3">

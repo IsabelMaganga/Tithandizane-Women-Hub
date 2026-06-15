@@ -369,30 +369,24 @@
                     const active = data.stats.active || 0;
                     const pending = data.stats.pending || 0;
                     const inactive = data.stats.inactive || 0;
-
+                    
                     const activePercent = total ? Math.round((active / total) * 100) : 0;
                     const pendingPercent = total ? Math.round((pending / total) * 100) : 0;
                     const inactivePercent = total ? Math.round((inactive / total) * 100) : 0;
-
-                    // Update count numbers
-                    animateNumber(document.getElementById('statTotalMentorsCount'), 0, total, 600);
-                    animateNumber(document.getElementById('statActiveMentorsCount'), 0, active, 600);
-                    animateNumber(document.getElementById('statPendingMentorsCount'), 0, pending, 600);
-                    animateNumber(document.getElementById('statInactiveMentorsCount'), 0, inactive, 600);
-
-                    // Update percentage labels
-                    const setPercent = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val + '%'; };
-                    setPercent('statTotalMentorsPercent', 100);
-                    setPercent('statActiveMentorsPercent', activePercent);
-                    setPercent('statPendingMentorsPercent', pendingPercent);
-                    setPercent('statInactiveMentorsPercent', inactivePercent);
-
-                    // Update progress bars
-                    const setBar = (id, val) => { const el = document.getElementById(id); if (el) el.style.width = val + '%'; };
-                    setBar('totalProgressBar', 100);
-                    setBar('activeProgressBar', activePercent);
-                    setBar('pendingProgressBar', pendingPercent);
-                    setBar('inactiveProgressBar', inactivePercent);
+                    
+                    animateNumber(document.getElementById('statTotalMentors'), 0, 100, 600, true);
+                    animateNumber(document.getElementById('statActiveMentors'), 0, activePercent, 600, true);
+                    animateNumber(document.getElementById('statPendingMentors'), 0, pendingPercent, 600, true);
+                    animateNumber(document.getElementById('statInactiveMentors'), 0, inactivePercent, 600, true);
+                    
+                    setTimeout(() => {
+                        const circles = ['circleTotal', 'circleActive', 'circlePending', 'circleInactive'];
+                        const values = [100, activePercent, pendingPercent, inactivePercent];
+                        circles.forEach((id, index) => {
+                            const circle = document.getElementById(id);
+                            if (circle) circle.style.setProperty('--value', values[index]);
+                        });
+                    }, 100);
                 }
                 renderMentorsTable(data.mentors || []);
                 renderPagination(data);
