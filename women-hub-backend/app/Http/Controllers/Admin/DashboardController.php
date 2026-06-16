@@ -10,7 +10,6 @@ use App\Models\Harassmentreport;
 use App\Models\Admin;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -19,7 +18,7 @@ class DashboardController extends Controller
         try {
             // Get dashboard statistics with error handling
             $stats = [
-                'mentors' => Mentor::count(),
+                'role','mentor' => User::count(),
                 'reports' => Harassmentreport::count(),
                 'admins' => Admin::count(),
             ];
@@ -33,26 +32,26 @@ class DashboardController extends Controller
             $activeMentors = Mentor::where('status', 'active')->count();
             $pendingMentors = Mentor::where('status', 'pending')->count();
             $inactiveMentors = Mentor::where('status', 'inactive')->count();
-
+            
             // Report statistics
             $pendingReports = Harassmentreport::where('status', 'pending')->count();
-            $inReviewReports = Harassmentreport::where('status', 'reviewing')->count();
+            $inReviewReports = Harassmentreport::where('status', 'in_review')->count();
             $resolvedReports = Harassmentreport::where('status', 'resolved')->count();
-
+            
             // User statistics
             $totalUsers = User::count();
             $totalActiveUsers = User::where('status', 'active')->count();
-
+            
             // Calculate mentor completion rate
             $mentorCompletionRate = $totalMentors > 0 ? round(($activeMentors / $totalMentors) * 100) : 0;
 
             // New mentors this week
             $oneWeekAgo = Carbon::now()->subWeek();
             $newMentorsThisWeek = Mentor::where('created_at', '>=', $oneWeekAgo)->count();
-
+            
             // New reports this week
             $newReportsThisWeek = Harassmentreport::where('created_at', '>=', $oneWeekAgo)->count();
-
+            
             // User growth percentage (mock calculation - compare with last month)
             $lastMonth = Carbon::now()->subMonth();
             $usersLastMonth = User::where('created_at', '<', Carbon::now())->where('created_at', '>=', $lastMonth)->count();
@@ -66,7 +65,7 @@ class DashboardController extends Controller
 
             // Prepare chart data for analytics
             $chartData = $this->getChartData();
-
+            
             // Prepare recent activity data
             $recentActivity = $this->getRecentActivity();
 
@@ -94,11 +93,11 @@ class DashboardController extends Controller
                 'chartData',
                 'recentActivity'
             ));
-
+            
         } catch (\Exception $e) {
             // Handle errors gracefully
-            Log::error('Dashboard error: ' . $e->getMessage());
-
+            \Log::error('Dashboard error: ' . $e->getMessage());
+            
             // Updated view path from 'dashboard' to 'admin.dashboard.dashboard'
             return view('admin.dashboard.dashboard', [
                 'stats' => ['mentors' => 0, 'reports' => 0, 'admins' => 0],
@@ -141,10 +140,10 @@ class DashboardController extends Controller
             for ($i = 5; $i >= 0; $i--) {
                 $month = Carbon::now()->subMonths($i);
                 $months[] = $month->format('M Y');
-
+                
                 $startOfMonth = $month->copy()->startOfMonth();
                 $endOfMonth = $month->copy()->endOfMonth();
-
+                
                 $mentorsData[] = Mentor::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
                 $usersData[] = User::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
                 $reportsData[] = Harassmentreport::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
@@ -156,9 +155,9 @@ class DashboardController extends Controller
                 'users' => $usersData,
                 'reports' => $reportsData
             ];
-
+            
         } catch (\Exception $e) {
-            Log::error('Chart data error: ' . $e->getMessage());
+            \Log::error('Chart data error: ' . $e->getMessage());
             return [
                 'months' => [],
                 'mentors' => [],
@@ -175,7 +174,7 @@ class DashboardController extends Controller
     {
         try {
             $activity = collect();
-
+            
             // Get recent mentor creations
             $recentMentors = Mentor::latest()->take(3)->get()->map(function($mentor) {
                 return (object)[
@@ -187,7 +186,7 @@ class DashboardController extends Controller
                     'color' => 'green'
                 ];
             });
-
+            
             // Get recent reports
             $recentReports = Harassmentreport::latest()->take(3)->get()->map(function($report) {
                 return (object)[
@@ -199,7 +198,7 @@ class DashboardController extends Controller
                     'color' => 'red'
                 ];
             });
-
+            
             // Get recent user registrations
             $recentUsers = User::latest()->take(3)->get()->map(function($user) {
                 return (object)[
@@ -211,15 +210,15 @@ class DashboardController extends Controller
                     'color' => 'blue'
                 ];
             });
-
+            
             // Merge and sort all activity
             $activity = $recentMentors->concat($recentReports)->concat($recentUsers);
             $activity = $activity->sortByDesc('time')->take(10);
-
+            
             return $activity;
-
+            
         } catch (\Exception $e) {
-            Log::error('Recent activity error: ' . $e->getMessage());
+            \Log::error('Recent activity error: ' . $e->getMessage());
             return collect([]);
         }
     }
@@ -237,9 +236,9 @@ class DashboardController extends Controller
                 'inactive' => Mentor::where('status', 'inactive')->count(),
                 'by_expertise' => $this->getMentorExpertiseStats(),
             ];
-
+            
             return response()->json($stats);
-
+            
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch mentor stats'], 500);
         }
@@ -253,7 +252,7 @@ class DashboardController extends Controller
         try {
             $mentors = Mentor::all();
             $expertiseCount = [];
-
+            
             foreach ($mentors as $mentor) {
                 $expertise = json_decode($mentor->expertise, true);
                 if (is_array($expertise)) {
@@ -262,10 +261,10 @@ class DashboardController extends Controller
                     }
                 }
             }
-
+            
             arsort($expertiseCount);
             return array_slice($expertiseCount, 0, 5); // Top 5 expertise areas
-
+            
         } catch (\Exception $e) {
             \Log::error('Expertise stats error: ' . $e->getMessage());
             return [];

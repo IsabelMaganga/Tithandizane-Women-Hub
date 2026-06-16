@@ -302,23 +302,17 @@
         })
         .then(response => response.json())
         .then(data => {
-            // The controller returns a paginated object; the rows live in .data
-            const reports = (data.reports && data.reports.data) ? data.reports.data
-                          : (Array.isArray(data.reports) ? data.reports : []);
-
-            if (reports.length >= 0) {
-                const pendingReports = reports.filter(r => r.status === 'pending' || r.status === 'reviewing').length;
+            if (data.reports && Array.isArray(data.reports)) {
+                const pendingReports = data.reports.filter(r => r.status === 'new' || r.status === 'in_review').length;
                 document.getElementById('statPendingReports').innerText = pendingReports;
                 document.getElementById('reportsCountBadge').innerText = `${pendingReports} new`;
+                document.getElementById('notificationBadge').innerText = pendingReports;
                 document.getElementById('summaryOpenReports').innerText = pendingReports;
 
-                const badge = document.getElementById('notificationBadge');
-                if (badge) badge.innerText = pendingReports;
-
-                const inReview = reports.filter(r => r.status === 'reviewing').length;
+                const inReview = data.reports.filter(r => r.status === 'in_review').length;
                 document.getElementById('statInReview').innerHTML = `${inReview} in review`;
 
-                renderRecentReports(reports.slice(0, 3));
+                renderRecentReports(data.reports.slice(0, 3));
             }
         })
         .catch(error => console.error('Error loading reports:', error));

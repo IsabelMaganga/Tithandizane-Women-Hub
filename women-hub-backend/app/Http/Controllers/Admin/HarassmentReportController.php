@@ -105,62 +105,6 @@ class HarassmentReportController extends Controller
         }
     }
 
-    /**
-     * Store a new harassment report submitted from the mobile app.
-     */
-    public function store(Request $request)
-    {
-        try {
-            $isAnonymous = filter_var($request->input('is_anonymous', true), FILTER_VALIDATE_BOOLEAN);
-
-            $rules = [
-                'incident_type'        => 'required|string|in:physical,verbal,sexual,cyber,other',
-                'incident_title'       => 'required|string|max:255',
-                'incident_description' => 'required|string',
-                'incident_date'        => 'required|date',
-                'incident_location'    => 'required|string|max:255',
-                'perpetrator_info'     => 'nullable|string',
-                'is_anonymous'         => 'required',
-            ];
-
-            if (!$isAnonymous) {
-                $rules['victim_name']  = 'required|string|max:255';
-                $rules['victim_email'] = 'required|email|max:255';
-                $rules['victim_phone'] = 'nullable|string|max:20';
-            }
-
-            $validated = $request->validate($rules);
-            $validated['is_anonymous'] = $isAnonymous;
-            $validated['status'] = 'pending';
-
-            if ($isAnonymous) {
-                unset($validated['victim_name'], $validated['victim_email'], $validated['victim_phone']);
-            }
-
-            $report = HarassmentReport::create($validated);
-
-            return response()->json([
-                'success'          => true,
-                'message'          => 'Report submitted successfully',
-                'reference_number' => $report->reference_number,
-                'data'             => $report,
-            ], 201);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors'  => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Failed to submit harassment report: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to submit report: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
     //display reports
     public function show($id)
     {
@@ -203,13 +147,6 @@ class HarassmentReportController extends Controller
         ]);
 
         try {
-
-            Log::info('Assigning mentor to report', [
-                'report_id' => $id,
-                'mentor_id' => $request->mentor_id,
-                'notes' => $request->notes
-            ]);
-
             DB::beginTransaction();
 
             $report = HarassmentReport::findOrFail($id);
@@ -227,13 +164,6 @@ class HarassmentReportController extends Controller
                 'assigned_mentor_id' => $mentor->id,
                 'status' => 'assigned'
             ]);
-            
-            Log::info('Report assigned successfully', [
-                'report_id' => $id,
-                'mentor_id' => $mentor->id,
-                'old_status' => $oldStatus,
-                'new_status' => 'assigned'
-            ]);
 
             // Create notification for the new mentor
             Notification::create([
@@ -250,12 +180,6 @@ class HarassmentReportController extends Controller
                     'assigned_by' => auth()->user()->name
                 ]
             ]);
-            
-            Log::info('Notification created for new mentor', [
-                'report_id' => $report->id,
-                'mentor_id' => $mentor->id,
-                'notification_type' => 'report_assigned'
-            ]);
 
             // Notify the previous mentor if reassigned
             if ($oldMentorId && $oldMentorId != $mentor->id) {
@@ -270,21 +194,11 @@ class HarassmentReportController extends Controller
                         'reference_number' => $report->reference_number
                     ]
                 ]);
-                
-                Log::info('Notification created for previous mentor', [
-                    'report_id' => $report->id,
-                    'mentor_id' => $oldMentorId,
-                    'notification_type' => 'report_unassigned'
-                ]);
             }
 
             // If report is not anonymous, notify the victim via email
             if (!$report->is_anonymous && $report->victim_email) {
                 $this->sendAssignmentNotificationToVictim($report, $mentor);
-                Log::info('Assignment notification sent to victim', [
-                    'report_id' => $report->id,
-                    'victim_email' => $report->victim_email
-                ]);
             }
 
             DB::commit();

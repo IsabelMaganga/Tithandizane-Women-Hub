@@ -178,10 +178,6 @@
                         <i class="w-5 fa-solid fa-user-astronaut"></i>
                         <span class="ml-0 capitalize">Report system</span>
                     </a>
-                    <a href="{{ route('mentor.assigned.reports')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                        <i class="w-5 fa-solid fa-tasks"></i>
-                        <span class="ml-0 capitalize">Assigned tasks</span>
-                    </a>
                 </div>
 
                 {{-- Guidance tab --}}
@@ -231,14 +227,9 @@
                         </a>
 
                         {{--  notification tab  --}}
-                        <a href="{{ route('mentor.notifications')}}" class="flex items-center justify-between px-6 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="guidance">
-                            <div class="flex items-center gap-3">
-                                <i class="w-5 fa-regular fa-bell"></i>
-                                <span class="ml-3">Notifications</span>
-                            </div>
-                            @if(isset($unreadCount) && $unreadCount > 0)
-                                <span class="text-xs font-semibold text-white bg-yellow-500 rounded-full px-2 py-0.5">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
-                            @endif
+                        <a href="{{ route('mentor.notifications')}}" class="flex items-center px-6 py-3 text-gray-300  hover:bg-gray-800 nav-item" data-page="guidance">
+                            <i class="w-5 fa-regular fa-bell"></i>
+                            <span class="ml-3">Notifications</span>
                         </a>
 
                         {{--  profile tab  --}}
@@ -286,9 +277,7 @@
                         <div class="relative px-2 notifications">
                             <i class="text-xl text-yellow-500 cursor-pointer fas fa-bell hover:text-yellow-600" id="bellIcon"></i>
                                 @if(isset($unreadCount) && $unreadCount > 0)
-                                    <span id="notifCount" class="absolute -top-2 -right-2 min-w-[1.25rem] h-5 rounded-full bg-yellow-500 text-[10px] leading-5 text-center text-white font-semibold px-1">
-                                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-                                    </span>
+                                    <p id="notifCount" class="absolute w-2 h-2 bg-yellow-500 rounded-full right-0 -top-1 text-[11px] text-white"></p>
                                 @endif
                         </div>
 
@@ -330,11 +319,6 @@
                                             </div>
                                             <p class="text-gray-500 wrap-break-word">{{ $notification->data['message'] ?? '' }}</p>
                                             <p class="text-sm text-gray-400">{{ $notification->created_at->diffForHumans() }}</p>
-                                            @if(!empty($notification->data['report_id']))
-                                                <div class="mt-2">
-                                                    <a href="{{ route('mentor.assigned.reports.show', $notification->data['report_id']) }}" class="inline-flex items-center px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700">View task</a>
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
