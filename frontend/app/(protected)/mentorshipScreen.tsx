@@ -139,27 +139,32 @@ const MentorshipScreen = () => {
   return (
     <View className="flex-1 bg-slate-50">
       {/* Header Panel */}
-      <View className="bg-violet-600 pt-8 pb-8 px-6 rounded-b-[40px] shadow-xl z-10">
-        <View className="text-blue-50 flex flex-row justify-between items-center color-white mb-2">
+      <View className="bg-violet-600 pt-12 pb-8 px-6 rounded-b-[40px] shadow-xl z-10">
+        {/* --- Top Utility Bar Row --- */}
+        <View className="flex-row justify-between items-center mb-5">
           <BackButton />
-          <Text className="text-white text-2xl font-bold">{t("Expert Mentors")}</Text>
-        <Text className="text-violet-100 text-sm mt-1">Connect with leaders to guide your journey</Text>
+          
           <Pressable
-          onPress={() => router.push('/(protected)/sessionsDashboard')}
-          className="flex-row items-center self-start bg-purple-50 px-3 py-2 mt-4 rounded-xl border border-purple-100 active:bg-purple-100"
-        >
-          <MaterialCommunityIcons name="calendar-clock" size={18} color="#8A4FFF" />
-          <Text className="text-purple-600 font-bold text-xs ml-2">My Sessions</Text>
-        </Pressable>
+            onPress={() => router.push('/(protected)/sessionsDashboard')}
+            className="flex-row items-center bg-white/20 px-4 py-2 rounded-xl active:bg-white/30 border border-white/10"
+          >
+            <MaterialCommunityIcons name="calendar-clock" size={16} color="white" />
+            <Text className="text-white font-bold text-xs ml-2">My Sessions</Text>
+          </Pressable>
+        </View>
+
+        {/* --- Title Block column alignment --- */}
+        <View className="mb-2">
+          <Text className="text-white text-2xl font-black tracking-tight">{t("Expert Mentors")}</Text>
+          <Text className="text-violet-200 text-sm font-medium mt-1">Connect with leaders to guide your journey</Text>
         </View>
         
-        
         {/* Search Architecture Box */}
-        <View className="flex-row items-center bg-white/10 mt-5 px-4 py-3 rounded-2xl border border-white/20">
+        <View className="flex-row items-center bg-white/10 mt-4 px-4 py-3 rounded-2xl border border-white/20">
           <Feather name="search" size={18} color="#ddd6fe" />
           <TextInput
             className="flex-1 ml-3 text-white placeholder-violet-200 text-sm h-6 p-0"
-            placeholder="Tell us what's going on..."
+            placeholder="Search by specialty, name or experience..."
             placeholderTextColor="#ddd6fe"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -172,8 +177,6 @@ const MentorshipScreen = () => {
             </Pressable>
           )}
         </View>
-
-        
       </View>
 
       <LegendList
@@ -191,7 +194,7 @@ const MentorshipScreen = () => {
           const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name || 'M')}&background=8b5cf6&color=fff`;
 
           return (
-            <View className="bg-white rounded-3xl mb-5 overflow-hidden shadow-sm border border-slate-100">
+            <View className="bg-white rounded-3xl mb-5 overflow-hidden shadow-xs border border-slate-100">
               <View className="p-5">
                 {/* Identity Frame */}
                 <View className="flex-row items-start justify-between">

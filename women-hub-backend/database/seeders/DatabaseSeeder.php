@@ -4,22 +4,22 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-
-use App\Models\{Admin, EmergencyContact, GeneralGuide, HygieneArticle, User};
+use Illuminate\Support\Str;
+use App\Models\{Admin, EmergencyContact, GeneralGuide, HygieneArticle, User, Expertise};
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin
+        // 1. Seed Admin
         Admin::create([
             'name' => 'Admin User',
             'email' => 'admin@tithandizane.mw',
-            'role'=>'admin',
+            'role' => 'admin',
             'password' => Hash::make('admin123'),
         ]);
 
-        // user
+        // 2. Seed Regular User
         User::create([
             'name' => 'user',
             'email' => 'user@tithandizane.mw',
@@ -27,52 +27,88 @@ class DatabaseSeeder extends Seeder
             'role' => 'user',
         ]);
 
-        // Sample Mentors
+        // 3. Seed Master Expertises (Broken down into atomic, single-concept entries)
+        $expertiseData = [
+            'Health',
+            'Menstrual Hygiene',
+            'Education',
+            'Career',
+            'Mental Health',
+            'Self-Esteem',
+        ];
+
+        $seededExpertises = [];
+        foreach ($expertiseData as $areaName) {
+            $seededExpertises[$areaName] = Expertise::create([
+                'name' => $areaName,
+                'slug' => Str::slug($areaName),
+            ]);
+        }
+
+        // 4. Sample Mentors Data (Using the cleaner, individual tag arrays)
         $mentors = [
-            [
-                'name' => 'Dr. Grace Phiri',
-                'email' => 'grace.phiri@tithandizane.mw',
-                'password' => Hash::make('mentor123'),
-                'role' => 'mentor',
-                'bio' => 'Medical doctor specializing in women\'s health with 10 years experience.',
-                'expertise_area' => 'Health & Menstrual Hygiene',
-                'available_days' => json_encode(['Monday', 'Wednesday', 'Friday']),
-                'available_time_start' => '09:00',
-                'available_time_end' => '17:00',
-                'is_available' => true,
+            'grace' => [
+                'data' => [
+                    'name' => 'Dr. Grace Phiri',
+                    'email' => 'grace.phiri@tithandizane.mw',
+                    'password' => Hash::make('mentor123'),
+                    'role' => 'mentor',
+                    'bio' => "Medical doctor specializing in women's health with 10 years experience.",
+                    'available_days' => json_encode(['Monday', 'Wednesday', 'Friday']),
+                    'available_time_start' => '09:00',
+                    'available_time_end' => '17:00',
+                    'is_available' => true,
+                ],
+                'expertises' => ['Health', 'Menstrual Hygiene']
             ],
-            [
-                'name' => 'Prof. Amina Banda',
-                'email' => 'martingulo28@gmail.com',
-                //  'email' => 'amina.banda@tithandizane.mw',
-                'password' => Hash::make('mentor123'),
-                'role' => 'mentor',
-                'bio' => 'University lecturer and women empowerment advocate.',
-                'expertise_area' => 'Education & Career',
-                'available_days' => json_encode(['Tuesday', 'Thursday']),
-                'available_time_start' => '14:00',
-                'available_time_end' => '18:00',
-                'is_available' => true,
+            'amina' => [
+                'data' => [
+                    'name' => 'Prof. Amina Banda',
+                    'email' => 'martingulo28@gmail.com',
+                    'password' => Hash::make('mentor123'),
+                    'role' => 'mentor',
+                    'bio' => 'University lecturer and women empowerment advocate.',
+                    'available_days' => json_encode(['Tuesday', 'Thursday']),
+                    'available_time_start' => '14:00',
+                    'available_time_end' => '18:00',
+                    'is_available' => true,
+                ],
+                'expertises' => ['Education', 'Career']
             ],
-            [
-                'name' => 'Ms. Thandeka Mwale',
-                'email' => 'thandeka.mwale@tithandizane.mw',
-                'password' => Hash::make('mentor123'),
-                'role' => 'mentor',
-                'bio' => 'Counselor and mental health advocate helping young women build resilience.',
-                'expertise_area' => 'Mental Health & Self-esteem',
-                'available_days' => json_encode(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']),
-                'available_time_start' => '10:00',
-                'available_time_end' => '15:00',
-                'is_available' => true,
+            'thandeka' => [
+                'data' => [
+                    'name' => 'Ms. Thandeka Mwale',
+                    'email' => 'thandeka.mwale@tithandizane.mw',
+                    'password' => Hash::make('mentor123'),
+                    'role' => 'mentor',
+                    'bio' => 'Counselor and mental health advocate helping young women build resilience.',
+                    'available_days' => json_encode(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']),
+                    'available_time_start' => '10:00',
+                    'available_time_end' => '15:00',
+                    'is_available' => true,
+                ],
+                'expertises' => ['Mental Health', 'Self-Esteem']
             ],
         ];
 
-        foreach ($mentors as $mentor) {
-            User::create($mentor);
+        // 5. Create Mentors and Attach Their Respective Pivot IDs
+        foreach ($mentors as $mentorInfo) {
+            // Create the user base row
+            $mentorUser = User::create($mentorInfo['data']);
+
+            // Map descriptive titles back to their seeded unique primary keys
+            $pivotIds = [];
+            foreach ($mentorInfo['expertises'] as $expName) {
+                if (isset($seededExpertises[$expName])) {
+                    $pivotIds[] = $seededExpertises[$expName]->id;
+                }
+            }
+
+            // Sync attachments directly onto the expertise_user table
+            $mentorUser->expertises()->sync($pivotIds);
         }
 
-        // Hygiene Articles
+        // 6. Hygiene Articles
         $articles = [
             [
                 'title' => 'Understanding Your Menstrual Cycle',
@@ -105,7 +141,7 @@ class DatabaseSeeder extends Seeder
             HygieneArticle::create($article);
         }
 
-        // General Guides
+        // 7. General Guides
         $guides = [
             [
                 'title' => 'Building Your Self-Esteem',
@@ -137,7 +173,7 @@ class DatabaseSeeder extends Seeder
             GeneralGuide::create($guide);
         }
 
-        // Emergency Contacts (Malawi)
+        // 8. Emergency Contacts (Malawi)
         $contacts = [
             ['name' => 'Malawi Police Service', 'phone' => '999', 'type' => 'police'],
             ['name' => 'Pogpogwa (GBV Helpline)', 'phone' => '5600', 'type' => 'counseling'],

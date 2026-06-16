@@ -122,6 +122,11 @@ class User extends Authenticatable
         return $this->hasMany(Message::class, 'sender_id');
     }
 
+    public function expertises()
+{
+    return $this->belongsToMany(Expertise::class, 'expertise_user');
+}
+
     // ============================================
     // ACCESSORS & MUTATORS
     // ============================================

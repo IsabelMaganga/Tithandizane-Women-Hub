@@ -102,7 +102,7 @@ export interface HarassmentReport {
 }
 
 // YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
-const COMPUTER_IP = '192.168.58.103'; 
+const COMPUTER_IP = '192.168.1.132'; 
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -111,7 +111,7 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
     
     if (Platform.OS === 'android') {
-      return `http://192.168.43.103:8000/api/v1`;
+      return `http://192.168.1.132:8000/api/v1`;
     } 
     
     if (Platform.OS === 'ios') {
@@ -848,6 +848,22 @@ export const testConnection = async (): Promise<boolean> => {
   } catch (error: any) {
     console.error(' Connection failed:', error.message);
     return false;
+  }
+};
+
+
+export const inteligencyRequest = async (query: string) => {
+  try {
+    const response = await api.post("/ask", {
+      content: query
+    });
+    console.log(response.data)
+    return response.data;
+    
+  } catch (error: any) {
+    console.error("Error fetching intelligence predictions:", error?.response?.data || error.message);
+    
+    return null;
   }
 };
 

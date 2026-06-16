@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, ImageBackground, Image, Text, Pressable, TouchableOpacity, ScrollView } from 'react-native';
+import { View, ImageBackground, Text, Pressable, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -8,7 +8,6 @@ import Profile from '../Profile';
 import { useTranslation } from "react-i18next";
 import { useThemeToggle } from "../../hooks/useTheme";
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons, Feather } from '@expo/vector-icons';
-import { MenuItem } from '../MenuItem';
 import Animated, { FadeInDown, BounceIn, FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -52,7 +51,7 @@ export default function UserDashboard() {
                 {t("welcome_back")}
               </Text>
               <Text className="text-slate-900 dark:text-white font-black text-lg">
-                {user?.name?.split(' ')[0] ?? "Sister"}
+                {user?.name?.split(' ')[0] ?? "Sister"} 👋
               </Text>
             </View>
           </View>
@@ -70,7 +69,7 @@ export default function UserDashboard() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          {/*FEATURED INSIGHT CARD*/}
+          {/* FEATURED INSIGHT CARD */}
           <Animated.View entering={FadeInDown.delay(200)} className="px-6 mt-2">
             <LinearGradient
               colors={['#7c3aed', '#6d28d9']}
@@ -98,23 +97,10 @@ export default function UserDashboard() {
             </LinearGradient>
           </Animated.View>
 
-          {/* --- STATUS ROW --- */}
-          {/* <View className="flex-row px-6 mt-8 justify-between">
-            <View className="bg-white dark:bg-slate-900 flex-1 mr-3 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-              <Text className="text-gray-400 text-[10px] font-bold uppercase">Cycle Day</Text>
-              <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Day 14</Text>
-              <Text className="text-emerald-500 text-[10px] font-bold mt-1">● Healthy</Text>
-            </View>
-            <View className="bg-white dark:bg-slate-900 flex-1 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-              <Text className="text-gray-400 text-[10px] font-bold uppercase">Safety Status</Text>
-              <Text className="text-slate-900 dark:text-white text-xl font-black mt-1">Secure</Text>
-              <Text className="text-blue-500 text-[10px] font-bold mt-1">Hub Encrypted</Text>
-            </View>
-          </View> */}
-          {/*  RECENT ACTIVITY / FORUM PREVIEW */}
+          {/* RECENT ACTIVITY / FORUM PREVIEW */}
           <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-8">
             <TouchableOpacity 
-              className="bg-white dark:bg-slate-900 p-5 rounded-[32px] flex-row items-center justify-between border border-gray-100 dark:border-slate-800"
+              className="bg-white dark:bg-slate-900 p-5 rounded-[32px] flex-row items-center justify-between border border-gray-100 dark:border-slate-800 shadow-xs"
               onPress={() => router.push("/(protected)/community")}
             >
               <View className="flex-row items-center">
@@ -123,7 +109,7 @@ export default function UserDashboard() {
                 </View>
                 <View className="ml-4">
                   <Text className="text-slate-900 dark:text-white font-bold text-base">Community Hub</Text>
-                  <Text className="text-gray-500 text-xs">Space for everyone</Text>
+                  <Text className="text-gray-500 dark:text-gray-400 text-xs">Space for everyone</Text>
                 </View>
               </View>
               <Feather name="chevron-right" size={20} color="#94a3b8" />
@@ -150,23 +136,20 @@ export default function UserDashboard() {
               onPress={() => router.push("/emergencyScreen")} 
             />
             <GridItem 
-              title="Health" 
-              icon="calendar-days" 
+              title="Intelligence" 
+              icon="brain" // <--- FIXED: Valid FontAwesome6 design token mapping
               color="#10b981" 
               family={FontAwesome6}
-              onPress={() => router.push("/menstrualHealthScreen")} 
+              onPress={() => router.push("/(protected)/inteligency")} 
             />
             <GridItem 
-              title="Report an Incident" 
+              title="Report Incident" 
               icon="report-problem" 
               color="#f59e0b" 
               family={MaterialIcons}
               onPress={() => router.push("/reportHarrasmentScreen")} 
             />
           </View>
-
-          
-
         </ScrollView>
 
         {/* --- FLOATING FAQ BOT --- */}
@@ -177,13 +160,14 @@ export default function UserDashboard() {
           <TouchableOpacity 
             className="bg-white dark:bg-slate-800 w-16 h-16 rounded-full items-center justify-center shadow-2xl border border-gray-100 dark:border-slate-700"
             activeOpacity={0.9}
+            onPress={() => router.push("/(protected)/inteligency")}
           >
             <MaterialCommunityIcons 
               name="robot-confused" 
               size={28} 
               color={isDark ? "#a78bfa" : "#7c3aed"} 
             />
-            <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-extrabold uppercase">
+            <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-extrabold uppercase mt-0.5">
               {t("FAQ")}
             </Text>
           </TouchableOpacity>
@@ -200,11 +184,12 @@ const GridItem = ({ title, icon, color, family: IconFamily, onPress }: any) => (
     style={{ width: '50%', padding: 8 }}
     activeOpacity={0.7}
   >
-    <View className=" p-6 rounded-[32px]  bg-white shadow-xl items-center">
+    {/* FIXED: Dark mode colors added directly to card background container */}
+    <View className="p-6 rounded-[32px] bg-white dark:bg-slate-900 shadow-md border border-slate-100/50 dark:border-slate-800/50 items-center justify-center min-h-[140px]">
       <View style={{ backgroundColor: `${color}15` }} className="p-4 rounded-2xl mb-3">
-        <IconFamily name={icon} size={26} color={color} />
+        <IconFamily name={icon} size={24} color={color} />
       </View>
-      <Text className="text-slate-800 dark:text-slate-100 font-bold text-sm text-center">{title}</Text>
+      <Text className="text-slate-800 dark:text-slate-200 font-bold text-xs text-center tracking-tight px-1">{title}</Text>
     </View>
   </TouchableOpacity>
 );
