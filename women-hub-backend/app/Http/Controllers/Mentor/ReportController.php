@@ -4,64 +4,65 @@ namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\HarassmentReport;
 use App\Models\ReportsIssues;
 use Illuminate\Support\Facades\Auth;
-use SebastianBergmann\CodeCoverage\Report\Xml\Report;
 
 class ReportController extends Controller
 {
 
         // reports controller
-       public function showReports(){
-
-        // notifications
-        $notifications = auth()->user()->notifications()->latest()->get();
-        $unreadCount = $notifications->where('read_at', null)->count();
-        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
-
-        // Get current admin user info
-        $mentorUser = Auth::guard('mentor')->user();
-        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
-        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
-        $unreadCount = $notifications->where('read_at', null)->count();
-
-        return view('mentor.report.index', compact(
-            'mentorName',
-            'mentorEmail',
-            'unreadCount',
-            'notifications',
-            'unreadCount',
-            'unreadNotifications'
-        ));
-
-
+       public function showReports()
+    {
+        $context = $this->mentorContext();
+        return view('mentor.report.index', $context);
     }
-       public function showPending(){
 
-        // notifications
-        $notifications = auth()->user()->notifications()->latest()->get();
-        $unreadCount = $notifications->where('read_at', null)->count();
-        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
-
-        // Get current admin user info
-        $mentorUser = Auth::guard('mentor')->user();
-        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
-        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
-        $unreadCount = $notifications->where('read_at', null)->count();
+    public function showPending()
+    {
+        $context = $this->mentorContext();
 
         //  Fetch all reports, newest first
         $reports = ReportsIssues::orderBy('created_at', 'desc')->paginate(10);
 
-        return view('mentor.report.pending', compact(
-            'mentorName',
-            'mentorEmail',
-            'unreadCount',
-            'notifications',
-            'unreadCount',
-            'unreadNotifications',
-            'reports'
-        ));
-        
+        return view('mentor.report.pending', array_merge($context, compact('reports')));
+    }
+
+    public function assignedReports()
+    {
+        $context = $this->mentorContext();
+
+        $reports = HarassmentReport::assignedToMentor(Auth::guard('mentor')->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('mentor.report.assigned', array_merge($context, compact('reports')));
+    }
+
+    public function showAssignedReport($id)
+    {
+        $context = $this->mentorContext();
+
+        $report = HarassmentReport::where('assigned_mentor_id', Auth::guard('mentor')->id())
+            ->findOrFail($id);
+
+        return view('mentor.report.assigned-show', array_merge($context, compact('report')));
+    }
+
+    private function mentorContext(): array
+    {
+        $mentor = Auth::guard('mentor')->user();
+        $notifications = $mentor ? $mentor->notifications()->latest()->get() : collect();
+        $unreadCount = $notifications->where('read_at', null)->count();
+        $unreadNotifications = $mentor ? $mentor->unreadNotifications()->paginate(3) : collect();
+
+        return [
+            'mentorName' => $mentor?->name ?? 'Mentor',
+            'mentorEmail' => $mentor?->email ?? 'mentor@tithandizane.com',
+            'unreadCount' => $unreadCount,
+            'notifications' => $notifications,
+            'unreadNotifications' => $unreadNotifications,
+        ];
     }
 
     public function SubmitReport(Request $request)
@@ -91,7 +92,7 @@ class ReportController extends Controller
             'type'        => $validated['type'],
             'description' => $validated['description'],
             'issue_date'  => $validated['issue_date'],
-            'user_id'     => auth()->id(),
+            'user_id'     => Auth::guard('mentor')->id(),
         ]);
 
         return redirect()->route('mentor.pending.reports')->with('success', 'Report submitted successfully!');

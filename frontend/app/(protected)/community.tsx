@@ -49,10 +49,8 @@ export default function Community() {
 
   // --- SECURITY: PREVENT SCREENSHOTS ---
   useEffect(() => {
-    // This activates the native "flag secure" on Android and 
-    // blackens the screen on iOS during recording/screenshots.
+    if (Platform.OS === 'web') return;
     ScreenCapture.preventScreenCaptureAsync();
-    
     return () => {
       ScreenCapture.allowScreenCaptureAsync();
     };
@@ -77,6 +75,7 @@ export default function Community() {
     setPostText("");
   };
 
+  
   const handleComment = () => {
     if (!commentText.trim() || !selectedPostId) return;
     setPosts(prev => prev.map(p => 
