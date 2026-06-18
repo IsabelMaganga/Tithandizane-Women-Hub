@@ -180,6 +180,14 @@
                     </a>
                 </div>
 
+                {{-- Harassment reports assigned to mentor --}}
+                <div class="border-t div border-white/30">
+                    <a href="{{ route('mentor.harassment.index')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="harassment">
+                        <i class="w-5 fa-solid fa-shield-halved"></i>
+                        <span class="ml-0 capitalize">Assigned Cases</span>
+                    </a>
+                </div>
+
                 {{-- Guidance tab --}}
                 <div class="border-t div border-white/30">
                     <div class="flex items-center justify-between w-full hover:bg-gray-800 div">

@@ -1,96 +1,70 @@
 @extends('mentor.layouts.dashboard')
-@section('title')
-    chats
-@endsection
+@section('title') Private Chats @endsection
+
+@push('styles')
+<style>
+    .chat-row {
+        display: flex; align-items: center; gap: 14px;
+        background: white; border: 1px solid #e5e7eb; border-radius: 14px;
+        padding: 16px; margin-bottom: 12px; text-decoration: none;
+        transition: border-color .15s, box-shadow .15s, transform .15s;
+    }
+    .chat-row:hover { border-color: #c4b5fd; box-shadow: 0 8px 24px rgba(124,58,237,.08); transform: translateY(-1px); }
+    .avatar {
+        width: 44px; height: 44px; border-radius: 14px;
+        background: #ede9fe; color: #6d28d9;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; flex-shrink: 0;
+    }
+    .empty { text-align: center; padding: 60px 20px; color: #9ca3af; background: white; border: 1px solid #e5e7eb; border-radius: 18px; }
+</style>
+@endpush
 
 @section('content')
-
-    <div class=" h-[83vh] flex bg-white rounded shadow overflow-hidden">
-       {{-- left chat list --}}
-        <div class="w-1/4 bg-gray-100 border-b flex flex-col">
-            <div class="p-4 border-b bg-[#111827] text-gray-100">
-                <h1 class="text-lg font-bold">Chats</h1>
-            </div>
-
-            <div class="flex-1 overflow-y-auto">
-
-                {{-- Chat items - loop through available chats --}}
-                @for ($i = 0; $i < 10; $i++)
-
-                <div class="p-4 border-b bg-white hover:bg-gray-200 cursor-pointer transition duration-200">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                        <p class="font-semibold">Isabel</p>
-                        <p class="text-sm text-gray-500 mt-1">
-                            Last message: 12:00
-                        </p>
-                        </div>
-
-                        <span class="bg-green-500 text-white text-xs rounded-full px-2 py-1">
-                            1
-                        </span>
-
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-xs text-gray-500">
-                        Status: active
-
-                        </span>
-                        </p>
-                    </div>
-                </div>
-
-                @endfor
-
-
-        </div>
+<div class="p-6 max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Private Chats</h1>
+        <p class="text-sm text-gray-500 mt-1">Conversations with users from identified harassment reports and approved mentorship sessions.</p>
     </div>
 
-
-        {{-- right section --}}
-        <div class=" flex-1 flex flex-col">
-            {{-- header --}}
-            <div class="div p-4 border-b flex items-center justify-between">
-                <h1 class=" text-lg font-semibold capitalize">isabella mtengo</h1>
-                <span class=" text-sm text-green-500">Online</span>
-            </div>
-
-            {{-- messages --}}
-            <div id="chat_box" class="chatBox flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50" >
-
-                <div class="flex justify-start">
-                    <div class=" max-w-xs md:max-w-md px-4 py-2 rounded-2xl shadow bg-blue-500 rounded-br-none text-white">
-                       <p> Hi, isabel..... you're amazing</p>
-                       <span class=" block text-xs mt-1 opacity-70">12:00:34</span>
-                    </div>
-                </div>
-                <div id="message_box" class="flex justify-end">
-                    <div class=" max-w-xs md:max-w-md px-4 py-2 rounded-2xl shadow bg-white rounded-bl-none text-gray-800">
-                       <p> Aww! Thanks zouker for the complement</p>
-                       <span class=" block text-xs mt-1 opacity-70">12:00:34</span>
-                    </div>
-                </div>
-
-            </div>
-
-            {{-- input --}}
-            <form class=" p-0 border-t bg-white">
-                <div class=" flex p-2 items-center space-x-2">
-                    <input type="text" id="input" placeholder="Type your message..." class=" rounded-3xl flex-1 px-4 py-3 focus:outline-none focus:ring focus:ring-blue-500/20" @required(true)>
-                    <button class=" bg-[#111827] rounded-3xl px-5 py-3 text-gray-100">Send</button>
-                </div>
-            </form>
-        </div>
-
+    @if(session('success'))
+    <div class="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+        {{ session('success') }}
     </div>
-    <script>
-        const chatBox = document.getElementById('chat_box');
-        const messageBox = document.getElementById('message_box');
-        chatBox.scrollTop = chatBox.scrollHeight;
+    @endif
 
-        function selectChat(chatId) {
-            //redirect to the chat
-            window.location.href = '/chat/' + chatId;
-        }
-    </script>
+    @if($conversations->isEmpty())
+    <div class="empty">
+        <i class="fas fa-comments text-5xl text-gray-300"></i>
+        <p class="mt-4 text-lg font-semibold text-gray-500">No private chats yet</p>
+        <p class="mt-1 text-sm">Open a chat from an identified harassment report to start a private conversation.</p>
+    </div>
+    @else
+    @foreach($conversations as $conversation)
+        @php
+            $other = $conversation->participants->first(fn($participant) => $participant->id !== $mentor->id);
+            $lastMessage = $conversation->messages->first();
+        @endphp
+        <a href="{{ route('mentor.chat.show', $conversation) }}" class="chat-row">
+            <div class="avatar">
+                {{ strtoupper(substr($other?->name ?? 'User', 0, 1)) }}
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-3">
+                    <p class="truncate text-sm font-semibold text-gray-900">{{ $other?->name ?? 'User' }}</p>
+                    @if($lastMessage)
+                    <span class="whitespace-nowrap text-xs text-gray-400">{{ $lastMessage->created_at->diffForHumans() }}</span>
+                    @endif
+                </div>
+                <p class="mt-1 truncate text-sm text-gray-500">
+                    {{ $lastMessage?->message ?? 'No messages yet. Start the conversation from here.' }}
+                </p>
+            </div>
+            <i class="fas fa-chevron-right text-gray-300"></i>
+        </a>
+    @endforeach
+
+    <div class="mt-5">{{ $conversations->links() }}</div>
+    @endif
+</div>
 @endsection

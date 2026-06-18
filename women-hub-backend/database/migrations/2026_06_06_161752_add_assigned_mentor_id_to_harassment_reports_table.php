@@ -11,7 +11,7 @@ class AddAssignedMentorIdToHarassmentReportsTable extends Migration
         Schema::table('harassment_reports', function (Blueprint $table) {
             // Add assigned_mentor_id column if it doesn't exist
             if (!Schema::hasColumn('harassment_reports', 'assigned_mentor_id')) {
-                $table->foreignId('assigned_mentor_id')->nullable()->after('user_id')->constrained('users')->onDelete('set null');
+                $table->foreignId('assigned_mentor_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
             }
             
             // Add other missing columns if they don't exist

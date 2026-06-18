@@ -5,63 +5,42 @@ namespace App\Http\Controllers\Mentor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ReportsIssues;
+use App\Models\HarassmentReport;
 use Illuminate\Support\Facades\Auth;
-use SebastianBergmann\CodeCoverage\Report\Xml\Report;
 
 class ReportController extends Controller
 {
-
-        // reports controller
-       public function showReports(){
-
-        // notifications
-        $notifications = auth()->user()->notifications()->latest()->get();
-        $unreadCount = $notifications->where('read_at', null)->count();
-        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
-
-        // Get current admin user info
-        $mentorUser = Auth::guard('mentor')->user();
-        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
-        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
-        $unreadCount = $notifications->where('read_at', null)->count();
-
-        return view('mentor.report.index', compact(
-            'mentorName',
-            'mentorEmail',
-            'unreadCount',
-            'notifications',
-            'unreadCount',
-            'unreadNotifications'
-        ));
-
-
+    private function mentorUser()
+    {
+        return Auth::guard('mentor')->user();
     }
-       public function showPending(){
 
-        // notifications
-        $notifications = auth()->user()->notifications()->latest()->get();
-        $unreadCount = $notifications->where('read_at', null)->count();
-        $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
+    private function mentorCommon(): array
+    {
+        $mentor = $this->mentorUser();
+        $notifications     = $mentor?->notifications()->latest()->get() ?? collect();
+        $unreadNotifications = $mentor?->unreadNotifications()->paginate(3) ?? collect();
+        $unreadCount       = $notifications->whereNull('read_at')->count();
 
-        // Get current admin user info
-        $mentorUser = Auth::guard('mentor')->user();
-        $mentorName = $mentorUser ? $mentorUser->name : 'mentor';
-        $mentorEmail = $mentorUser ? $mentorUser->email : 'mentor@tithandizane.com';
-        $unreadCount = $notifications->where('read_at', null)->count();
+        return [
+            'mentorName'          => $mentor?->name ?? 'Mentor',
+            'mentorEmail'         => $mentor?->email ?? '',
+            'notifications'       => $notifications,
+            'unreadNotifications' => $unreadNotifications,
+            'unreadCount'         => $unreadCount,
+        ];
+    }
 
-        //  Fetch all reports, newest first
+    public function showReports()
+    {
+        return view('mentor.report.index', $this->mentorCommon());
+    }
+
+    public function showPending()
+    {
         $reports = ReportsIssues::orderBy('created_at', 'desc')->paginate(10);
 
-        return view('mentor.report.pending', compact(
-            'mentorName',
-            'mentorEmail',
-            'unreadCount',
-            'notifications',
-            'unreadCount',
-            'unreadNotifications',
-            'reports'
-        ));
-        
+        return view('mentor.report.pending', array_merge($this->mentorCommon(), compact('reports')));
     }
 
     public function SubmitReport(Request $request)
@@ -83,18 +62,74 @@ class ReportController extends Controller
             'issue_date.date'      => 'The issue date must be a valid date/time.',
         ]);
 
-
-        // Mass assignment
         ReportsIssues::create([
             'username'    => $validated['name'] ?? 'mentor',
             'title'       => $validated['title'],
             'type'        => $validated['type'],
             'description' => $validated['description'],
             'issue_date'  => $validated['issue_date'],
-            'user_id'     => auth()->id(),
+            'user_id'     => $this->mentorUser()?->id,
         ]);
 
         return redirect()->route('mentor.pending.reports')->with('success', 'Report submitted successfully!');
     }
 
+    // ── Harassment Reports ────────────────────────────────────────────────────
+
+    public function harassmentReports()
+    {
+        $mentorId = $this->mentorUser()?->id;
+
+        $reports = HarassmentReport::where('assigned_mentor_id', $mentorId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        $stats = [
+            'total'    => HarassmentReport::where('assigned_mentor_id', $mentorId)->count(),
+            'pending'  => HarassmentReport::where('assigned_mentor_id', $mentorId)->whereIn('status', ['assigned', 'reviewing'])->count(),
+            'resolved' => HarassmentReport::where('assigned_mentor_id', $mentorId)->where('status', 'resolved')->count(),
+        ];
+
+        return view('mentor.harassment.index', array_merge($this->mentorCommon(), compact('reports', 'stats')));
+    }
+
+    public function showHarassmentReport($id)
+    {
+        $mentorId = $this->mentorUser()?->id;
+
+        $report = HarassmentReport::where('id', $id)
+            ->where('assigned_mentor_id', $mentorId)
+            ->firstOrFail();
+
+        // Mark as reviewing if still pending/assigned
+        if (in_array($report->status, ['pending', 'assigned'])) {
+            $report->update(['status' => 'reviewing']);
+        }
+
+        return view('mentor.harassment.show', array_merge($this->mentorCommon(), compact('report')));
+    }
+
+    public function respondToHarassmentReport(Request $request, $id)
+    {
+        $mentorId = $this->mentorUser()?->id;
+
+        $report = HarassmentReport::where('id', $id)
+            ->where('assigned_mentor_id', $mentorId)
+            ->firstOrFail();
+
+        $request->validate([
+            'response' => 'required|string|min:10',
+            'status'   => 'required|in:reviewing,resolved',
+        ]);
+
+        $report->update([
+            'admin_response' => $request->response,
+            'responded_at'   => now(),
+            'status'         => $request->status,
+        ]);
+
+        return redirect()
+            ->route('mentor.harassment.show', $id)
+            ->with('success', 'Your response has been saved and the user has been notified.');
+    }
 }

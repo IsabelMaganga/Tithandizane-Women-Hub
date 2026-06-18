@@ -4,7 +4,7 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
-use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 use App\Http\Controllers\Admin\ReportManagementController;
 use App\Http\Controllers\HarassmentReportController as UserHarassmentReportController;
 
@@ -162,13 +162,21 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::post('/events/store', [CalenderController::class, 'store'])->name('events.store');
     Route::delete('/events/{id}', [CalenderController::class, 'destroy'])->name('events.destroy');
 
-    // reports
+    // reports (mentor's own issue reports)
     Route::get('/reports',[ReportController::class, 'showReports'])->name('reports');
     Route::post('/reports',[ReportController::class, 'SubmitReport'])->name('submit.report');
     Route::get('/my-reports',[ReportController::class, 'showPending'])->name('pending.reports');
 
+    // harassment reports assigned to this mentor
+    Route::get('/harassment-reports', [ReportController::class, 'harassmentReports'])->name('harassment.index');
+    Route::get('/harassment-reports/{id}', [ReportController::class, 'showHarassmentReport'])->name('harassment.show');
+    Route::post('/harassment-reports/{id}/respond', [ReportController::class, 'respondToHarassmentReport'])->name('harassment.respond');
+
     // chat
-    Route::get('/chats',[MentorSecurityController::class, 'showChat'])->name('chat');
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat');
+    Route::get('/chat/{conversation}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/harassment-reports/{report}/chat', [ChatController::class, 'openHarassmentReportChat'])->name('harassment.chat');
     Route::get('/groups',[MentorSecurityController::class, 'showChatGroups'])->name('groups');
     Route::get('/group',[MentorSecurityController::class, 'showGroupForm'])->name('group');
 

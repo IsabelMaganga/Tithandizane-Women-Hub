@@ -524,7 +524,7 @@
     
     // Load pending reports count for badge
     function loadPendingReportsCount() {
-        fetch('{{ route("admin.reports.index") }}', {
+        fetch('{{ route("admin.reports.index") }}?status=pending', {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -533,13 +533,13 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.reports && Array.isArray(data.reports)) {
-                const pendingReports = data.reports.filter(r => r.status === 'new' || r.status === 'in_review').length;
-                const badge = document.getElementById('pendingReportsBadge');
-                if (badge) badge.innerText = pendingReports;
+            const count = data.stats?.pending ?? 0;
+            const badge = document.getElementById('pendingReportsBadge');
+            if (badge) {
+                badge.innerText = count > 0 ? count : '';
             }
         })
-        .catch(error => console.error('Error loading reports:', error));
+        .catch(() => {});
     }
     
     // Load total users count

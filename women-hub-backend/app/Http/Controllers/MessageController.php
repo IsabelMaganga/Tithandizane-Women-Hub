@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Models\HarassmentReport;
 use App\Models\MentorshipSession;
 use App\Events\MessageSent;
 
@@ -58,24 +59,29 @@ class MessageController extends Controller
     public function createConversation(Request $request)
     {
         $request->validate([
-            'is_group' => 'required|boolean',
+            'is_group' => 'nullable|boolean',
             'users' => 'nullable|array',
             'name' => 'nullable|string',
-            'target_user_id' => 'nullable|exists:users,id', 
+            'target_user_id' => 'nullable|exists:users,id',
+            'mentor_id' => 'nullable|exists:users,id',
+            'receiver_id' => 'nullable|exists:users,id',
+            'harassment_report_id' => 'nullable|exists:harassment_reports,id',
         ]);
 
         $user = auth()->user();
+        $isGroup = $request->boolean('is_group', false);
+        $targetUserId = $request->target_user_id ?? $request->mentor_id ?? $request->receiver_id;
 
-        // 1. Group Creation Logic (Admin OR Mentor)
-        if ($request->is_group) {
-            // Updated to allow both roles
+        if ($isGroup) {
             if (!$user->isAdmin() && $user->role !== 'mentor') {
                 return response()->json(['message' => 'Only admins and mentors can create groups.'], 403);
             }
-        } 
-        // 2. 1-on-1 Chat Logic
-        else {
-            $targetUser = User::findOrFail($request->target_user_id);
+        } else {
+            if (!$targetUserId) {
+                return response()->json(['message' => 'Target user is required.'], 422);
+            }
+
+            $targetUser = User::findOrFail($targetUserId);
 
             if ($targetUser->role === 'mentor' && !$user->isAdmin() && $user->role !== 'mentor') {
                 $hasApprovedSession = MentorshipSession::where('mentee_id', $user->id)
@@ -83,8 +89,13 @@ class MessageController extends Controller
                     ->where('status', 'accepted')
                     ->exists();
 
-                if (!$hasApprovedSession) {
-                    return response()->json(['message' => 'Approved mentorship session required.'], 403);
+                $hasReportAssignment = HarassmentReport::where('user_id', $user->id)
+                    ->where('assigned_mentor_id', $targetUser->id)
+                    ->where('is_anonymous', false)
+                    ->exists();
+
+                if (!$hasApprovedSession && !$hasReportAssignment) {
+                    return response()->json(['message' => 'Approved mentorship session or identified harassment report required.'], 403);
                 }
             }
             
@@ -97,27 +108,27 @@ class MessageController extends Controller
                 })->first();
 
             if ($existingConvo) {
-                return response()->json($existingConvo);
+                return response()->json($existingConvo->load('participants'));
             }
         }
 
         $conversation = Conversation::create([
-            'name' => $request->is_group ? $request->name : null,
-            'is_group' => $request->is_group,
+            'name' => $isGroup ? $request->name : null,
+            'is_group' => $isGroup,
         ]);
 
-        if ($request->is_group) {
+        if ($isGroup) {
             $participants = $request->users ?? [];
             $participants[] = $user->id; 
             $conversation->participants()->attach(array_unique($participants));
         } else {
             $conversation->participants()->attach([
                 $user->id,
-                $request->target_user_id
+                $targetUserId
             ]);
         }
 
-        return response()->json($conversation);
+        return response()->json($conversation->load('participants'));
     }
 
     //Allow users to join a group

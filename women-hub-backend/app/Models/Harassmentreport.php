@@ -41,11 +41,10 @@ class HarassmentReport extends Model
         parent::boot();
         
         static::creating(function ($report) {
-            // Generate reference number if not already set
             if (!$report->reference_number) {
-                $latest = static::latest('id')->first();
-                $nextId = $latest ? $latest->id + 1 : 1;
-                $report->reference_number = 'HR-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+                do {
+                    $report->reference_number = 'TWH-' . now()->year . '-' . strtoupper(substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes(6))), 0, 6));
+                } while (static::where('reference_number', $report->reference_number)->exists());
             }
         });
     }
@@ -247,7 +246,7 @@ class HarassmentReport extends Model
      */
     public function canBeAssigned()
     {
-        return in_array($this->status, ['pending', 'reviewing']);
+        return in_array($this->status, ['pending', 'reviewing', 'assigned']);
     }
 
     /**

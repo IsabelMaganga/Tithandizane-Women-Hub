@@ -7,6 +7,7 @@ use App\Models\HarassmentReport;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -138,6 +139,75 @@ class HarassmentReportController extends Controller
         }
     }
 
+    // Submit a new harassment report (used by the mobile app — both anonymous and identified)
+    public function store(Request $request)
+    {
+        try {
+            $isAnonymous = filter_var($request->input('is_anonymous'), FILTER_VALIDATE_BOOLEAN);
+
+            $rules = [
+                'incident_type'        => 'required|in:physical,verbal,sexual,cyber,other',
+                'incident_title'       => 'required|string|min:3|max:255',
+                'incident_description' => 'required|string|min:10',
+                'incident_location'    => 'required|string|max:255',
+                'incident_date'        => 'required|date',
+                'perpetrator_info'     => 'nullable|string|max:1000',
+                'is_anonymous'         => 'required',
+            ];
+
+            if (!$isAnonymous) {
+                $rules['victim_name']  = 'required|string|max:255';
+                $rules['victim_email'] = 'required|email|max:255';
+                $rules['victim_phone'] = 'nullable|string|max:20';
+            }
+
+            $validated = $request->validate($rules);
+
+            $report = HarassmentReport::create([
+                'incident_type'        => $validated['incident_type'],
+                'incident_title'       => $validated['incident_title'],
+                'incident_description' => $validated['incident_description'],
+                'incident_location'    => $validated['incident_location'],
+                'incident_date'        => $validated['incident_date'],
+                'perpetrator_info'     => $validated['perpetrator_info'] ?? null,
+                'is_anonymous'         => $isAnonymous,
+                'victim_name'          => $isAnonymous ? null : ($validated['victim_name'] ?? null),
+                'victim_email'         => $isAnonymous ? null : ($validated['victim_email'] ?? null),
+                'victim_phone'         => $isAnonymous ? null : ($validated['victim_phone'] ?? null),
+                'status'               => 'pending',
+                'user_id'              => Auth::id() ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Report submitted successfully.',
+                'data'    => [
+                    'id'               => $report->id,
+                    'reference_number' => $report->reference_number,
+                    'status'           => $report->status,
+                    'is_anonymous'     => $report->is_anonymous,
+                ],
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Failed to submit harassment report: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit report. Please try again.',
+            ], 500);
+        }
+    }
+
+    // Legacy route aliases — kept for backward compatibility with non-v1 API routes
+    public function submitReport(Request $request)   { return $this->store($request); }
+    public function submitAnonymousReport(Request $request) { return $this->store($request); }
+
     //assign mentor
     public function assignMentor(Request $request, $id)
     {
@@ -177,7 +247,7 @@ class HarassmentReportController extends Controller
                     'reference_number' => $report->reference_number,
                     'incident_type' => $report->incident_type,
                     'notes' => $request->notes,
-                    'assigned_by' => auth()->user()->name
+                    'assigned_by' => Auth::guard('admin')->user()?->name ?? 'Admin'
                 ]
             ]);
 
@@ -542,6 +612,98 @@ class HarassmentReportController extends Controller
                 'success' => false,
                 'message' => 'Failed to load statistics'
             ], 500);
+        }
+    }
+
+    /**
+     * Return the authenticated user's own submitted reports.
+     * Used by the mobile app "My Reports" screen.
+     */
+    public function myReports(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $reports = HarassmentReport::where('user_id', $user->id)
+                ->orWhere(function ($q) use ($user) {
+                    $q->where('is_anonymous', false)
+                      ->where('victim_email', $user->email);
+                })
+                ->with(['assignedMentor:id,name'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $data = $reports->map(function ($r) {
+                return [
+                    'id'               => $r->id,
+                    'reference_number' => $r->reference_number,
+                    'incident_type'    => $r->incident_type,
+                    'incident_title'   => $r->incident_title,
+                    'status'           => $r->status,
+                    'is_anonymous'     => $r->is_anonymous,
+                    'submitted_at'     => $r->created_at->format('M d, Y'),
+                    'has_response'     => !empty($r->admin_response),
+                    'response'         => $r->admin_response,
+                    'responded_at'     => $r->responded_at
+                        ? \Carbon\Carbon::parse($r->responded_at)->format('M d, Y')
+                        : null,
+                    'assigned_mentor'  => $r->assignedMentor
+                        ? ['id' => $r->assignedMentor->id, 'name' => $r->assignedMentor->name]
+                        : null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+                'total'   => $reports->total(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('myReports error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to load reports.'], 500);
+        }
+    }
+
+    /**
+     * Public reference-code lookup — used by anonymous users to track their report.
+     * Returns only safe fields (no victim PII, no perpetrator details).
+     */
+    public function showByReference($referenceNumber)
+    {
+        try {
+            $report = HarassmentReport::where('reference_number', $referenceNumber)->first();
+
+            if (!$report) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No report found with that reference number.',
+                ], 404);
+            }
+
+            $mentor = null;
+            if ($report->assigned_mentor_id) {
+                $m = User::find($report->assigned_mentor_id);
+                if ($m) $mentor = ['name' => $m->name];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'reference_number' => $report->reference_number,
+                    'incident_type'    => $report->incident_type,
+                    'status'           => $report->status,
+                    'submitted_at'     => $report->created_at->format('M d, Y'),
+                    'has_response'     => !empty($report->admin_response),
+                    'response'         => $report->admin_response,
+                    'responded_at'     => $report->responded_at
+                        ? \Carbon\Carbon::parse($report->responded_at)->format('M d, Y')
+                        : null,
+                    'assigned_mentor'  => $mentor,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('showByReference error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lookup failed.'], 500);
         }
     }
 

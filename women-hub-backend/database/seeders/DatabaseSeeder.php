@@ -186,5 +186,8 @@ class DatabaseSeeder extends Seeder
         foreach ($contacts as $contact) {
             EmergencyContact::create($contact);
         }
+
+        // 9. Sample Harassment Reports
+        $this->call(HarassmentReport::class);
     }
 }

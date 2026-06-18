@@ -59,6 +59,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/harassment-reports/anonymous', [HarassmentReportController::class, 'store']);
     Route::post('/harassment-reports', [HarassmentReportController::class, 'store']);
 
+    // Public reference-code lookup — no auth needed so anonymous users can track their report
+    Route::get('/harassment-reports/reference/{referenceNumber}', [HarassmentReportController::class, 'showByReference']);
+
     //inteligency apache_child_terminate
     Route::post('/ask',[IncidentController::class,'incident']);
     

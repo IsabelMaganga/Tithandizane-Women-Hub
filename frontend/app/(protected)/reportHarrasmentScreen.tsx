@@ -9,12 +9,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '../../context/LanguageContext';
-import { submitHarassmentReport, submitAnonymousReport } from '../../services/api';
+import { submitHarassmentReport } from '../../services/api';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -262,40 +261,67 @@ export default function HarassmentReportScreen() {
     }
   };
 
+  const validate = () => {
+    const nextErrors: Partial<Record<keyof ReportFormData, string>> = {};
+
+    if (!formData.incident_type) nextErrors.incident_type = t('Please select a type of harassment.', 'Chonde sankhani mtundu wa nkhanza.');
+    if (!formData.incident_title.trim()) nextErrors.incident_title = t('Please enter an incident title.', 'Chonde lembani mutu wa chochitika.');
+    if (!formData.incident_date) nextErrors.incident_date = t('Please select the incident date.', 'Chonde sankhani tsiku la chochitika.');
+    if (!formData.incident_location.trim()) nextErrors.incident_location = t('Please enter where the incident happened.', 'Chonde lembani komwe chochitika chinachitika.');
+    if (formData.incident_description.trim().length < 10) nextErrors.incident_description = t('Please describe what happened in at least 10 characters.', 'Chonde fotokozani zochitika mwamawu osachepera 10.');
+
+    if (!formData.is_anonymous) {
+      if (!formData.victim_name.trim()) nextErrors.victim_name = t('Please enter your full name.', 'Chonde lembani dzina lanu lonse.');
+      if (!formData.victim_email.trim()) {
+        nextErrors.victim_email = t('Please enter your email address.', 'Chonde lembani imelo yanu.');
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.victim_email.trim())) {
+        nextErrors.victim_email = t('Please enter a valid email address.', 'Chonde lembani imelo yolondola.');
+      }
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
-    console.log('📤 Submit button pressed, form data:', formData);
+    if (!validate()) return;
     setLoading(true);
     try {
-      let response;
-      if (formData.is_anonymous) {
-        response = await submitAnonymousReport({
-          title: formData.incident_title.trim(),
-          description: formData.incident_description.trim(),
-          location: formData.incident_location.trim(),
-        });
-      } else {
-        response = await submitHarassmentReport({
-          incident_type: formData.incident_type,
-          incident_title: formData.incident_title.trim(),
-          incident_description: formData.incident_description.trim(),
-          incident_location: formData.incident_location.trim(),
-          incident_date: formData.incident_date,
-          perpetrator_info: formData.perpetrator_info.trim() || null,
-          is_anonymous: false,
+      const response = await submitHarassmentReport({
+        incident_type: formData.incident_type || 'other',
+        incident_title: formData.incident_title.trim(),
+        incident_description: formData.incident_description.trim(),
+        incident_location: formData.incident_location.trim(),
+        incident_date: formData.incident_date,
+        perpetrator_info: formData.perpetrator_info.trim() || null,
+        is_anonymous: formData.is_anonymous,
+        ...(formData.is_anonymous ? {} : {
           victim_name: formData.victim_name.trim(),
           victim_email: formData.victim_email.trim(),
-        });
-      }
+          victim_phone: formData.victim_phone.trim() || undefined,
+        }),
+      });
 
-      const ref = response?.data?.reference_number ?? response?.reference_number ?? undefined;
-      Alert.alert(
-        t('Report Submitted', 'Lipoti Latumizidwa'),
-        t(
-          `Your report has been submitted successfully.${ref ? `\n\nReference: ${ref}` : ''}\n\nAn administrator will review it shortly.`,
-          `Lipoti lanu latumizidwa bwino.${ref ? `\n\nNambala: ${ref}` : ''}\n\nWoyang'anira adzaliwunika posachedwa.`
-        ),
-        [{ text: t('OK', 'Chabwino'), onPress: () => router.back() }]
-      );
+      const ref = response?.data?.reference_number ?? response?.reference_number ?? '';
+
+      if (formData.is_anonymous) {
+        router.replace({
+          pathname: '/(protected)/trackReportScreen',
+          params: { ref, submitted: 'true' },
+        });
+      } else {
+        Alert.alert(
+          t('Report Submitted', 'Lipoti Latumizidwa'),
+          t(
+            'Your report has been submitted. A mentor will review it and may reach out via in-app chat.',
+            'Lipoti lanu latumizidwa. Wotsogolera adzaliwunika ndipo adzalumikizana nanu.'
+          ),
+          [
+            { text: t('View My Reports', 'Ona Mauthenga Anga'), onPress: () => router.replace('/(protected)/myReportsScreen') },
+            { text: t('OK', 'Chabwino'), onPress: () => router.back() },
+          ]
+        );
+      }
     } catch (error: any) {
       let msg = t('Failed to submit. Please try again.', 'Kutumiza kwalephera. Yesaninso.');
       if (error.response?.data?.errors)
@@ -397,6 +423,65 @@ export default function HarassmentReportScreen() {
               </TouchableOpacity>
             </View>
           </Card>
+
+          {/* Contact Information — only shown when NOT anonymous */}
+          {!formData.is_anonymous && (
+            <Card style={{ borderWidth: 1.5, borderColor: PRIMARY_PURPLE }}>
+              <SectionHeader
+                icon="person-circle-outline"
+                title={t('Your Contact Information', 'Zambiri Zolumikizana Nanu')}
+                subtitle={t('So a mentor can follow up with you directly', 'Kuti wotsogolera akufikire mwachinsinsi')}
+              />
+
+              <View style={{ marginBottom: 14 }}>
+                <FieldLabel label={t('Full Name', 'Dzina Lonse')} required />
+                <TextInput
+                  style={inputStyle(!!errors.victim_name)}
+                  placeholder={t('Your full name', 'Dzina lanu lonse')}
+                  placeholderTextColor="#BDBDBD"
+                  value={formData.victim_name}
+                  onChangeText={text => setFormData(prev => ({ ...prev, victim_name: text }))}
+                />
+                {errors.victim_name && <Text style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{errors.victim_name}</Text>}
+              </View>
+
+              <View style={{ marginBottom: 14 }}>
+                <FieldLabel label={t('Email Address', 'Imelo')} required />
+                <TextInput
+                  style={inputStyle(!!errors.victim_email)}
+                  placeholder="your@email.com"
+                  placeholderTextColor="#BDBDBD"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={formData.victim_email}
+                  onChangeText={text => setFormData(prev => ({ ...prev, victim_email: text }))}
+                />
+                {errors.victim_email && <Text style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{errors.victim_email}</Text>}
+              </View>
+
+              <View>
+                <FieldLabel label={t('Phone Number', 'Nambala ya Foni')} hint={t('Optional', 'Mwasankha')} />
+                <TextInput
+                  style={inputStyle()}
+                  placeholder="+265 ..."
+                  placeholderTextColor="#BDBDBD"
+                  keyboardType="phone-pad"
+                  value={formData.victim_phone}
+                  onChangeText={text => setFormData(prev => ({ ...prev, victim_phone: text }))}
+                />
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EDE9FE', borderRadius: 10, padding: 10, marginTop: 12, gap: 8 }}>
+                <Ionicons name="information-circle-outline" size={16} color={PRIMARY_PURPLE} />
+                <Text style={{ fontSize: 12, color: PRIMARY_PURPLE, flex: 1, lineHeight: 16 }}>
+                  {t(
+                    'Your information is only shared with the assigned mentor to follow up on your case.',
+                    'Zambiri zanu zidzagawanidwa ndi wotsogolera wokha pofunsira.'
+                  )}
+                </Text>
+              </View>
+            </Card>
+          )}
 
           {/* Incident Details */}
           <Card>

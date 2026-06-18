@@ -95,10 +95,25 @@ export interface HarassmentReport {
   incident_date?: string;
   perpetrator_info?: string;
   is_anonymous: boolean;
-  status: 'pending' | 'reviewing' | 'resolved' | 'dismissed';
+  status: 'pending' | 'reviewing' | 'assigned' | 'resolved' | 'dismissed';
   admin_response?: string;
   responded_at?: string;
+  assigned_mentor?: { id: number; name: string } | null;
+  submitted_at?: string;
+  has_response?: boolean;
+  response?: string;
   created_at: string;
+}
+
+export interface ReportTracking {
+  reference_number: string;
+  incident_type: string;
+  status: 'pending' | 'reviewing' | 'assigned' | 'resolved' | 'dismissed';
+  submitted_at: string;
+  has_response: boolean;
+  response?: string | null;
+  responded_at?: string | null;
+  assigned_mentor?: { name: string } | null;
 }
 
 // YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
@@ -560,13 +575,14 @@ export const getChatList = async (): Promise<Conversation[]> => {
 // Send message
 export const sendMessage = async (
   conversationId: number,
-  message: string
+  message: string,
+  token?: string
 ): Promise<Message> => {
   try {
     const response = await api.post<Message>('/messages', {
       conversation_id: conversationId,
       message: message
-    });
+    }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
     return response.data;
   } catch (error: any) {
     console.error('❌ Error sending message:', error.message);
@@ -576,11 +592,18 @@ export const sendMessage = async (
 
 // Create conversation
 export const createConversation = async (payload: {
-  mentor_id: number;
+  mentor_id?: number;
+  receiver_id?: number;
+  target_user_id?: number;
   initial_message?: string;
 }): Promise<Conversation> => {
   try {
-    const response = await api.post<Conversation>('/conversations', payload);
+    const target_user_id = payload.target_user_id ?? payload.mentor_id ?? payload.receiver_id;
+    const response = await api.post<Conversation>('/conversations', {
+      ...payload,
+      target_user_id,
+      is_group: false,
+    });
     return response.data;
   } catch (error: any) {
     console.error('❌ Error creating conversation:', error.message);
@@ -589,9 +612,9 @@ export const createConversation = async (payload: {
 };
 
 // Get messages
-export const getMessages = async (conversationId: number): Promise<Message[]> => {
+export const getMessages = async (conversationId: number, token?: string): Promise<Message[]> => {
   try {
-    const response = await api.get<Message[]>(`/conversations/${conversationId}/messages`);
+    const response = await api.get<Message[]>(`/conversations/${conversationId}/messages`, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
     return response.data;
   } catch (error: any) {
     console.error('❌ Error fetching messages:', error.message);
@@ -604,15 +627,25 @@ export const getMessages = async (conversationId: number): Promise<Message[]> =>
 // ============================================
 
 // Get harassment reports for the current user
-export const getReportHarassment = async (): Promise<HarassmentReport[]> => {
+// Note: uses explicit token header because the interceptor skips auth for URLs containing '/harassment-reports'
+export const getMyReports = async (): Promise<HarassmentReport[]> => {
   try {
-    const response = await api.get<HarassmentReport[]>('/harassment-reports/my-reports');
-    return response.data;
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get('/harassment-reports/my-reports', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const payload = response.data;
+    if (payload?.success && Array.isArray(payload.data)) return payload.data;
+    if (Array.isArray(payload)) return payload;
+    return [];
   } catch (error: any) {
-    console.error('❌ Error fetching reports:', error.message);
+    console.error('❌ Error fetching my reports:', error.message);
     throw error;
   }
 };
+
+/** @deprecated use getMyReports instead */
+export const getReportHarassment = getMyReports;
 
 // Submit harassment report - Works for both anonymous and non-anonymous
 export const submitHarassmentReport = async (data: {
@@ -692,11 +725,13 @@ export const submitAnonymousReport = async (data: {
   }
 };
 
-// Get report by reference number
-export const getReportByReference = async (referenceNumber: string): Promise<HarassmentReport | null> => {
+// Get report by reference number (public — no auth required)
+export const getReportByReference = async (referenceNumber: string): Promise<ReportTracking | null> => {
   try {
-    const response = await api.get(`/harassment-reports/reference/${referenceNumber}`);
-    return response.data;
+    const response = await api.get(`/harassment-reports/reference/${encodeURIComponent(referenceNumber)}`);
+    const payload = response.data;
+    if (payload?.success && payload.data) return payload.data as ReportTracking;
+    return null;
   } catch (error: any) {
     console.error('❌ Error fetching report by reference:', error.message);
     return null;
@@ -732,11 +767,11 @@ export const getAllUsers = async (token: string) => {
 };
 
 // Get conversation
-export const getConversation = async (conversationId: number, token: string) => {
+export const getConversation = async (conversationId: number, token?: string) => {
   try {
-    const response = await api.get(`/conversations/${conversationId}`, {
+    const response = await api.get(`/conversations/${conversationId}`, token ? {
       headers: { Authorization: `Bearer ${token}` },
-    });
+    } : undefined);
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching conversation:", error);
