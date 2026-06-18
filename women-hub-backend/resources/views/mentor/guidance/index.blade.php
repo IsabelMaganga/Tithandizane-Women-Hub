@@ -1,68 +1,42 @@
 @extends('mentor.layouts.dashboard')
 
-@section('title') guidance @endsection
+@section('title') Guidance @endsection
 
 @section('content')
 <div class="px-4 py-0 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <!-- Header -->
     <div class="mt-10 mb-8">
         <h1 class="text-3xl font-semibold text-gray-900">Guidance Content</h1>
-        <p class="mt-2 text-sm text-gray-600">Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt sed commodi, architecto tempore, a dolores ea reprehenderit dolorum harum quia esse maiores, accusamus magnam quidem quibusdam vero suscipit recusandae libero..</p>
+        <p class="mt-2 text-sm text-gray-600">Publish and manage educational content for app users. Choose a category below to create, edit, publish, or unpublish your articles.</p>
     </div>
 
-    <!-- content Grid -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-
-        <!-- hygiene_articles -->
-        <div class="p-6 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="p-6 transition-shadow bg-white border border-purple-100 rounded-2xl shadow-sm hover:shadow-md">
             <div class="flex items-center mb-4">
-                <div class="p-2 rounded-lg bg-blue-50">
-                    <i class="w-6 h-6 text-blue-600 fa-solid fa-head-side-mask"></i>
+                <div class="p-3 rounded-xl bg-purple-50">
+                    <i class="text-purple-700 fa-solid fa-droplet"></i>
                 </div>
-                <h3 class="ml-3 text-lg font-medium text-gray-900">hygiene_articles</h3>
+                <h3 class="ml-3 text-lg font-semibold text-gray-900">Menstrual Hygiene Guidance</h3>
             </div>
-            <p class="mb-4 text-sm text-gray-600">Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt sed commodi, architecto tempore,.</p>
-            <a href="{{ route('mentor.hygiene')}}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Navigate
-                <i class="fa-solid fa-chevron-right"></i>
+            <p class="mb-5 text-sm text-gray-600">Share hygiene tips, cycle care, and health guidance for menstrual wellness.</p>
+            <a href="{{ route('mentor.hygiene') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-lg hover:bg-purple-800">
+                Manage Content
+                <i class="ml-2 fa-solid fa-chevron-right"></i>
             </a>
         </div>
 
-        <!-- general_guides -->
-        <div class="p-6 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
+        <div class="p-6 transition-shadow bg-white border border-purple-100 rounded-2xl shadow-sm hover:shadow-md">
             <div class="flex items-center mb-4">
-                <div class="p-2 rounded-lg bg-green-50">
-                    <i class="w-6 h-6 text-green-600 fa-solid fa-blender"></i>
+                <div class="p-3 rounded-xl bg-violet-50">
+                    <i class="text-violet-700 fa-solid fa-heart-pulse"></i>
                 </div>
-                <h3 class="ml-3 text-lg font-medium text-gray-900">general_guides</h3>
+                <h3 class="ml-3 text-lg font-semibold text-gray-900">General Issues</h3>
             </div>
-            <p class="mb-4 text-sm text-gray-600">Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt sed commodi, architecto tempore,.</p>
-            <a href="{{ route('mentor.general')}}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Navigate
-                <i class="fa-solid fa-chevron-right"></i>
+            <p class="mb-5 text-sm text-gray-600">Cover self-esteem, stress, relationships, health, and personal development topics.</p>
+            <a href="{{ route('mentor.general') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-lg hover:bg-purple-800">
+                Manage Content
+                <i class="ml-2 fa-solid fa-chevron-right"></i>
             </a>
         </div>
-
-        <!-- emergency_contacts -->
-        <div class="p-6 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
-            <div class="flex items-center mb-4">
-                <div class="p-2 rounded-lg bg-yellow-50">
-                    <i class="w-6 h-6 text-yellow-600 fa-solid fa-tower-broadcast"></i>
-                </div>
-                <h3 class="ml-3 text-lg font-medium text-gray-900">emergency_contacts</h3>
-            </div>
-            <p class="mb-4 text-sm text-gray-600">Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt sed commodi, architecto tempore.</p>
-            <a href="{{ route('mentor.emergency')}}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                navigate
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
-        </div>
-
-
-
-
     </div>
-
-
 </div>
 @endsection

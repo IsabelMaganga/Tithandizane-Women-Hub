@@ -9,39 +9,34 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import { Feather } from '@expo/vector-icons';
-import { getUserToken } from '@/hooks/useAuth';
-//import { getNotifications, markNotificationRead } from '@/services/api';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-type Notification = {
-  id: number;
-  title: string;
-  message: string;
-  created_at: string;
-  read: boolean;
-};
+import {
+  AppNotification,
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '../../services/api';
 
 const NotificationsScreen = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const fetchNotifications = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const token = await getUserToken();
-      //const data = await getNotifications(token);
-      //setNotifications(data);
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
+      const { notifications: data } = await getNotifications();
+      setNotifications(data);
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'Error',
         text2: 'Could not fetch notifications',
+        position: 'top',
       });
     } finally {
       setLoading(false);
@@ -53,38 +48,59 @@ const NotificationsScreen = () => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // const handleMarkRead = async (id: number) => {
-  //   try {
-  //     const token = await getUserToken();
-  //     await markNotificationRead(id, token);
-  //     setNotifications(prev =>
-  //       prev.map(n => (n.id === id ? { ...n, read: true } : n))
-  //     );
-  //   } catch (err) {
-  //     console.error('Mark read failed:', err);
-  //     Toast.show({ type: 'error', text1: 'Could not mark as read' });
-  //   }
-  // };
+  const handleMarkRead = async (item: AppNotification) => {
+    if (item.is_read) {
+      if (item.report_id) {
+        router.push('/(protected)/myReportsScreen');
+      }
+      return;
+    }
 
-  const renderNotification = ({ item }: { item: Notification }) => (
+    try {
+      await markNotificationRead(item.id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
+      );
+
+      if (item.report_id || item.type.includes('report') || item.type.includes('mentor')) {
+        router.push('/(protected)/myReportsScreen');
+      }
+    } catch {
+      Toast.show({ type: 'error', text1: 'Could not mark as read', position: 'top' });
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      Toast.show({ type: 'success', text1: 'All notifications marked as read', position: 'top' });
+    } catch {
+      Toast.show({ type: 'error', text1: 'Could not mark all as read', position: 'top' });
+    }
+  };
+
+  const renderNotification = ({ item }: { item: AppNotification }) => (
     <Pressable
-      //onPress={() => handleMarkRead(item.id)}
+      onPress={() => handleMarkRead(item)}
       className={`p-4 mb-2 rounded-xl border ${
-        item.read ? 'border-slate-200 bg-white' : 'border-purple-300 bg-purple-50'
+        item.is_read ? 'border-slate-200 bg-white' : 'border-violet-300 bg-violet-50'
       }`}
     >
-      <Text className={`font-bold text-base ${item.read ? 'text-slate-900' : 'text-purple-600'}`}>
+      <Text className={`font-bold text-base ${item.is_read ? 'text-slate-900' : 'text-[#7c3aed]'}`}>
         {item.title}
       </Text>
       <Text className="text-slate-600 text-sm mt-1">{item.message}</Text>
-      <Text className="text-slate-400 text-xs mt-1">{new Date(item.created_at).toLocaleString()}</Text>
+      <Text className="text-slate-400 text-xs mt-1">
+        {new Date(item.created_at).toLocaleString()}
+      </Text>
     </Pressable>
   );
 
   if (loading && !refreshing) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#8A4FFF" />
+        <ActivityIndicator size="large" color="#7c3aed" />
         <Text className="mt-4 text-slate-400 font-medium">Fetching notifications...</Text>
       </View>
     );
@@ -94,18 +110,33 @@ const NotificationsScreen = () => {
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <StatusBar style="dark" />
       <View className="px-6 pt-4 pb-2 flex-row justify-between items-center bg-white border-b border-slate-100">
-        <Pressable onPress={()=> router.back()}>
+        <Pressable onPress={() => router.back()}>
           <SimpleLineIcons name="arrow-left" size={18} color="black" />
         </Pressable>
         <Text className="text-2xl font-black text-slate-900">Notifications</Text>
-        <Pressable onPress={() => fetchNotifications()} className="p-2 active:opacity-50">
-          <Feather name="refresh-cw" size={20} color="#8A4FFF" />
-        </Pressable>
+        <View className="flex-row gap-3">
+          {notifications.some((n) => !n.is_read) ? (
+            <Pressable onPress={handleMarkAllRead} className="p-2 active:opacity-50">
+              <Feather name="check-circle" size={20} color="#7c3aed" />
+            </Pressable>
+          ) : (
+            <View className="w-9" />
+          )}
+          <Pressable
+            onPress={() => {
+              setRefreshing(true);
+              fetchNotifications(true);
+            }}
+            className="p-2 active:opacity-50"
+          >
+            <Feather name="refresh-cw" size={20} color="#7c3aed" />
+          </Pressable>
+        </View>
       </View>
 
       <LegendList
         data={notifications}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         estimatedItemSize={80}
         contentContainerStyle={{ padding: 16, paddingBottom: 20 }}
         refreshControl={
@@ -115,7 +146,7 @@ const NotificationsScreen = () => {
               setRefreshing(true);
               fetchNotifications(true);
             }}
-            tintColor="#8A4FFF"
+            tintColor="#7c3aed"
           />
         }
         renderItem={renderNotification}
@@ -124,7 +155,7 @@ const NotificationsScreen = () => {
             <Feather name="bell-off" size={40} color="#CBD5E1" />
             <Text className="text-slate-900 font-bold text-lg mt-4 text-center">No notifications</Text>
             <Text className="text-slate-400 text-center mt-2">
-              You’re all caught up! Notifications will appear here when available.
+              Report updates and mentor responses will appear here.
             </Text>
           </View>
         }

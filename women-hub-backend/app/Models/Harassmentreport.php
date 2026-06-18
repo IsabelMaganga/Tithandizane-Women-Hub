@@ -77,6 +77,41 @@ class HarassmentReport extends Model
         return $this->hasMany(Notification::class, 'report_id');
     }
 
+    public function resolveOwnerUserId(): ?int
+    {
+        if ($this->user_id) {
+            return (int) $this->user_id;
+        }
+
+        if (!$this->is_anonymous && $this->victim_email) {
+            $userId = User::where('email', $this->victim_email)->value('id');
+            return $userId ? (int) $userId : null;
+        }
+
+        return null;
+    }
+
+    public function notifyOwner(string $type, string $title, string $message, array $data = []): void
+    {
+        $userId = $this->resolveOwnerUserId();
+        if (!$userId) {
+            return;
+        }
+
+        Notification::create([
+            'type' => $type,
+            'user_id' => $userId,
+            'report_id' => $this->id,
+            'title' => $title,
+            'message' => $message,
+            'data' => array_merge([
+                'report_id' => $this->id,
+                'reference_number' => $this->reference_number,
+            ], $data),
+            'is_read' => false,
+        ]);
+    }
+
     // ============================================
     // ACCESSORS
     // ============================================

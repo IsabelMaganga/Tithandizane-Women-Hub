@@ -47,6 +47,10 @@ export default function ProtectedLayout() {
     <Stack.Screen name="twoFactorAuthScreen" />
     <Stack.Screen name="aboutScreen" />
     <Stack.Screen name="privacyPolicyScreen" />
+    <Stack.Screen name="guidanceScreen" />
+    <Stack.Screen name="contentDetailScreen" />
+    <Stack.Screen name="myContentScreen" />
+    <Stack.Screen name="publishContentScreen" />
 
 
   </Stack>

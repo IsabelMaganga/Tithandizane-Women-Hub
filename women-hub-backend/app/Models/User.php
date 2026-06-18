@@ -112,6 +112,11 @@ class User extends Authenticatable
         return $this->hasMany(MentorshipSession::class, 'mentee_id');
     }
 
+    public function guidanceContents()
+    {
+        return $this->hasMany(GuidanceContent::class, 'mentor_id');
+    }
+
     public function conversations()
     {
         return $this->belongsToMany(Conversation::class, 'conversation_participants');

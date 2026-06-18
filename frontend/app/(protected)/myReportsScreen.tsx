@@ -6,7 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useThemeToggle } from '../../hooks/useTheme';
 import { getMyReports, createConversation, HarassmentReport } from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -111,6 +111,7 @@ function ReportCard({ report, onChat, isDark, T }: {
 
 export default function MyReportsScreen() {
   const router = useRouter();
+  const { submitted, ref } = useLocalSearchParams<{ submitted?: string; ref?: string }>();
   const { isDark } = useThemeToggle();
   const [reports, setReports] = useState<HarassmentReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,6 +192,20 @@ export default function MyReportsScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7c3aed" />}
         >
+          {submitted === 'true' && (
+            <View style={{ backgroundColor: '#f0fdf4', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#bbf7d0', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <MaterialCommunityIcons name="check-circle" size={22} color="#16a34a" />
+                <Text style={{ color: '#15803d', fontWeight: '700', fontSize: 15 }}>Report submitted successfully</Text>
+              </View>
+              <Text style={{ color: '#166534', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
+                {ref
+                  ? `Your reference number is ${ref}. A mentor will review your report and you will be notified here when they respond.`
+                  : 'Your report has been received. You will be notified when a mentor responds.'}
+              </Text>
+            </View>
+          )}
+
           {reports.length === 0 ? (
             <View style={{ alignItems: 'center', marginTop: 60 }}>
               <MaterialCommunityIcons name="file-document-outline" size={56} color={T.sub} />

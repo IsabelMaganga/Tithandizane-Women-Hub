@@ -11,9 +11,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class HarassmentReportController extends Controller
 {
+    private function resolveApiUser(Request $request): ?User
+    {
+        if ($request->user()) {
+            return $request->user();
+        }
+
+        $token = $request->bearerToken();
+        if (!$token) {
+            return null;
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        return $accessToken?->tokenable;
+    }
    
     public function index(Request $request)
     {
@@ -163,6 +179,8 @@ class HarassmentReportController extends Controller
 
             $validated = $request->validate($rules);
 
+            $user = $this->resolveApiUser($request);
+
             $report = HarassmentReport::create([
                 'incident_type'        => $validated['incident_type'],
                 'incident_title'       => $validated['incident_title'],
@@ -175,8 +193,17 @@ class HarassmentReportController extends Controller
                 'victim_email'         => $isAnonymous ? null : ($validated['victim_email'] ?? null),
                 'victim_phone'         => $isAnonymous ? null : ($validated['victim_phone'] ?? null),
                 'status'               => 'pending',
-                'user_id'              => Auth::id() ?? null,
+                'user_id'              => $user?->id,
             ]);
+
+            if ($user) {
+                $report->notifyOwner(
+                    'report_submitted',
+                    'Report Submitted Successfully',
+                    "Your report \"{$report->incident_title}\" was submitted. Reference: {$report->reference_number}.",
+                    ['status' => $report->status]
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -271,6 +298,17 @@ class HarassmentReportController extends Controller
                 $this->sendAssignmentNotificationToVictim($report, $mentor);
             }
 
+            $report->notifyOwner(
+                'mentor_assigned',
+                'Mentor Assigned to Your Report',
+                "A mentor ({$mentor->name}) has been assigned to review your report {$report->reference_number}.",
+                [
+                    'mentor_id' => $mentor->id,
+                    'mentor_name' => $mentor->name,
+                    'status' => $report->status,
+                ]
+            );
+
             DB::commit();
 
             $message = $oldMentorId ? 'Mentor reassigned successfully' : 'Mentor assigned successfully';
@@ -324,6 +362,16 @@ class HarassmentReportController extends Controller
             if (!$report->is_anonymous && $report->victim_email) {
                 $this->sendResponseToVictim($report);
             }
+
+            $report->notifyOwner(
+                'report_response',
+                'Response on Your Report',
+                "There is a new response on your report {$report->reference_number}.",
+                [
+                    'status' => $request->status,
+                    'response' => $request->response,
+                ]
+            );
 
             // Notify assigned mentor if any
             if ($report->assigned_mentor_id) {

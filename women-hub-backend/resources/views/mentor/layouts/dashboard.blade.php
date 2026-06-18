@@ -170,11 +170,11 @@
                     <div id="guidance-sub-list" class="sub-list text-[12px] {{ $isGuidanceOpen ? 'show' : '' }}">
                         <a href="{{ route('mentor.hygiene') }}" class="flex items-center px-6 py-3 mt-1 transition-colors {{ request()->routeIs('mentor.hygiene') ? $activeClasses : $inactiveClasses }}">
                             <i class="w-5 fa-solid fa-pump-medical"></i>
-                            <span class="ml-3">Hygiene</span>
+                            <span class="ml-3">Menstrual Hygiene</span>
                         </a>
                         <a href="{{ route('mentor.general') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.general') ? $activeClasses : $inactiveClasses }}">
                             <i class="w-5 fa-solid fa-house-medical"></i>
-                            <span class="ml-3 capitalize">General</span>
+                            <span class="ml-3">General Issues</span>
                         </a>
                         <a href="{{ route('mentor.emergency') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.emergency') ? $activeClasses : $inactiveClasses }}">
                             <i class="w-5 fa-solid fa-user-injured"></i>

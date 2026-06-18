@@ -17,6 +17,7 @@ import { submitHarassmentReport } from '../../services/api';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
+import Toast from 'react-native-toast-message';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ReportFormData {
@@ -304,23 +305,26 @@ export default function HarassmentReportScreen() {
 
       const ref = response?.data?.reference_number ?? response?.reference_number ?? '';
 
+      Toast.show({
+        type: 'success',
+        text1: t('Report submitted successfully', 'Lipoti latumizidwa bwino'),
+        text2: ref
+          ? t(`Reference: ${ref}`, `Nambala: ${ref}`)
+          : t('You can track updates in My Reports.', 'Mutha kuona zosintha mu Mauthenga Anga.'),
+        position: 'top',
+        visibilityTime: 4000,
+      });
+
       if (formData.is_anonymous) {
         router.replace({
           pathname: '/(protected)/trackReportScreen',
           params: { ref, submitted: 'true' },
         });
       } else {
-        Alert.alert(
-          t('Report Submitted', 'Lipoti Latumizidwa'),
-          t(
-            'Your report has been submitted. A mentor will review it and may reach out via in-app chat.',
-            'Lipoti lanu latumizidwa. Wotsogolera adzaliwunika ndipo adzalumikizana nanu.'
-          ),
-          [
-            { text: t('View My Reports', 'Ona Mauthenga Anga'), onPress: () => router.replace('/(protected)/myReportsScreen') },
-            { text: t('OK', 'Chabwino'), onPress: () => router.back() },
-          ]
-        );
+        router.replace({
+          pathname: '/(protected)/myReportsScreen',
+          params: { submitted: 'true', ref: ref || '' },
+        });
       }
     } catch (error: any) {
       let msg = t('Failed to submit. Please try again.', 'Kutumiza kwalephera. Yesaninso.');

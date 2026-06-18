@@ -4,7 +4,7 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\{Broadcast, Route};
 
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
-use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, GuidanceContentController, NotificationController, ReportController, SecurityController as MentorSecurityController};
 use App\Http\Controllers\Admin\ReportManagementController;
 use App\Http\Controllers\HarassmentReportController as UserHarassmentReportController;
 
@@ -184,9 +184,20 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/profile', [MentorSecurityController::class, 'showMyProfile'])->name('profile');
 
     // guidance routes
-    Route::get('/guidance', [MentorSecurityController::class, 'showGuidance'])->name('Guidance');
-    Route::get('/guidance/hygiene', [MentorSecurityController::class, 'showHygiene'])->name('hygiene');
-    Route::get('/guidance/general', [MentorSecurityController::class, 'showGeneral'])->name('general');
+    Route::get('/guidance', [GuidanceContentController::class, 'hub'])->name('Guidance');
+    Route::get('/guidance/hygiene', [GuidanceContentController::class, 'hygiene'])->name('hygiene');
+    Route::get('/guidance/hygiene/create', [GuidanceContentController::class, 'createHygiene'])->name('hygiene.create');
+    Route::post('/guidance/hygiene', [GuidanceContentController::class, 'storeHygiene'])->name('hygiene.store');
+    Route::get('/guidance/hygiene/{id}/edit', [GuidanceContentController::class, 'editHygiene'])->name('hygiene.edit');
+    Route::put('/guidance/hygiene/{id}', [GuidanceContentController::class, 'updateHygiene'])->name('hygiene.update');
+    Route::get('/guidance/general', [GuidanceContentController::class, 'general'])->name('general');
+    Route::get('/guidance/general/create', [GuidanceContentController::class, 'createGeneral'])->name('general.create');
+    Route::post('/guidance/general', [GuidanceContentController::class, 'storeGeneral'])->name('general.store');
+    Route::get('/guidance/general/{id}/edit', [GuidanceContentController::class, 'editGeneral'])->name('general.edit');
+    Route::put('/guidance/general/{id}', [GuidanceContentController::class, 'updateGeneral'])->name('general.update');
+    Route::delete('/guidance/content/{id}', [GuidanceContentController::class, 'destroy'])->name('content.destroy');
+    Route::patch('/guidance/content/{id}/publish', [GuidanceContentController::class, 'publish'])->name('content.publish');
+    Route::patch('/guidance/content/{id}/unpublish', [GuidanceContentController::class, 'unpublish'])->name('content.unpublish');
     Route::get('/guidance/emergency', [MentorSecurityController::class, 'showEmergency'])->name('emergency');
 
     // settings related routes

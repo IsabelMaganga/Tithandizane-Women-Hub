@@ -35,6 +35,29 @@ export interface HygieneArticle {
   created_at: string;
 }
 
+export interface GuidanceContent {
+  id: number;
+  mentor_id: number;
+  title: string;
+  body: string;
+  photo_url?: string | null;
+  category: 'menstrual_hygiene' | 'general';
+  status: 'published' | 'unpublished';
+  language: 'english';
+  mentor_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GuidanceContentPayload {
+  title: string;
+  body: string;
+  category: 'menstrual_hygiene' | 'general';
+  status?: 'published' | 'unpublished';
+  photo?: { uri: string; type?: string; name?: string } | null;
+  remove_photo?: boolean;
+}
+
 export interface EmergencyContact {
   id: number;
   name: string;
@@ -116,28 +139,36 @@ export interface ReportTracking {
   assigned_mentor?: { name: string } | null;
 }
 
-// YOUR COMPUTER'S NETWORK IP - From Metro output: 192.168.74.205
-const COMPUTER_IP = '192.168.1.132'; 
+export interface AppNotification {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  report_id?: number | null;
+  data?: Record<string, unknown>;
+  created_at: string;
+}
+
+// Update this to your computer's WiFi IPv4 (run: ipconfig)
+const COMPUTER_IP = '192.168.173.205';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
 const getBaseURL = (): string => {
   if (__DEV__) {
     console.log('📱 Platform:', Platform.OS);
-    
+
     if (Platform.OS === 'android') {
-      return `http://192.168.1.132:8000/api/v1`;
-    } 
-    
-    if (Platform.OS === 'ios') {
-      return `http://192.168.74.205:8000/api`;
+      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
     }
-    
-    // Default fallback
-    //return `http://${COMPUTER_IP}:${BACKEND_PORT}/api`;
-    return `http://127.0.0.1:8000/api/v1`;
+
+    if (Platform.OS === 'ios') {
+      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+    }
+
+    return `http://127.0.0.1:${BACKEND_PORT}/api/v1`;
   } else {
-    // Production environment
     return 'https://your-production-api.com/api';
   }
 };
@@ -680,7 +711,10 @@ export const submitHarassmentReport = async (data: {
     }
     
     console.log('📤 Submitting harassment report:', JSON.stringify(requestData, null, 2));
-    const response = await api.post('/harassment-reports', requestData);
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.post('/harassment-reports', requestData, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     console.log('✅ Report submitted successfully:', response.data);
     return response.data;
   } catch (error: any) {
@@ -738,6 +772,55 @@ export const getReportByReference = async (referenceNumber: string): Promise<Rep
   }
 };
 
+// ============================================
+// NOTIFICATIONS API
+// ============================================
+
+export const getNotifications = async (): Promise<{
+  notifications: AppNotification[];
+  unread_count: number;
+}> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get('/notifications', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const payload = response.data;
+    const items = payload?.data?.data ?? payload?.data ?? [];
+    return {
+      notifications: Array.isArray(items) ? items : [],
+      unread_count: payload?.unread_count ?? 0,
+    };
+  } catch (error: any) {
+    console.error('❌ Error fetching notifications:', error.message);
+    throw error;
+  }
+};
+
+export const markNotificationRead = async (id: number): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await api.post(`/notifications/${id}/read`, {}, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (error: any) {
+    console.error('❌ Error marking notification read:', error.message);
+    throw error;
+  }
+};
+
+export const markAllNotificationsRead = async (): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await api.post('/notifications/mark-all-read', {}, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (error: any) {
+    console.error('❌ Error marking all notifications read:', error.message);
+    throw error;
+  }
+};
+
 // Fetch general guides
 export const getGeneralGuides = async (): Promise<any[]> => {
   try {
@@ -745,6 +828,141 @@ export const getGeneralGuides = async (): Promise<any[]> => {
     return response.data;
   } catch (error: any) {
     console.error('❌ Error fetching guides:', error.message);
+    throw error;
+  }
+};
+
+// ============================================
+// GUIDANCE CONTENT API
+// ============================================
+
+const buildGuidanceFormData = (payload: GuidanceContentPayload, method?: 'PUT'): FormData => {
+  const formData = new FormData();
+  formData.append('title', payload.title);
+  formData.append('body', payload.body);
+  formData.append('category', payload.category);
+  formData.append('status', payload.status ?? 'published');
+
+  if (payload.photo?.uri) {
+    const uri = payload.photo.uri;
+    const name = payload.photo.name ?? uri.split('/').pop() ?? 'photo.jpg';
+    const type = payload.photo.type ?? 'image/jpeg';
+    formData.append('photo', { uri, name, type } as unknown as Blob);
+  }
+
+  if (payload.remove_photo) {
+    formData.append('remove_photo', '1');
+  }
+
+  if (method) {
+    formData.append('_method', method);
+  }
+
+  return formData;
+};
+
+const guidanceMultipartConfig = {
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'multipart/form-data',
+  },
+  transformRequest: (data: FormData) => data,
+};
+
+export const getPublishedGuidanceContent = async (
+  category: 'menstrual_hygiene' | 'general'
+): Promise<GuidanceContent[]> => {
+  try {
+    const response = await api.get(`/content?category=${category}`);
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error fetching guidance content:', error.message);
+    throw error;
+  }
+};
+
+export const getGuidanceContentDetail = async (id: number): Promise<GuidanceContent> => {
+  try {
+    const response = await api.get(`/content/${id}`);
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error fetching guidance detail:', error.message);
+    throw error;
+  }
+};
+
+export const getMentorGuidanceContent = async (): Promise<GuidanceContent[]> => {
+  try {
+    const response = await api.get('/mentor/content');
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error fetching mentor content:', error.message);
+    throw error;
+  }
+};
+
+export const publishGuidanceContent = async (
+  payload: GuidanceContentPayload
+): Promise<GuidanceContent> => {
+  try {
+    const hasPhoto = Boolean(payload.photo?.uri);
+    const response = hasPhoto
+      ? await api.post(
+          '/mentor/content',
+          buildGuidanceFormData(payload),
+          guidanceMultipartConfig
+        )
+      : await api.post('/mentor/content', {
+          ...payload,
+          status: payload.status ?? 'published',
+        });
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error publishing content:', error.message);
+    throw error;
+  }
+};
+
+export const updateGuidanceContent = async (
+  id: number,
+  payload: GuidanceContentPayload
+): Promise<GuidanceContent> => {
+  try {
+    const hasPhoto = Boolean(payload.photo?.uri);
+    const hasRemove = Boolean(payload.remove_photo);
+
+    if (hasPhoto || hasRemove) {
+      const response = await api.post(
+        `/mentor/content/${id}`,
+        buildGuidanceFormData(payload, 'PUT'),
+        guidanceMultipartConfig
+      );
+      return response.data.data ?? response.data;
+    }
+
+    const response = await api.put(`/mentor/content/${id}`, payload);
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error updating content:', error.message);
+    throw error;
+  }
+};
+
+export const toggleGuidanceContentStatus = async (id: number): Promise<GuidanceContent> => {
+  try {
+    const response = await api.patch(`/mentor/content/${id}/unpublish`);
+    return response.data.data ?? response.data;
+  } catch (error: any) {
+    console.error('❌ Error toggling content status:', error.message);
+    throw error;
+  }
+};
+
+export const deleteGuidanceContent = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/mentor/content/${id}`);
+  } catch (error: any) {
+    console.error('❌ Error deleting content:', error.message);
     throw error;
   }
 };

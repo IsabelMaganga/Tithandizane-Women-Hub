@@ -22,7 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'mentor' => \App\Http\Middleware\MentorMiddleware::class
+            'mentor' => \App\Http\Middleware\MentorMiddleware::class,
+            'mentor.api' => \App\Http\Middleware\EnsureMentorApi::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -128,6 +128,20 @@ class ReportController extends Controller
             'status'         => $request->status,
         ]);
 
+        $mentor = $this->mentorUser();
+        $report->notifyOwner(
+            'mentor_response',
+            'Mentor Response Received',
+            $mentor
+                ? "{$mentor->name} responded to your report {$report->reference_number}."
+                : "A mentor responded to your report {$report->reference_number}.",
+            [
+                'status' => $request->status,
+                'response' => $request->response,
+                'mentor_name' => $mentor?->name,
+            ]
+        );
+
         return redirect()
             ->route('mentor.harassment.show', $id)
             ->with('success', 'Your response has been saved and the user has been notified.');

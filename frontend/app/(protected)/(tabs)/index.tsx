@@ -17,5 +17,5 @@ export default function SmartLandingPage() {
   }
 
   // deciding which landing screen to show
-  return user.role === 'mentor' ? <MentorDashboard /> : <UserDashboard />;
+  return user.role?.toLowerCase() === 'mentor' ? <MentorDashboard /> : <UserDashboard />;
 }

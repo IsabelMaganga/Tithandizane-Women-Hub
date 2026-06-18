@@ -6,14 +6,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') - Tithandizane Women Hub</title>
     
-    <!-- Tailwind + Font Awesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Chart.js CDN for analytics -->
+   
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <style>
-        /* Light Mode Variables (Default) */
+        
         :root {
             --bg-primary: #f0f2f5;
             --bg-secondary: #ffffff;
@@ -356,7 +355,7 @@
                 <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'active-nav' : '' }}" data-page="reports" style="color: var(--sidebar-text);">
                     <i class="fas fa-flag w-5"></i>
                     <span class="ml-3">Harassment Reports</span>
-                    <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-red-500 text-white" id="pendingReportsBadge"></span>
+                    <span class="ml-auto text-xs font-bold px-2 py-0.5 text-white" id="pendingReportsBadge"></span>
                 </a>
                 <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group" data-page="guidance" style="color: var(--sidebar-text);">
                     <i class="fas fa-book-open w-5"></i>
@@ -365,7 +364,7 @@
                 <a href="{{ route('admin.users.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active-nav' : '' }}" data-page="users" style="color: var(--sidebar-text);">
                     <i class="fas fa-user-circle w-5"></i>
                     <span class="ml-3">Users</span>
-                    <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-500 text-white" id="totalUsersBadge"></span>
+                    <span class="ml-auto text-xs px-2 py-0.5  text-white" id="totalUsersBadge"></span>
                 </a>
                 <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);">
                     <i class="fas fa-cog w-5"></i>

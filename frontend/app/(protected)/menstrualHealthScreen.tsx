@@ -1,12 +1,8 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { Redirect } from 'expo-router';
 
-const menstrualHealthScreen = () => {
-  return (
-    <View>
-      <Text>menstrualHealthScreen</Text>
-    </View>
-  )
-}
+const MenstrualHealthScreen = () => {
+  return <Redirect href="/(protected)/guidanceScreen" />;
+};
 
-export default menstrualHealthScreen
+export default MenstrualHealthScreen;

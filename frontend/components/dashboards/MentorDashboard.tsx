@@ -15,7 +15,7 @@ import Profile from '../Profile';
 
 const { width } = Dimensions.get('window');
 
-export default function UserDashboard() {
+export default function MentorDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const { colorScheme } = useThemeToggle();
@@ -133,6 +133,43 @@ export default function UserDashboard() {
             </View>
           </View>
 
+          {/* GUIDANCE CONTENT CARD */}
+          <Animated.View entering={FadeInDown.delay(300)} className="px-6 mt-6">
+            <LinearGradient
+              colors={['#6B21A8', '#7c3aed']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="rounded-[32px] p-6 shadow-xl"
+            >
+              <View className="flex-row justify-between items-start">
+                <View className="flex-1 pr-4">
+                  <Text className="text-purple-200 font-medium text-sm">Guidance Content</Text>
+                  <Text className="text-white text-xl font-black mt-1 leading-7">
+                    Publish educational articles for app users
+                  </Text>
+                  <Text className="text-purple-100 text-xs mt-2 leading-5">
+                    Menstrual Hygiene & General Issues
+                  </Text>
+                </View>
+                <MaterialCommunityIcons name="book-education" size={44} color="rgba(255,255,255,0.35)" />
+              </View>
+              <View className="flex-row gap-3 mt-5">
+                <TouchableOpacity
+                  onPress={() => handleNavigation("/(protected)/myContentScreen")}
+                  className="flex-1 bg-white py-3 rounded-2xl items-center"
+                >
+                  <Text className="text-[#6B21A8] font-bold text-sm">My Content</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleNavigation("/(protected)/publishContentScreen")}
+                  className="flex-1 bg-white/20 py-3 rounded-2xl items-center border border-white/30"
+                >
+                  <Text className="text-white font-bold text-sm">+ Publish</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+
           {/* QUICK ACTIONS GRID */}
           <Text className="px-8 mt-10 text-slate-500 dark:text-white font-black text-lg mb-4">Core Services</Text>
           <View className="flex-row flex-wrap px-4 border-t border-gray-200 dark:border-slate-700 pt-2">
@@ -150,11 +187,18 @@ export default function UserDashboard() {
               isMaterial
             />
             <GridItem 
-              title="Hygiene Hub" 
-              icon="water-outline" 
-              color="#0ea5e9" 
-              onPress={() => handleNavigation("/(protected)/menstrualHealthScreen")} 
-              isIonicons
+              title="Guidance" 
+              icon="book-open-variant" 
+              color="#6B21A8" 
+              onPress={() => handleNavigation("/(protected)/guidanceScreen")} 
+              isMaterial
+            />
+            <GridItem 
+              title="My Content" 
+              icon="file-document-edit-outline" 
+              color="#9333ea" 
+              onPress={() => handleNavigation("/(protected)/myContentScreen")} 
+              isMaterial
             />
             <GridItem 
               title="Reports" 

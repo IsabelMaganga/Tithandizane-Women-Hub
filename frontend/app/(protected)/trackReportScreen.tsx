@@ -94,7 +94,7 @@ export default function TrackReportScreen() {
           <View style={{ backgroundColor: '#f0fdf4', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#bbf7d0', marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <MaterialCommunityIcons name="check-circle" size={22} color="#16a34a" />
-              <Text style={{ color: '#15803d', fontWeight: '700', fontSize: 15 }}>Report Submitted</Text>
+            <Text style={{ color: '#15803d', fontWeight: '700', fontSize: 15 }}>Report submitted successfully</Text>
             </View>
             <Text style={{ color: '#166534', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
               Your report has been received. Save your reference code below — you'll need it to check back for a mentor's response.

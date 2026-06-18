@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, ImageBackground, Text, Pressable, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import Profile from '../Profile';
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { useThemeToggle } from "../../hooks/useTheme";
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome6, Ionicons, Feather } from '@expo/vector-icons';
 import Animated, { FadeInDown, BounceIn, FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
+import { getNotifications } from '../../services/api';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -17,6 +18,23 @@ export default function UserDashboard() {
   const { colorScheme } = useThemeToggle();
   const { t } = useTranslation();
   const isDark = colorScheme === "dark";
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getNotifications()
+        .then(({ unread_count }) => {
+          if (active) setUnreadCount(unread_count);
+        })
+        .catch(() => {
+          if (active) setUnreadCount(0);
+        });
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-slate-950">
@@ -61,7 +79,13 @@ export default function UserDashboard() {
             className="w-11 h-11 bg-white/80 dark:bg-slate-800 rounded-2xl items-center justify-center shadow-sm border border-white/20"
           >
             <Ionicons name="notifications-outline" size={22} color={isDark ? "white" : "#1e293b"} />
-            <View className="absolute top-3 right-3 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800" />
+            {unreadCount > 0 && (
+              <View className="absolute top-2 right-2 min-w-[18px] h-[18px] bg-rose-500 rounded-full border-2 border-white dark:border-slate-800 items-center justify-center px-1">
+                <Text className="text-white text-[10px] font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 

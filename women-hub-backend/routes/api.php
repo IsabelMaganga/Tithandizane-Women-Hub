@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\Admin\HarassmentReportController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\Api\GuidanceContentController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\MentorController;
@@ -33,6 +34,20 @@ Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts'
 // Harassment report routes (public - anonymous)
 Route::post('/harassment-report/submit', [HarassmentReportController::class, 'submitReport']);
 Route::post('/harassment-report/anonymous', [HarassmentReportController::class, 'submitAnonymousReport']);
+
+// Guidance content routes (authenticated users)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/content', [GuidanceContentController::class, 'publicIndex']);
+    Route::get('/content/{id}', [GuidanceContentController::class, 'publicShow']);
+
+    Route::prefix('mentor')->middleware('mentor.api')->group(function () {
+        Route::get('/content', [GuidanceContentController::class, 'mentorIndex']);
+        Route::post('/content', [GuidanceContentController::class, 'store']);
+        Route::put('/content/{id}', [GuidanceContentController::class, 'update']);
+        Route::patch('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
+        Route::delete('/content/{id}', [GuidanceContentController::class, 'destroy']);
+    });
+});
 
 // ============================================
 // API V1 ROUTES
@@ -100,6 +115,18 @@ Route::prefix('v1')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'getNotifications']);
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+
+        // Guidance content (authenticated users)
+        Route::get('/content', [GuidanceContentController::class, 'publicIndex']);
+        Route::get('/content/{id}', [GuidanceContentController::class, 'publicShow']);
+
+        Route::prefix('mentor')->middleware('mentor.api')->group(function () {
+            Route::get('/content', [GuidanceContentController::class, 'mentorIndex']);
+            Route::post('/content', [GuidanceContentController::class, 'store']);
+            Route::put('/content/{id}', [GuidanceContentController::class, 'update']);
+            Route::patch('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
+            Route::delete('/content/{id}', [GuidanceContentController::class, 'destroy']);
+        });
         
         // ============================================
         // ADMIN ROUTES
