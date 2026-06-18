@@ -31,11 +31,42 @@
                 background-repeat: no-repeat;
                 z-index: -1 ;
             }
+
+             .animate-fade-in {
+                animation: fadeInUp 0.8s ease-out forwards;
+            }
+            .animate-fade-text-in {
+                animation: fadeInUpText 1.2s ease-out forwards;
+            }
+
+            @keyframes fadeInUpText {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+             @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+
         </style>
     </head>
     <body class=" bg-[#874179]/80 text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
         <img src="{{ asset('images/shape (1).png')}}" class="fixed top-0 left-0 z-10 object-cover w-40 " alt="left eclipse sharp">
-        <img src="{{ asset('images/shape (1).png')}}" class="fixed bottom-0 right-0 z-10 object-cover w-80 opacity-30 -rotate-180 " alt="right eclipse sharp">
+        <img src="{{ asset('images/shape (1).png')}}" class="fixed bottom-0 right-0 z-10 object-cover -rotate-180 w-80 opacity-30 " alt="right eclipse sharp">
 
         <header class=" w-[90%] md:w-full sticky  flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6 not-has-[nav]:hidden">
             <a  href="{{ route('get.started')}}" class="logo decoration-0 text-[#ffff] flex justify-start items-center gap-3">
@@ -59,7 +90,7 @@
         <div class="relative grid items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
 
                 <main class="z-20 flex flex-col items-center justify-center w-full max-w-5xl gap-5 mt-0 text-gray-100 md:pt-10 md:flex-row ">
-                    <p class="mb-2  w-[90%] mt-10 max-w-5xl text-shadow-black text-shadow-2xs font-semibold text-3xl md:text-4xl text-center  ">
+                    <p class="animate-fade-text-in mb-2  w-[90%] mt-10 max-w-5xl text-shadow-black text-shadow-2xs font-semibold text-3xl md:text-4xl text-center  ">
                         Empowering women to claim their rights, restore their dignity, and lead with justice
                     </p>
                 </main>
@@ -67,7 +98,7 @@
                 {{-- buttons section --}}
                 <main class=" relative z-[100] grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-5 mb-5 p md:pt-0 w-full justify-center items-top text-gray-200">
 
-                    <div class=" flex-1 mx-auto  text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80  transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
+                    <div class="animate-fade-in flex-1 mx-auto  text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80  transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
 
                         <div class="flex items-center gap-3 top-text-section">
                             <i class="fa-regular fa-circle-user"></i>
@@ -81,14 +112,14 @@
                     <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
                         <li>
                             <a href="{{ route('mentor.login') }}"
-                                class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95]  border-[#eeeeec]/20  transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
+                                class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] hover:ml-2 relative transition-all duration-200 ease-in-out  border-[#eeeeec]/20   px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
                                 Enter Portal
                             </a>
                         </li>
                     </ul>
                 </div>
 
-                    <div class=" flex-1 mx-auto text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
+                    <div class="animate-fade-in flex-1 mx-auto text-[30px] w-[90%] md:w-[100%] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75  p-6 backdrop-blur-xl  text-[#ffffff] shadow-2xl  rounded-2xl">
 
                         <div class="flex items-center gap-3 top-text-section">
                             <i class="fa-regular fa-circle-user"></i>
@@ -102,7 +133,7 @@
                     <ul class="flex gap-3 mt-5 text-[20px] leading-normal">
     <li>
         <a href="{{ route('admin.login') }}"
-           class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] border-[#eeeeec]/20 transition delay-75 px-5 py-3 rounded-3xl border text-white text-sm leading-normal cursor-pointer">
+           class="inline-block bg-[#962980] hover:ml-2 relative  active:bg-[#5c1a4f] hover:bg-[#af2a95] border-[#eeeeec]/20 transition-all duration-200 ease-in-out px-5 py-3 rounded-3xl border text-white text-sm leading-normal cursor-pointer">
             Manage Platform
         </a>
     </li>

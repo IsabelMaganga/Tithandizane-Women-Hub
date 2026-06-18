@@ -80,14 +80,30 @@
         input:-webkit-autofill ~ .password-toggle {
             display: none;
         }
+
+
+        .animate-fade-in {
+            animation: fadeInUp 1.2s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
 <body class="bg-[#874179]/80 relative text-[#1b1b18] flex p-0 lg:p-0 items-center lg:justify-center min-h-screen flex-col">
 
     <!-- Decorative corner shapes -->
-    <img src="{{ asset('images/shape (1).png')}}" class="z-10  object-cover w-40 fixed top-0 left-0" alt="">
-    <img src="{{ asset('images/shape (1).png')}}" class="z-10 object-cover w-40 fixed bottom-0 -rotate-180 right-0" alt="">
+    <img src="{{ asset('images/shape (1).png')}}" class="fixed top-0 left-0 z-10 object-cover w-40" alt="">
+    <img src="{{ asset('images/shape (1).png')}}" class="fixed bottom-0 right-0 z-10 object-cover w-40 -rotate-180" alt="">
 
     <!-- Header -->
     <header class="w-[90%] md:w-full sticky flex flex-wrap items-center shadow-2xl backdrop-blur-2xl rounded-3xl px-5 justify-between z-50 py-2 top-5 lg:max-w-4xl max-w-7xl text-sm mb-6">
@@ -109,10 +125,10 @@
     </header>
 
     <!-- Main Content -->
-    <div class="grid relative items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow">
+    <div class="relative grid items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow">
 
         <!-- Page Title -->
-        {{--  <main class="flex max-w-5xl mt-0 z-20 gap-5 md:pt-6 w-full justify-center items-center text-gray-100 flex-col">
+        {{--  <main class="z-20 flex flex-col items-center justify-center w-full max-w-5xl gap-5 mt-0 text-gray-100 md:pt-6">
             <p class="mb-2 w-[90%] mt-6 max-w-5xl font-semibold text-3xl md:text-4xl text-center" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
                 Admin Platform Login
             </p>
@@ -122,7 +138,7 @@
         </main>  --}}
 
         <!-- Login Card -->
-        <main class="grid grid-cols-1 max-w-4xl mx-auto z-20 gap-5 mb-5 pt-4 md:pt-4 w-full justify-center items-center text-gray-200">
+        <main class="z-20 grid items-center justify-center w-full max-w-4xl grid-cols-1 gap-5 pt-4 mx-auto mb-5 text-gray-200 animate-fade-in md:pt-4">
 
             <div class="flex-1 mx-auto w-[90%] md:w-[480px] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75 p-8 backdrop-blur-xl text-[#ffffff] shadow-2xl rounded-2xl">
 
@@ -141,7 +157,7 @@
 
                 <!-- Session Status -->
                 @if (session('status'))
-                    <div class="mb-4 text-sm text-green-300 bg-green-900/30 border border-green-500/30 rounded-xl px-4 py-3">
+                    <div class="px-4 py-3 mb-4 text-sm text-green-300 border bg-green-900/30 border-green-500/30 rounded-xl">
                         {{ session('status') }}
                     </div>
                 @endif
@@ -151,7 +167,7 @@
                     @csrf
                     <!-- Email -->
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-200 mb-1">
+                        <label for="email" class="block mb-1 text-sm font-medium text-gray-200">
                             Email Address
                         </label>
                         <input
@@ -172,12 +188,12 @@
 
                     <!-- Password with Eye Toggle -->
                     <div>
-                        <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center justify-between mb-1">
                             <label for="password" class="block text-sm font-medium text-gray-200">
                                 Password
                             </label>
                             @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-xs text-pink-300 hover:text-pink-200 transition underline underline-offset-2">
+                                <a href="{{ route('password.request') }}" class="text-xs text-pink-300 underline transition hover:text-pink-200 underline-offset-2">
                                     Forgot password?
                                 </a>
                             @endif
@@ -237,7 +253,7 @@
 
                 <!-- Back link -->
                 <div class="mt-6 text-center">
-                    <a href="{{ route('get.started') }}" class="text-xs text-gray-400 hover:text-pink-300 transition underline underline-offset-2">
+                    <a href="{{ route('get.started') }}" class="text-xs text-gray-400 underline transition hover:text-pink-300 underline-offset-2">
                         ← Back to portal selection
                     </a>
                 </div>
@@ -245,7 +261,7 @@
         </main>
 
         <!-- Footer -->
-        <p class="flex text-sm text-center justify-center text-gray-300 w-full py-2">
+        <p class="flex justify-center w-full py-2 text-sm text-center text-gray-300">
             &copy; 2026 Tithandizane-women-hub . All rights reserved
         </p>
     </div>

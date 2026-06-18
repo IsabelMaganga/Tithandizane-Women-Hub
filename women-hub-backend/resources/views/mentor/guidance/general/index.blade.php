@@ -19,11 +19,28 @@
         </div>
     </div>
 
-    <!-- Header -->
-    <div class="mt-2 mb-8">
-        <h1 class="text-3xl font-semibold text-gray-900">general Content</h1>
-        <p class="mt-2 text-sm text-gray-600">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Harum, vitae quasi cupiditate esse itaque architecto. Qui corporis tempora saepe, ut hic placeat possimus, ab enim, repellendus officiis optio tempore debitis.</p>
-    </div>
+    <!-- Header Section -->
+        <div class="relative mb-10 overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 p-8 md:p-10">
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-10 -mb-10"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <i class="text-2xl text-white fas fa-hand-sparkles"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white md:text-4xl">general Content</h1>
+                    </div>
+                </div>
+                <p class="max-w-2xl text-purple-100 text-sm md:text-base leading-relaxed">
+                    Explore our comprehensive collection of hygiene resources designed to promote health, wellness, and cleanliness in your community. Stay informed with expert guidelines and practical tips.
+                </p>
+
+
+            </div>
+        </div>
 
 
 

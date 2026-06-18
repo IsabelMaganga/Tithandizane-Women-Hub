@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Mentor;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB, Hash, Log, Mail, Notification, RateLimiter};
+use Illuminate\Support\Facades\{Auth, DB, Hash, Log, Mail, RateLimiter};
+use App\Models\Notification as AppNotification;
+
 use App\Http\Controllers\Controller;
 use App\Notifications\WelcomeNotification;
 
@@ -42,8 +44,19 @@ class AuthController extends Controller
                 ])->onlyInput('email');
             }
 
-            // Optional: Send welcome notification (consider moving this to a listener)
-            // Notification::send($user, new WelcomeNotification($user));
+            // Create a local notification record matching our custom schema
+            AppNotification::create([
+                'type' => WelcomeNotification::class,
+                'user_id' => $user->id,
+                'report_id' => null,
+                'title' => "Tithandizane Women's Hub,",
+                'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
+                'data' => [
+                    'title' => "Tithandizane Women's Hub,",
+                    'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
+                    'time' => now()->toDateTimeString(),
+                ],
+            ]);
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');
