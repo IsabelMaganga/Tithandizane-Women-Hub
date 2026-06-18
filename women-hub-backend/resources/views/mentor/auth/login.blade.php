@@ -45,6 +45,20 @@
             to   { transform: rotate(360deg); }
         }
 
+        .animate-fade-in {
+            animation: fadeInUp 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
 
     </style>
@@ -63,7 +77,7 @@
     <div class="absolute inset-0 z-10 w-full h-full overflow-hidden overlay bg-black/40"></div>
 
     {{-- left-grid container --}}
-    <div class="z-10 flex flex-col items-center justify-between w-full min-h-screen gap-20 px-6 pt-4 pb-10 bg-white left-grid">
+    <div class="z-10 flex flex-col items-center justify-between w-full min-h-screen gap-20 px-6 pt-4 pb-10 bg-white animate-fade-in left-grid">
 
         {{-- top-left-details-section --}}
         <div class="flex items-center justify-start w-full gap-3 mt-1 top">
@@ -213,9 +227,10 @@
     let signinForm = document.getElementById('signinForm');
 
     signinForm.addEventListener('submit', function(e) {
+        {{--  e.preventDefault();  --}}
         let signInBtn = document.getElementById('signInBtn');
           signInBtn.innerHTML = `
-                    <p class='btn-spinning w-5 h-5 border-l-2 rounded-full border-white'></p>
+                    <p class='w-5 h-5 border-l-2 border-white rounded-full btn-spinning'></p>
                     <p>signing in...</p>`;
     });
 
@@ -224,7 +239,6 @@
             const msgSuccess = document.getElementById('success');
             {{--  const signInBtn = document.getElementById('signInBtn');  --}}
             const msgError = document.getElementById('error');
-
 
             if(msgSuccess){
                 msgSuccess.style.display = 'flex';
