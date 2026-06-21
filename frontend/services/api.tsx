@@ -151,7 +151,7 @@ export interface AppNotification {
 }
 
 // Update this to your computer's WiFi IPv4 (run: ipconfig)
-const COMPUTER_IP = '192.168.173.205';
+const COMPUTER_IP = '192.168.204.205';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform

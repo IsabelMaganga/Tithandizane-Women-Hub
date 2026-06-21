@@ -498,24 +498,7 @@
             </div>
             @endif
 
-            {{-- Quick Actions --}}
-            @if(!in_array($report->status, ['resolved', 'dismissed']))
-            <div class="detail-card">
-                <div class="card-title">
-                    <i class="fas fa-bolt" style="color: var(--orange);"></i>
-                    Quick actions
-                </div>
-                <button onclick="markInProgress()" class="btn-act btn-reviewing">
-                    <i class="fas fa-play"></i> Mark in progress
-                </button>
-                <button onclick="markResolved()" class="btn-act btn-resolved">
-                    <i class="fas fa-check-circle"></i> Mark resolved
-                </button>
-                <button onclick="markDismissed()" class="btn-act btn-dismissed">
-                    <i class="fas fa-times-circle"></i> Dismiss report
-                </button>
-            </div>
-            @endif
+           
 
             {{-- Report Info --}}
             <div class="detail-card">

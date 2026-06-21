@@ -1,7 +1,8 @@
 @extends('admin.layouts.admin')
+
 @section('title', 'Manage Users')
 @section('page-title', 'User Management')
-@section('page-subtitle', 'View and manage all registered users')
+@section('page-subtitle', 'View and manage all registered users across the platform')
 
 @push('styles')
 <style>
@@ -12,6 +13,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        border: 1px solid var(--border-color);
     }
     
     .stat-card-modern::before {
@@ -22,353 +24,565 @@
         right: 0;
         height: 4px;
         background: linear-gradient(90deg, var(--teal-green), var(--blue));
+        opacity: 0.6;
     }
     
     .stat-card-modern:hover {
-        transform: translateY(-5px);
+        transform: translateY(-4px);
         box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
     }
     
-    /* Gradient Border for Filters */
-    .filter-section-modern {
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon-blue { background: rgba(52, 152, 219, 0.12); color: var(--blue); }
+    .stat-icon-green { background: rgba(46, 204, 113, 0.12); color: var(--teal-green); }
+    .stat-icon-orange { background: rgba(243, 156, 18, 0.12); color: var(--orange); }
+    .stat-icon-red { background: rgba(231, 76, 60, 0.12); color: var(--red); }
+    .stat-icon-purple { background: rgba(155, 89, 182, 0.12); color: var(--purple); }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .stat-trend {
+        font-size: 0.75rem;
+        padding: 2px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .stat-trend-up { background: rgba(46, 204, 113, 0.15); color: var(--teal-green); }
+    .stat-trend-down { background: rgba(231, 76, 60, 0.15); color: var(--red); }
+    .stat-trend-neutral { background: rgba(155, 89, 182, 0.15); color: var(--purple); }
+    
+    /* Progress Bar */
+    .progress-bar {
+        height: 4px;
+        border-radius: 4px;
+        background: var(--border-color);
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    
+    .progress-fill-green { background: var(--teal-green); }
+    .progress-fill-blue { background: var(--blue); }
+    .progress-fill-orange { background: var(--orange); }
+    .progress-fill-red { background: var(--red); }
+    
+    /* Filter Section */
+    .filter-section {
         background: var(--card-bg);
         border-radius: 1rem;
-        position: relative;
         padding: 1.5rem;
+        border: 1px solid var(--border-color);
     }
     
-    /* Modern Table Styles */
-    .modern-table {
+    .filter-input {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    
-    .modern-table th {
-        padding: 1rem 1.5rem;
-        text-align: left;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        background: var(--bg-secondary);
-        border-bottom: 2px solid var(--border-color);
-    }
-    
-    .modern-table td {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--border-color);
-        transition: background 0.2s ease;
-    }
-    
-    .modern-table tbody tr:hover {
-        background: var(--light-gray);
-        cursor: pointer;
-    }
-    
-    /* Action Buttons */
-    .action-btn {
-        padding: 0.5rem;
-        border-radius: 0.5rem;
+        padding: 0.625rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
+        color: var(--text-primary);
         transition: all 0.2s ease;
-        background: transparent;
-        cursor: pointer;
+        font-size: 0.875rem;
     }
     
-    .action-btn-view:hover {
-        background: var(--light-blue);
-        color: var(--blue);
-        transform: scale(1.1);
-    }
-    
-    .action-btn-edit:hover {
-        background: var(--light-orange);
-        color: var(--orange);
-        transform: scale(1.1);
-    }
-    
-    .action-btn-delete:hover {
-        background: var(--light-red);
-        color: var(--red);
-        transform: scale(1.1);
-    }
-    
-    /* Avatar Animation */
-    .user-avatar-modern {
-        transition: transform 0.2s ease;
-    }
-    
-    .user-avatar-modern:hover {
-        transform: scale(1.1);
-    }
-    
-    /* Search Input Focus Effect */
-    .search-input:focus {
+    .filter-input:focus {
+        outline: none;
         border-color: var(--blue);
         box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
     
-    /* Custom Checkbox */
-    .checkbox-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .checkbox-wrapper input {
-        width: 1.2rem;
-        height: 1.2rem;
+    .filter-select {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
         cursor: pointer;
-        accent-color: var(--blue);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
     }
     
-    /* Export Button */
-    .export-btn {
-        background: linear-gradient(135deg, var(--teal-green), var(--green));
-        transition: all 0.3s ease;
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
     
-    .export-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px -5px rgba(46, 204, 113, 0.3);
+    .filter-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.375rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
+    
+    /* Table Styles */
+    .table-wrapper {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .modern-table th {
+        padding: 0.875rem 1.25rem;
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+        background: var(--bg-primary);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+    
+    .modern-table td {
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        vertical-align: middle;
+    }
+    
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: var(--bg-primary);
+    }
+    
+    .modern-table tbody tr:active {
+        transform: scale(0.99);
+    }
+    
+    /* Avatar */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+    
+    .user-avatar:hover {
+        transform: scale(1.05);
+        border-color: var(--blue);
+    }
+    
+    /* Badge */
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+    
+    .badge-admin { background: rgba(155, 89, 182, 0.15); color: var(--purple); }
+    .badge-mentor { background: rgba(52, 152, 219, 0.15); color: var(--blue); }
+    .badge-user { background: rgba(46, 204, 113, 0.15); color: var(--teal-green); }
+    
+    .badge-active { background: rgba(46, 204, 113, 0.15); color: var(--teal-green); }
+    .badge-inactive { background: rgba(243, 156, 18, 0.15); color: var(--orange); }
+    .badge-banned { background: rgba(231, 76, 60, 0.15); color: var(--red); }
+    
+    /* Action Buttons */
+    .action-btn {
+        padding: 0.375rem 0.625rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        background: transparent;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .action-btn-view:hover { background: rgba(52, 152, 219, 0.15); color: var(--blue); }
+    .action-btn-edit:hover { background: rgba(243, 156, 18, 0.15); color: var(--orange); }
+    .action-btn-delete:hover { background: rgba(231, 76, 60, 0.15); color: var(--red); }
     
     /* Bulk Action Bar */
-    .bulk-action-bar {
-        background: var(--blue);
-        color: white;
-        border-radius: 0.75rem;
-        padding: 0.75rem 1.5rem;
+    .bulk-bar {
         display: none;
         align-items: center;
         justify-content: space-between;
+        padding: 0.75rem 1.5rem;
+        background: var(--blue);
+        color: white;
+        border-radius: 0.75rem;
         margin-bottom: 1rem;
         animation: slideDown 0.3s ease;
     }
     
+    .bulk-bar.show {
+        display: flex;
+    }
+    
     @keyframes slideDown {
-        from {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Advanced Filter Panel */
-    .advanced-filters {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-out;
+    .bulk-btn {
+        padding: 0.375rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: white;
     }
     
-    .advanced-filters.show {
-        max-height: 500px;
+    .bulk-btn:hover { opacity: 0.8; transform: scale(0.97); }
+    .bulk-btn-danger { background: #dc2626; }
+    .bulk-btn-success { background: #16a34a; }
+    .bulk-btn-warning { background: #ea580c; }
+    .bulk-btn-secondary { background: #6b7280; }
+    
+    /* Checkbox */
+    .checkbox-custom {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid var(--border-color);
+        cursor: pointer;
+        accent-color: var(--blue);
+        transition: all 0.2s ease;
     }
     
-    /* Loading Skeleton */
-    .skeleton {
-        background: linear-gradient(90deg, var(--border-color) 25%, var(--light-gray) 50%, var(--border-color) 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
+    .checkbox-custom:checked {
+        border-color: var(--blue);
     }
     
-    @keyframes loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .modal-overlay.show {
+        display: flex;
+    }
+    
+    .modal-container {
+        background: var(--card-bg);
+        border-radius: 1.25rem;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow: auto;
+        animation: modalIn 0.3s ease;
+    }
+    
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.95) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    .modal-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, var(--blue), var(--purple));
+        border-radius: 1.25rem 1.25rem 0 0;
+    }
+    
+    .modal-header h3 {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .modal-close:hover { transform: rotate(90deg); opacity: 0.8; }
+    .modal-body { padding: 2rem; }
+    .modal-footer { padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 3rem 1.5rem;
+        text-align: center;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--text-secondary);
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stat-card-modern { padding: 1rem; }
+        .stat-value { font-size: 1.5rem; }
+        .stat-icon { width: 40px; height: 40px; font-size: 1.25rem; }
+        .modal-container { max-width: 95%; margin: 1rem; }
+        .modern-table th, .modern-table td { padding: 0.625rem 0.875rem; font-size: 0.8rem; }
+        .bulk-bar { flex-wrap: wrap; gap: 0.5rem; }
+        .bulk-bar .flex { flex-wrap: wrap; gap: 0.5rem; }
     }
 </style>
 @endpush
 
 @section('content')
 <div class="space-y-6">
-    <!-- Modern Statistics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Users -->
-        <div class="stat-card-modern p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 rounded-xl bg-blue/10">
-                    <i class="fas fa-users text-2xl text-blue"></i>
+        <div class="stat-card-modern p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="stat-label">Total Users</p>
+                    <p class="stat-value mt-1">{{ $totalUsers ?? 0 }}</p>
                 </div>
-                <span class="text-3xl font-bold text-primary-color">{{ $totalUsers }}</span>
+                <div class="stat-icon stat-icon-blue">
+                    <i class="fas fa-users"></i>
+                </div>
             </div>
-            <div>
-                <p class="text-secondary-color text-sm font-medium">Total Users</p>
-                <div class="mt-2 flex items-center gap-2">
-                    <span class="text-xs text-success">
-                        <i class="fas fa-arrow-up"></i> +12%
-                    </span>
-                    <span class="text-xs text-secondary-color">from last month</span>
-                </div>
+            <div class="mt-3">
+                <span class="stat-trend stat-trend-up">
+                    <i class="fas fa-arrow-up"></i> 12%
+                </span>
+                <span class="text-xs text-secondary-color ml-2">from last month</span>
             </div>
         </div>
 
         <!-- Active Users -->
-        <div class="stat-card-modern p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 rounded-xl bg-success/10">
-                    <i class="fas fa-user-check text-2xl text-success"></i>
+        <div class="stat-card-modern p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="stat-label">Active Users</p>
+                    <p class="stat-value mt-1">{{ $activeUsers ?? 0 }}</p>
                 </div>
-                <span class="text-3xl font-bold text-primary-color">{{ $activeUsers }}</span>
+                <div class="stat-icon stat-icon-green">
+                    <i class="fas fa-user-check"></i>
+                </div>
             </div>
-            <div>
-                <p class="text-secondary-color text-sm font-medium">Active Users</p>
-                <div class="mt-2">
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-success rounded-full h-2" style="width: {{ $totalUsers > 0 ? ($activeUsers / $totalUsers) * 100 : 0 }}%"></div>
-                    </div>
-                    <p class="text-xs text-secondary-color mt-1">{{ $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) : 0 }}% of total</p>
+            <div class="mt-3">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill progress-fill-green" style="width: {{ $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) : 0 }}%"></div>
                 </div>
+                <span class="text-xs text-secondary-color mt-1 block">{{ $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) : 0 }}% of total</span>
             </div>
         </div>
 
         <!-- Inactive Users -->
-        <div class="stat-card-modern p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 rounded-xl bg-warning/10">
-                    <i class="fas fa-user-clock text-2xl text-warning"></i>
+        <div class="stat-card-modern p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="stat-label">Inactive Users</p>
+                    <p class="stat-value mt-1">{{ $inactiveUsers ?? 0 }}</p>
                 </div>
-                <span class="text-3xl font-bold text-primary-color">{{ $inactiveUsers }}</span>
+                <div class="stat-icon stat-icon-orange">
+                    <i class="fas fa-user-clock"></i>
+                </div>
             </div>
-            <div>
-                <p class="text-secondary-color text-sm font-medium">Inactive Users</p>
-                <div class="mt-2 flex items-center gap-2">
-                    <span class="text-xs text-warning">
-                        <i class="fas fa-clock"></i> Needs attention
-                    </span>
-                </div>
+            <div class="mt-3">
+                <span class="stat-trend stat-trend-neutral">
+                    <i class="fas fa-clock"></i> Needs review
+                </span>
             </div>
         </div>
 
         <!-- Banned Users -->
-        <div class="stat-card-modern p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 rounded-xl bg-danger/10">
-                    <i class="fas fa-ban text-2xl text-danger"></i>
+        <div class="stat-card-modern p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="stat-label">Banned Users</p>
+                    <p class="stat-value mt-1">{{ $bannedUsers ?? 0 }}</p>
                 </div>
-                <span class="text-3xl font-bold text-primary-color">{{ $bannedUsers }}</span>
+                <div class="stat-icon stat-icon-red">
+                    <i class="fas fa-ban"></i>
+                </div>
             </div>
-            <div>
-                <p class="text-secondary-color text-sm font-medium">Banned Users</p>
-                <div class="mt-2 flex items-center gap-2">
-                    <span class="text-xs text-danger">
-                        <i class="fas fa-exclamation-triangle"></i> Restricted access
-                    </span>
-                </div>
+            <div class="mt-3">
+                <span class="stat-trend stat-trend-down">
+                    <i class="fas fa-exclamation-triangle"></i> Restricted
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Role Distribution & Quick Actions -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="filter-section-modern">
-            <div class="flex items-center gap-3 mb-4">
-                <i class="fas fa-chart-pie text-xl text-purple"></i>
+    <!-- Role Distribution & Quick Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="filter-section">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-chart-pie" style="color: var(--purple);"></i>
                 <h3 class="font-semibold text-primary-color">Role Distribution</h3>
             </div>
-            <div class="flex flex-wrap gap-3">
-                @foreach($roleStats as $stat)
-                <div class="px-4 py-2 rounded-full" style="background: var(--light-purple);">
-                    <span class="text-sm font-medium" style="color: var(--purple);">
-                        {{ ucfirst($stat->role) }}: {{ $stat->count }}
-                    </span>
-                </div>
+            <div class="flex flex-wrap gap-2">
+                @foreach($roleStats ?? [] as $stat)
+                <span class="badge badge-admin">
+                    {{ ucfirst($stat->role) }} ({{ $stat->count }})
+                </span>
                 @endforeach
             </div>
         </div>
 
-        <div class="filter-section-modern">
-            <div class="flex items-center gap-3 mb-4">
-                <i class="fas fa-chart-line text-xl text-info"></i>
+        <div class="filter-section">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-chart-line" style="color: var(--blue);"></i>
                 <h3 class="font-semibold text-primary-color">Quick Stats</h3>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <p class="text-xs text-secondary-color">Active Rate</p>
+                    <p class="text-xs text-secondary-color uppercase tracking-wide">Active Rate</p>
                     <p class="text-2xl font-bold text-primary-color">{{ $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) : 0 }}%</p>
                 </div>
                 <div>
-                    <p class="text-xs text-secondary-color">Banned Rate</p>
+                    <p class="text-xs text-secondary-color uppercase tracking-wide">Banned Rate</p>
                     <p class="text-2xl font-bold text-primary-color">{{ $totalUsers > 0 ? round(($bannedUsers / $totalUsers) * 100) : 0 }}%</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Search and Filters Section -->
-    <div class="filter-section-modern">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-filter text-lg text-purple"></i>
+    <!-- Search and Filters -->
+    <div class="filter-section">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-sliders-h" style="color: var(--purple);"></i>
                 <h3 class="font-semibold text-primary-color">Filter Users</h3>
             </div>
-            <button type="button" onclick="toggleAdvancedFilters()" class="text-sm text-blue hover:underline">
-                <i class="fas fa-sliders-h mr-1"></i> Advanced Filters
+            <button onclick="toggleFilters()" class="text-sm" style="color: var(--blue);">
+                <i class="fas fa-chevron-down mr-1"></i> Advanced
             </button>
         </div>
 
         <form method="GET" action="{{ route('admin.users.index') }}" id="filterForm">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">
-                        <i class="fas fa-search mr-1"></i> Search
-                    </label>
-                    <input type="text"
-                           name="search"
-                           value="{{ request('search') }}"
-                           placeholder="Name, email or phone..."
-                           class="search-input w-full px-4 py-2.5 rounded-lg border border-color bg-transparent text-primary-color focus:outline-none focus:ring-2 focus:ring-blue transition">
+                    <label class="filter-label">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="Name, email or phone..." class="filter-input">
                 </div>
-               
                 <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">
-                        <i class="fas fa-tag mr-1"></i> Role
-                    </label>
-                    <select name="role" class="w-full px-4 py-2.5 rounded-lg border border-color bg-transparent text-primary-color focus:outline-none focus:ring-2 focus:ring-blue">
+                    <label class="filter-label">Role</label>
+                    <select name="role" class="filter-select">
                         <option value="">All Roles</option>
-                        <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>👤 User</option>
-                        <option value="mentor" {{ request('role') == 'mentor' ? 'selected' : '' }}>🎓 Mentor</option>
-                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>⚙️ Admin</option>
+                        <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
+                        <option value="mentor" {{ request('role') == 'mentor' ? 'selected' : '' }}>Mentor</option>
+                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                     </select>
                 </div>
-               
                 <div>
-                    <label class="block text-sm font-medium text-secondary-color mb-2">
-                        <i class="fas fa-circle mr-1"></i> Status
-                    </label>
-                    <select name="status" class="w-full px-4 py-2.5 rounded-lg border border-color bg-transparent text-primary-color focus:outline-none focus:ring-2 focus:ring-blue">
+                    <label class="filter-label">Status</label>
+                    <select name="status" class="filter-select">
                         <option value="">All Status</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>✅ Active</option>
-                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>⏸️ Inactive</option>
-                        <option value="banned" {{ request('status') == 'banned' ? 'selected' : '' }}>🚫 Banned</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="banned" {{ request('status') == 'banned' ? 'selected' : '' }}>Banned</option>
                     </select>
                 </div>
-               
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 px-6 py-2.5 bg-blue text-white rounded-lg hover:opacity-90 transition transform hover:scale-105">
+                    <button type="submit" class="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--blue); color: white;">
                         <i class="fas fa-search mr-2"></i>Apply
                     </button>
-                    <a href="{{ route('admin.users.index') }}" class="px-6 py-2.5 border border-color rounded-lg text-secondary-color hover:bg-gray-100 transition">
-                        <i class="fas fa-redo mr-2"></i>Reset
+                    <a href="{{ route('admin.users.index') }}" class="px-4 py-2 rounded-lg border transition hover:bg-gray-100" style="border-color: var(--border-color); color: var(--text-secondary);">
+                        <i class="fas fa-undo"></i>
                     </a>
                 </div>
             </div>
 
-            <!-- Advanced Filters Panel -->
-            <div id="advancedFilters" class="advanced-filters mt-4 pt-4 border-t border-color">
+            <!-- Advanced Filters -->
+            <div id="advancedFilters" class="mt-4 pt-4 border-t" style="border-color: var(--border-color); display: none;">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-secondary-color mb-2">Date From</label>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full px-4 py-2 rounded-lg border border-color bg-transparent text-primary-color">
+                        <label class="filter-label">Date From</label>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="filter-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-secondary-color mb-2">Date To</label>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full px-4 py-2 rounded-lg border border-color bg-transparent text-primary-color">
+                        <label class="filter-label">Date To</label>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="filter-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-secondary-color mb-2">Email Verified</label>
-                        <select name="email_verified" class="w-full px-4 py-2 rounded-lg border border-color bg-transparent text-primary-color">
+                        <label class="filter-label">Email Verified</label>
+                        <select name="email_verified" class="filter-select">
                             <option value="">All</option>
                             <option value="yes" {{ request('email_verified') == 'yes' ? 'selected' : '' }}>Verified</option>
                             <option value="no" {{ request('email_verified') == 'no' ? 'selected' : '' }}>Not Verified</option>
@@ -380,22 +594,22 @@
     </div>
 
     <!-- Bulk Action Bar -->
-    <div id="bulkActionBar" class="bulk-action-bar">
+    <div id="bulkBar" class="bulk-bar">
         <div class="flex items-center gap-3">
             <i class="fas fa-check-circle"></i>
             <span id="selectedCount">0</span> users selected
         </div>
-        <div class="flex gap-3">
-            <button onclick="bulkDelete()" class="px-4 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+        <div class="flex gap-2">
+            <button onclick="bulkAction('delete')" class="bulk-btn bulk-btn-danger">
                 <i class="fas fa-trash mr-1"></i> Delete
             </button>
-            <button onclick="bulkStatusChange('active')" class="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+            <button onclick="bulkAction('active')" class="bulk-btn bulk-btn-success">
                 <i class="fas fa-check mr-1"></i> Activate
             </button>
-            <button onclick="bulkStatusChange('inactive')" class="px-4 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+            <button onclick="bulkAction('inactive')" class="bulk-btn bulk-btn-warning">
                 <i class="fas fa-pause mr-1"></i> Deactivate
             </button>
-            <button onclick="clearSelection()" class="px-4 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            <button onclick="clearSelection()" class="bulk-btn bulk-btn-secondary">
                 <i class="fas fa-times mr-1"></i> Clear
             </button>
         </div>
@@ -403,147 +617,82 @@
 
     <!-- Export Button -->
     <div class="flex justify-end">
-        <button onclick="exportUsers()" class="export-btn px-6 py-2.5 rounded-lg text-white font-medium flex items-center gap-2">
-            <i class="fas fa-download"></i> Export Users
+        <button onclick="exportUsers()" class="px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition hover:opacity-90" style="background: var(--teal-green); color: white;">
+            <i class="fas fa-download"></i> Export
         </button>
     </div>
 
     <!-- Users Table -->
-    <div class="card-bg rounded-xl shadow-sm overflow-hidden" style="background: var(--card-bg);">
+    <div class="table-wrapper">
         <div class="overflow-x-auto">
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th class="w-12">
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
-                            </div>
+                        <th class="w-8">
+                            <input type="checkbox" id="selectAll" class="checkbox-custom" onclick="toggleAll()">
                         </th>
-                        <th>
-                            <a href="{{ route('admin.users.index', array_merge(request()->all(), ['sort_by' => 'name', 'sort_order' => request('sort_by') == 'name' && request('sort_order') == 'asc' ? 'desc' : 'asc'])) }}" class="hover:text-primary-color flex items-center gap-1">
-                                User
-                                @if(request('sort_by') == 'name')
-                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
-                                @endif
-                            </a>
-                        </th>
+                        <th>User</th>
                         <th>Contact</th>
-                        <th>
-                            <a href="{{ route('admin.users.index', array_merge(request()->all(), ['sort_by' => 'role', 'sort_order' => request('sort_by') == 'role' && request('sort_order') == 'asc' ? 'desc' : 'asc'])) }}" class="hover:text-primary-color flex items-center gap-1">
-                                Role
-                                @if(request('sort_by') == 'role')
-                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
-                                @endif
-                            </a>
-                        </th>
-                        <th>
-                            <a href="{{ route('admin.users.index', array_merge(request()->all(), ['sort_by' => 'status', 'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'])) }}" class="hover:text-primary-color flex items-center gap-1">
-                                Status
-                                @if(request('sort_by') == 'status')
-                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
-                                @endif
-                            </a>
-                        </th>
-                        <th>
-                            <a href="{{ route('admin.users.index', array_merge(request()->all(), ['sort_by' => 'created_at', 'sort_order' => request('sort_by') == 'created_at' && request('sort_order') == 'asc' ? 'desc' : 'asc'])) }}" class="hover:text-primary-color flex items-center gap-1">
-                                Joined
-                                @if(request('sort_by') == 'created_at')
-                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
-                                @endif
-                            </a>
-                        </th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($users as $user)
+                    @forelse($users ?? [] as $user)
                     <tr>
-                        <td class="text-center">
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" class="user-checkbox" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" onclick="updateSelectedCount()">
-                            </div>
+                        <td>
+                            <input type="checkbox" class="checkbox-custom user-checkbox" 
+                                   data-id="{{ $user->id }}" onchange="updateBulkBar()">
                         </td>
                         <td>
                             <div class="flex items-center gap-3">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=3498db&color=fff&bold=true&size=40&length=2"
-                                     class="user-avatar-modern w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-blue"
-                                     alt="{{ $user->name }}">
+                                     class="user-avatar" alt="{{ $user->name }}">
                                 <div>
-                                    <p class="font-semibold text-primary-color">{{ $user->name }}</p>
-                                    <p class="text-xs text-secondary-color">ID: {{ $user->id }}</p>
+                                    <p class="font-medium text-primary-color">{{ $user->name }}</p>
+                                    <p class="text-xs text-secondary-color">ID: #{{ $user->id }}</p>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="text-sm">
-                                <div class="text-primary-color flex items-center gap-1">
-                                    <i class="fas fa-envelope text-xs text-secondary-color"></i>
-                                    <span>{{ $user->email }}</span>
-                                </div>
-                                @if($user->phone)
-                                <div class="text-xs text-secondary-color mt-1 flex items-center gap-1">
-                                    <i class="fas fa-phone text-xs"></i>
-                                    <span>{{ $user->phone }}</span>
-                                </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-primary-color">{{ $user->email }}</span>
+                                @if($user->phone ?? false)
+                                <span class="text-xs text-secondary-color">{{ $user->phone }}</span>
                                 @endif
                             </div>
                         </td>
                         <td>
-                            @php
-                                $roleColors = [
-                                    'admin' => 'bg-purple-100 text-purple-700',
-                                    'mentor' => 'bg-blue-100 text-blue-700',
-                                    'user' => 'bg-green-100 text-green-700'
-                                ];
-                                $roleColor = $roleColors[$user->role ?? 'user'] ?? 'bg-gray-100 text-gray-700';
-                            @endphp
-                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $roleColor }}">
-                                <i class="fas fa-{{ $user->role == 'admin' ? 'crown' : ($user->role == 'mentor' ? 'chalkboard-user' : 'user') }} mr-1"></i>
+                            <span class="badge badge-{{ $user->role ?? 'user' }}">
+                                <i class="fas fa-{{ $user->role == 'admin' ? 'crown' : ($user->role == 'mentor' ? 'chalkboard-user' : 'user') }}"></i>
                                 {{ ucfirst($user->role ?? 'user') }}
                             </span>
                         </td>
                         <td>
-                            @php
-                                $statusColors = [
-                                    'active' => 'bg-green-100 text-green-700',
-                                    'inactive' => 'bg-orange-100 text-orange-700',
-                                    'banned' => 'bg-red-100 text-red-700'
-                                ];
-                                $statusColor = $statusColors[$user->status ?? 'active'] ?? 'bg-gray-100 text-gray-700';
-                                $statusIcons = [
-                                    'active' => 'fa-check-circle',
-                                    'inactive' => 'fa-pause-circle',
-                                    'banned' => 'fa-ban'
-                                ];
-                            @endphp
-                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusColor }}">
-                                <i class="fas {{ $statusIcons[$user->status ?? 'active'] }} mr-1"></i>
+                            <span class="badge badge-{{ $user->status ?? 'active' }}">
+                                <i class="fas fa-{{ $user->status == 'active' ? 'check-circle' : ($user->status == 'inactive' ? 'pause-circle' : 'ban') }}"></i>
                                 {{ ucfirst($user->status ?? 'active') }}
                             </span>
                         </td>
-                        <td class="text-sm text-secondary-color">
+                        <td>
                             <div class="flex flex-col">
-                                <span>{{ $user->created_at->format('M d, Y') }}</span>
-                                <span class="text-xs">{{ $user->created_at->diffForHumans() }}</span>
+                                <span class="text-sm text-primary-color">{{ $user->created_at->format('M d, Y') }}</span>
+                                <span class="text-xs text-secondary-color">{{ $user->created_at->diffForHumans() }}</span>
                             </div>
                         </td>
                         <td>
-                            <div class="flex gap-1 justify-center">
-                                <button onclick="viewUser({{ $user->id }})"
-                                        class="action-btn action-btn-view p-2 rounded-lg"
-                                        title="View Details">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="viewUser({{ $user->id }})" class="action-btn action-btn-view" title="View">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                               
-                                <button onclick="changeUserStatus({{ $user->id }}, '{{ $user->status ?? 'active' }}')"
-                                        class="action-btn action-btn-edit p-2 rounded-lg"
-                                        title="Change Status">
+                                <button onclick="openStatusModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->status ?? 'active' }}')" 
+                                        class="action-btn action-btn-edit" title="Change Status">
                                     <i class="fas fa-user-edit"></i>
                                 </button>
-                               
-                                <button onclick="deleteUser({{ $user->id }}, '{{ $user->name }}')"
-                                        class="action-btn action-btn-delete p-2 rounded-lg"
-                                        title="Delete User">
+                                <button onclick="deleteUser({{ $user->id }}, '{{ $user->name }}')" 
+                                        class="action-btn action-btn-delete" title="Delete">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -551,11 +700,11 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="text-center">
-                                <i class="fas fa-users-slash text-6xl text-secondary-color mb-4"></i>
-                                <p class="text-secondary-color text-lg">No users found</p>
-                                <p class="text-sm text-secondary-color mt-2">Try adjusting your search or filter criteria</p>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon"><i class="fas fa-users-slash"></i></div>
+                                <p class="empty-state-title">No users found</p>
+                                <p class="empty-state-subtitle">Try adjusting your search or filter criteria</p>
                             </div>
                         </td>
                     </tr>
@@ -563,56 +712,55 @@
                 </tbody>
             </table>
         </div>
-       
-        <!-- Pagination -->
-        @if($users->hasPages())
-        <div class="px-6 py-4 border-t border-color">
+        
+        @if(isset($users) && $users->hasPages())
+        <div class="px-6 py-4 border-t" style="border-color: var(--border-color);">
             {{ $users->appends(request()->query())->links() }}
         </div>
         @endif
     </div>
 </div>
 
-<!-- User Details Modal -->
-<div id="userModal" class="modal">
-    <div class="modal-content max-w-2xl">
-        <div class="p-6 border-b border-color flex justify-between items-center" style="background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);">
-            <h3 class="text-xl font-bold text-white">
-                <i class="fas fa-user-circle mr-2"></i>User Profile
-            </h3>
-            <button onclick="closeModal()" class="text-white hover:text-gray-200 transition">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+<!-- View User Modal -->
+<div id="viewModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-circle mr-2"></i>User Profile</h3>
+            <button onclick="closeModal('viewModal')" class="modal-close">&times;</button>
         </div>
-        <div class="p-6" id="userDetails">
-            <!-- User details will be loaded here -->
+        <div class="modal-body" id="userDetails">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-3xl" style="color: var(--blue);"></i>
+                <p class="mt-2 text-secondary-color">Loading...</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Status Change Modal -->
-<div id="statusModal" class="modal">
-    <div class="modal-content">
-        <div class="p-6 border-b border-color" style="background: linear-gradient(135deg, var(--orange) 0%, var(--red) 100%);">
-            <h3 class="text-xl font-bold text-white">
-                <i class="fas fa-exchange-alt mr-2"></i>Change User Status
-            </h3>
+<!-- Status Modal -->
+<div id="statusModal" class="modal-overlay">
+    <div class="modal-container max-w-md">
+        <div class="modal-header" style="background: linear-gradient(135deg, var(--orange), var(--red));">
+            <h3><i class="fas fa-exchange-alt mr-2"></i>Change Status</h3>
+            <button onclick="closeModal('statusModal')" class="modal-close">&times;</button>
         </div>
-        <div class="p-6">
-            <p class="mb-4 text-primary-color">Select new status for <strong id="statusUserName" class="text-blue"></strong></p>
-            <select id="newStatus" class="w-full px-4 py-2.5 rounded-lg border border-color bg-transparent text-primary-color focus:outline-none focus:ring-2 focus:ring-blue mb-4">
-                <option value="active">✅ Active</option>
-                <option value="inactive">⏸️ Inactive</option>
-                <option value="banned">🚫 Banned</option>
+        <div class="modal-body">
+            <p class="text-primary-color mb-4">
+                Update status for <strong id="statusUserName" class="text-blue"></strong>
+            </p>
+            <select id="newStatus" class="filter-select">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="banned">Banned</option>
             </select>
-            <div class="flex gap-3 justify-end">
-                <button onclick="closeStatusModal()" class="px-4 py-2 border border-color rounded-lg text-secondary-color hover:bg-gray-100 transition">
-                    Cancel
-                </button>
-                <button onclick="confirmStatusChange()" class="px-4 py-2 bg-blue text-white rounded-lg hover:opacity-90 transition transform hover:scale-105">
-                    <i class="fas fa-save mr-1"></i> Update Status
-                </button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeModal('statusModal')" class="px-4 py-2 rounded-lg border transition hover:bg-gray-100" style="border-color: var(--border-color); color: var(--text-secondary);">
+                Cancel
+            </button>
+            <button onclick="confirmStatus()" class="px-4 py-2 rounded-lg transition hover:opacity-90" style="background: var(--blue); color: white;">
+                <i class="fas fa-save mr-1"></i> Update
+            </button>
         </div>
     </div>
 </div>
@@ -620,270 +768,232 @@
 
 @push('scripts')
 <script>
-    let currentUserId = null;
-    let currentUserName = null;
-    let currentStatus = null;
     let selectedUsers = [];
+    let statusUserId = null;
+    let statusUserName = '';
 
-    // Bulk Actions
-    function toggleSelectAll() {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.user-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAll.checked;
-        });
-        updateSelectedCount();
+    // Toggle advanced filters
+    function toggleFilters() {
+        const panel = document.getElementById('advancedFilters');
+        const icon = event.currentTarget.querySelector('i');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            icon.className = 'fas fa-chevron-up mr-1';
+        } else {
+            panel.style.display = 'none';
+            icon.className = 'fas fa-chevron-down mr-1';
+        }
     }
 
-    function updateSelectedCount() {
+    // Select all
+    function toggleAll() {
+        const checked = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = checked);
+        updateBulkBar();
+    }
+
+    // Update bulk bar
+    function updateBulkBar() {
         const checkboxes = document.querySelectorAll('.user-checkbox:checked');
-        selectedUsers = Array.from(checkboxes).map(cb => ({
-            id: cb.dataset.userId,
-            name: cb.dataset.userName
-        }));
-        
+        selectedUsers = Array.from(checkboxes).map(cb => cb.dataset.id);
         const count = selectedUsers.length;
-        document.getElementById('selectedCount').innerText = count;
-        document.getElementById('bulkActionBar').style.display = count > 0 ? 'flex' : 'none';
+        document.getElementById('selectedCount').textContent = count;
+        document.getElementById('bulkBar').className = `bulk-bar ${count > 0 ? 'show' : ''}`;
     }
 
+    // Clear selection
     function clearSelection() {
-        const checkboxes = document.querySelectorAll('.user-checkbox');
-        checkboxes.forEach(checkbox => checkbox.checked = false);
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
         document.getElementById('selectAll').checked = false;
-        updateSelectedCount();
+        updateBulkBar();
     }
 
-    function bulkDelete() {
+    // Bulk action
+    function bulkAction(action) {
         if (selectedUsers.length === 0) return;
         
-        if (confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`)) {
-            selectedUsers.forEach(user => {
-                fetch(`/admin/users/${user.id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-            });
-            showNotification(`${selectedUsers.length} user(s) deleted successfully`, 'success');
-            setTimeout(() => location.reload(), 1500);
-        }
-    }
-
-    function bulkStatusChange(status) {
-        if (selectedUsers.length === 0) return;
+        const actions = {
+            'delete': { confirm: `Delete ${selectedUsers.length} user(s)?`, method: 'DELETE', url: '/admin/users/' },
+            'active': { confirm: `Activate ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' },
+            'inactive': { confirm: `Deactivate ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' }
+        };
         
-        if (confirm(`Change status to ${status} for ${selectedUsers.length} user(s)?`)) {
-            selectedUsers.forEach(user => {
-                fetch(`/admin/users/${user.id}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ status: status })
-                });
+        const config = actions[action];
+        if (!config) return;
+        
+        if (!confirm(config.confirm + ' This action cannot be undone.')) return;
+        
+        selectedUsers.forEach(id => {
+            fetch(`${config.url}${id}${action !== 'delete' ? '/status' : ''}`, {
+                method: config.method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: action !== 'delete' ? JSON.stringify({ status: action }) : undefined
             });
-            showNotification(`${selectedUsers.length} user(s) status updated to ${status}`, 'success');
-            setTimeout(() => location.reload(), 1500);
-        }
+        });
+        
+        showNotification(`${selectedUsers.length} user(s) ${action}d successfully`, 'success');
+        setTimeout(() => location.reload(), 1500);
     }
 
+    // Export users
     function exportUsers() {
         window.location.href = '{{ route("admin.users.index") }}?export=true&' + new URLSearchParams(window.location.search).toString();
     }
 
-    function toggleAdvancedFilters() {
-        const panel = document.getElementById('advancedFilters');
-        panel.classList.toggle('show');
-    }
-
-    // View user details
-    function viewUser(userId) {
-        fetch(`/admin/users/${userId}/json`, {
+    // View user
+    function viewUser(id) {
+        const modal = document.getElementById('viewModal');
+        const details = document.getElementById('userDetails');
+        modal.classList.add('show');
+        details.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl" style="color: var(--blue);"></i><p class="mt-2 text-secondary-color">Loading...</p></div>';
+        
+        fetch(`/admin/users/${id}/json`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
-                const user = data.user;
-                document.getElementById('userDetails').innerHTML = `
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-6 pb-6 border-b border-color">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3498db&color=fff&bold=true&size=100&length=2"
-                                 class="w-24 h-24 rounded-full ring-4 ring-blue">
-                            <div>
-                                <h4 class="text-2xl font-bold text-primary-color">${escapeHtml(user.name)}</h4>
-                                <p class="text-secondary-color">${escapeHtml(user.email)}</p>
-                                <div class="flex gap-2 mt-2">
-                                    <span class="px-2 py-1 rounded-full text-xs ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : (user.role === 'mentor' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700')}">
-                                        ${user.role || 'User'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="p-4 rounded-lg" style="background: var(--light-gray);">
-                                <p class="text-xs text-secondary-color uppercase tracking-wide">Phone Number</p>
-                                <p class="text-primary-color font-medium mt-1">${user.phone || 'Not provided'}</p>
-                            </div>
-                            <div class="p-4 rounded-lg" style="background: var(--light-gray);">
-                                <p class="text-xs text-secondary-color uppercase tracking-wide">Status</p>
-                                <p class="text-primary-color font-medium mt-1 capitalize">${user.status || 'Active'}</p>
-                            </div>
-                            <div class="p-4 rounded-lg" style="background: var(--light-gray);">
-                                <p class="text-xs text-secondary-color uppercase tracking-wide">Joined Date</p>
-                                <p class="text-primary-color font-medium mt-1">${new Date(user.created_at).toLocaleDateString()}</p>
-                            </div>
-                            <div class="p-4 rounded-lg" style="background: var(--light-gray);">
-                                <p class="text-xs text-secondary-color uppercase tracking-wide">Last Updated</p>
-                                <p class="text-primary-color font-medium mt-1">${new Date(user.updated_at).toLocaleDateString()}</p>
+                const u = data.user;
+                details.innerHTML = `
+                    <div class="flex items-center gap-6 pb-6 border-b" style="border-color: var(--border-color);">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=3498db&color=fff&bold=true&size=80&length=2"
+                             class="w-20 h-20 rounded-full border-4" style="border-color: var(--blue);">
+                        <div>
+                            <h4 class="text-xl font-bold text-primary-color">${escapeHtml(u.name)}</h4>
+                            <p class="text-secondary-color">${escapeHtml(u.email)}</p>
+                            <div class="flex gap-2 mt-2">
+                                <span class="badge badge-${u.role || 'user'}">${u.role || 'User'}</span>
+                                <span class="badge badge-${u.status || 'active'}">${u.status || 'Active'}</span>
                             </div>
                         </div>
                     </div>
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div class="p-3 rounded-lg" style="background: var(--bg-primary);">
+                            <p class="text-xs text-secondary-color uppercase tracking-wide">Phone</p>
+                            <p class="font-medium text-primary-color mt-1">${u.phone || 'Not provided'}</p>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: var(--bg-primary);">
+                            <p class="text-xs text-secondary-color uppercase tracking-wide">Joined</p>
+                            <p class="font-medium text-primary-color mt-1">${new Date(u.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: var(--bg-primary);">
+                            <p class="text-xs text-secondary-color uppercase tracking-wide">Last Updated</p>
+                            <p class="font-medium text-primary-color mt-1">${new Date(u.updated_at).toLocaleDateString()}</p>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: var(--bg-primary);">
+                            <p class="text-xs text-secondary-color uppercase tracking-wide">User ID</p>
+                            <p class="font-medium text-primary-color mt-1">#${u.id}</p>
+                        </div>
+                    </div>
                 `;
-                document.getElementById('userModal').style.display = 'flex';
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-   
-    // Change user status
-    function changeUserStatus(userId, currentStatusValue) {
-        currentUserId = userId;
-        currentStatus = currentStatusValue;
-       
-        fetch(`/admin/users/${userId}/json`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                currentUserName = data.user.name;
-                document.getElementById('statusUserName').textContent = currentUserName;
-                document.getElementById('newStatus').value = currentStatus;
-                document.getElementById('statusModal').style.display = 'flex';
             }
         });
     }
-   
-    function confirmStatusChange() {
-        const newStatus = document.getElementById('newStatus').value;
-       
-        fetch(`/admin/users/${currentUserId}/status`, {
+
+    // Open status modal
+    function openStatusModal(id, name, status) {
+        statusUserId = id;
+        statusUserName = name;
+        document.getElementById('statusUserName').textContent = name;
+        document.getElementById('newStatus').value = status;
+        document.getElementById('statusModal').classList.add('show');
+    }
+
+    // Confirm status change
+    function confirmStatus() {
+        const status = document.getElementById('newStatus').value;
+        fetch(`/admin/users/${statusUserId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ status: newStatus })
+            body: JSON.stringify({ status })
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
                 showNotification(data.message, 'success');
                 setTimeout(() => location.reload(), 1500);
-            } else {
-                showNotification(data.message, 'error');
+            }
+        });
+        closeModal('statusModal');
+    }
+
+    // Delete user
+    function deleteUser(id, name) {
+        if (!confirm(`⚠️ Delete "${name}"?\n\nThis action cannot be undone.`)) return;
+        
+        fetch(`/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
             }
         })
-        .catch(error => {
-            showNotification('Error updating user status', 'error');
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            }
         });
-       
-        closeStatusModal();
     }
-   
-    // Delete user
-    function deleteUser(userId, userName) {
-        if (confirm(`⚠️ Are you sure you want to delete "${userName}"?\n\nThis action cannot be undone and will permanently remove the user from the system.`)) {
-            fetch(`/admin/users/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showNotification('Error deleting user', 'error');
-            });
-        }
+
+    // Close modal
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
     }
-   
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+        const colors = {
+            success: { bg: '#22c55e', icon: 'fa-check-circle' },
+            error: { bg: '#ef4444', icon: 'fa-exclamation-circle' }
+        };
+        const config = colors[type] || colors.success;
+        
+        const el = document.createElement('div');
+        el.className = 'fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 text-white flex items-center gap-3';
+        el.style.background = config.bg;
+        el.style.animation = 'slideDown 0.3s ease';
+        el.innerHTML = `<i class="fas ${config.icon} text-xl"></i><span>${message}</span>`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+
+    // Escape HTML
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
         });
-    }
-   
-    // Close modals
-    function closeModal() {
-        document.getElementById('userModal').style.display = 'none';
-    }
-   
-    function closeStatusModal() {
-        document.getElementById('statusModal').style.display = 'none';
-    }
-   
-    // Show notification
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 animate-slide-in ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
-        notification.innerHTML = `
-            <div class="flex items-center gap-3">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-xl"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    }
-   
-    // Close modals when clicking outside
-    window.onclick = function(event) {
-        const modal = document.getElementById('userModal');
-        const statusModal = document.getElementById('statusModal');
-        if (event.target === modal) closeModal();
-        if (event.target === statusModal) closeStatusModal();
-    }
+    });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.show').forEach(el => el.classList.remove('show'));
+        }
         if (e.ctrlKey && e.key === 'a') {
             e.preventDefault();
-            document.getElementById('selectAll').checked = true;
-            toggleSelectAll();
-        }
-        if (e.key === 'Escape') {
-            closeModal();
-            closeStatusModal();
+            document.getElementById('selectAll').click();
         }
     });
 </script>
