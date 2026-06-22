@@ -150,8 +150,52 @@ export interface AppNotification {
   created_at: string;
 }
 
+
+// Types to add to your existing types section at the top of api.ts
+export interface MentorshipSession {
+  id: number;
+  mentor_id: number;
+  mentee_id: number;
+  topic: string;
+  message?: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'completed' | 'missed';
+  mentor_notes?: string | null;
+  scheduled_at?: string | null;
+  requested_date?: string | null;
+  requested_time_from?: string | null;
+  requested_time_to?: string | null;
+  is_missed: boolean;
+  missed_at?: string | null;
+  conversation_started_at?: string | null;
+  mentor?: Mentor;
+  mentee?: User;
+  review?: MentorReview | null;
+  created_at: string;
+  updated_at: string;
+}
+ 
+export interface MentorReview {
+  id: number;
+  mentorship_session_id: number;
+  reviewer_id: number;
+  mentor_id: number;
+  rating: number;
+  comment?: string | null;
+  reviewer?: User;
+  created_at: string;
+}
+ 
+export interface MentorshipRequestData {
+  mentor_id: number;
+  topic: string;
+  message?: string;
+  requested_date: string;        // e.g. "2026-06-25"
+  requested_time_from: string;   // e.g. "09:00"
+  requested_time_to: string;     // e.g. "10:00"
+}
+
 // Update this to your computer's WiFi IPv4 (run: ipconfig)
-const COMPUTER_IP = '192.168.173.205';
+const COMPUTER_IP = '192.168.1.170';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -1010,59 +1054,109 @@ export const getUser = async (userId: number, token: string) => {
   }
 };
 
-// ============================================
-// MENTORSHIP SESSION FUNCTIONS
-// ============================================
-
-// Send mentorship request
-export const sendMentorshipRequest = async (data: {
-  mentor_id: number;
-  topic: string;
-  message?: string
-}, token: string) => {
+// Send mentorship request — now includes date/time for availability checking
+export const sendMentorshipRequest = async (
+  data: MentorshipRequestData,
+  token: string
+) => {
   const response = await api.post('/mentorship/request', data, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
-
-// Get mentorship sessions
-export const getMentorshipSessions = async (token: string) => {
+ 
+// Get mentorship sessions (outgoing + incoming)
+export const getMentorshipSessions = async (token: string): Promise<{
+  outgoing: MentorshipSession[];
+  incoming: MentorshipSession[];
+}> => {
   const response = await api.get('/mentorship/my-sessions', {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
-
-// Get mentor sessions
-export const getMentorSessions = async (token: string) => {
+ 
+// Get mentor sessions (mentor view)
+export const getMentorSessions = async (token: string): Promise<MentorshipSession[]> => {
   const response = await api.get('/mentorship/mentor-sessions', {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
-
-// Update session status
+ 
+// Accept / decline / complete a session
 export const updateSessionStatus = async (
-  sessionId: string,
+  sessionId: number | string,
   token: string,
   payload: {
     status: 'accepted' | 'declined' | 'completed';
     mentor_notes?: string;
-    scheduled_at?: string
+    scheduled_at?: string;
   }
 ) => {
   try {
-    const response = await api.patch(`/mentorship/sessions/${sessionId}`, payload, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.patch(
+      `/mentorship/sessions/${sessionId}/status`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     return response.data;
   } catch (error: any) {
-    console.error("❌ API Error:", error.response?.data || error.message);
+    console.error('❌ updateSessionStatus error:', error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
-
+ 
+// Start the conversation for an accepted session (enforces scheduled time)
+export const startMentorshipConversation = async (
+  sessionId: number | string,
+  token: string
+): Promise<{ message: string; conversation: Conversation }> => {
+  try {
+    const response = await api.post(
+      `/mentorship/sessions/${sessionId}/start`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ startMentorshipConversation error:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+ 
+// Submit a review after a completed session
+export const submitSessionReview = async (
+  sessionId: number | string,
+  token: string,
+  payload: { rating: number; comment?: string }
+): Promise<{ message: string; review: MentorReview }> => {
+  try {
+    const response = await api.post(
+      `/mentorship/sessions/${sessionId}/review`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ submitSessionReview error:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+ 
+// Get reviews for a mentor
+export const getMentorReviews = async (
+  mentorId: number
+): Promise<{ average_rating: number; total: number; reviews: MentorReview[] }> => {
+  try {
+    const response = await api.get(`/mentors/${mentorId}/reviews`);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ getMentorReviews error:', error.message);
+    throw error;
+  }
+};
+ 
 // Get groups
 export const getGroups = async (token: string) => {
   try {

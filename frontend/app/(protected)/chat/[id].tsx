@@ -1,105 +1,218 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { 
-  View, Text, TextInput, Pressable, KeyboardAvoidingView, 
-  Platform, ActivityIndicator 
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
-import { LegendList } from '@legendapp/list';
-import { getMessages, sendMessage, getConversation, createConversation } from '@/services/api';
-import { getUserToken } from '@/hooks/useAuth';
-import { useAuth } from '@/context/AuthContext';
-import { initializeEcho } from '@/services/echo';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { LegendList } from "@legendapp/list";
+import {
+  getMessages,
+  sendMessage,
+  getConversation,
+  createConversation,
+} from "@/services/api";
+import { getUserToken } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
+import { subscribeToChatChannel } from "@/services/echo";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Message {
+  id: number;
+  sender_id: number;
+  message: string;
+  sender?: { name: string };
+  created_at?: string;
+}
+
+interface Conversation {
+  id: number;
+  name: string;
+  is_group: boolean;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const ChatScreen = () => {
-  const { id, isNew, name } = useLocalSearchParams();
+  const { id, isNew, name } = useLocalSearchParams<{
+    id: string;
+    isNew?: string;
+    name?: string;
+  }>();
   const { user } = useAuth();
   const router = useRouter();
 
-  const [activeId, setActiveId] = useState<number | null>(isNew === 'true' ? null : Number(id));
-  const [messages, setMessages] = useState<any[]>([]);
-  const [conversation, setConversation] = useState<any>(null);
-  const [text, setText] = useState('');
+  const [activeId, setActiveId] = useState<number | null>(
+    isNew === "true" ? null : Number(id)
+  );
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
-  const echoRef = useRef<any>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const pendingMessagesRef = useRef<Map<string, number>>(new Map());
 
-  // Setup WebSocket for conversation
-  const setupWebsocket = async (convId: number) => {
-    if (echoRef.current) return;
-    const echo = await initializeEcho();
-    echoRef.current = echo;
-
-    echo.private(`chat.${convId}`)
-      .listen('MessageSent', (e: any) => {
-        setMessages(prev => prev.some(m => m.id === e.message.id) ? prev : [...prev, e.message]);
-      })
-      .listenForWhisper('typing', (e: { name: string }) => {
-        setTypingUser(e.name);
-        setTimeout(() => setTypingUser(null), 2000);
-      });
+  // Helper to strictly ensure unique IDs in an array of messages
+  const deduplicateMessages = (arr: Message[]): Message[] => {
+    return Array.from(new Map(arr.map((m) => [m.id, m])).values());
   };
 
-  // Initialize chat
+  // ─── WebSocket Sub / Unsub ─────────────────────────────────────────────────
+  const setupWebsocket = (convId: number, token: string) => {
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
+    unsubscribeRef.current = subscribeToChatChannel(
+      token,
+      convId,
+      (e: any) => {
+        const incoming: Message = e.message;
+        
+        // Strict duplicate pre-check on text and maps
+        if (pendingMessagesRef.current.has(incoming.message)) {
+          return;
+        }
+
+        setMessages((prev) => {
+          // Double guard check: check text match or ID match in state
+          const isDuplicate = prev.some(
+            (m) => m.id === incoming.id || (m.message === incoming.message && m.sender_id === incoming.sender_id)
+          );
+          if (isDuplicate) return prev;
+          return [...prev, incoming];
+        });
+      }
+    );
+
+    console.log(`📡 Subscribed to chat.${convId}`);
+  };
+
+  // ─── Global Cleanup ────────────────────────────────────────────────────────
   useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, []);
+
+  // ─── Chat Initialization & WS Sync ─────────────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+
     const initChat = async () => {
       try {
-        if (isNew === 'true') {
-          setConversation({ name: name, is_group: false });
-          setLoading(false);
-        } else {
-          const token = await getUserToken();
-          const [msgs, convo] = await Promise.all([
-            getMessages(Number(id), token),
-            getConversation(Number(id), token)
-          ]);
-          setMessages(msgs);
-          setConversation(convo);
-          setActiveId(Number(id));
-          setupWebsocket(Number(id));
-          setLoading(false);
+        const token = await getUserToken();
+        
+        if (isNew === "true" && !activeId) {
+          if (isMounted) {
+            setConversation({ id: 0, name: name ?? "", is_group: false });
+            setLoading(false);
+          }
+          return;
         }
+
+        const targetId = activeId || Number(id);
+
+        const [msgs, convo] = await Promise.all([
+          getMessages(targetId, token),
+          getConversation(targetId, token),
+        ]);
+
+        if (!isMounted) return;
+
+        setMessages(deduplicateMessages(msgs));
+        setConversation(convo);
+
+        setupWebsocket(targetId, token);
       } catch (err) {
-        console.error('Init chat error:', err);
-        setLoading(false);
+        console.error("Init chat error:", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
     initChat();
-    return () => echoRef.current?.leave(`chat.${activeId}`);
-  }, [id]);
 
-  // Handle sending a message
+    return () => {
+      isMounted = false;
+    };
+  }, [id, activeId]);
+
+  // ─── Send Message ─────────────────────────────────────────────────────────
   const handleSend = async () => {
-    if (!text.trim() || sending) return;
+    const messageText = text.trim();
+    if (!messageText || sending) return;
     setSending(true);
+
+    const optimisticId = Date.now();
+    const optimisticMsg: Message = {
+      id: optimisticId,
+      sender_id: user?.id ?? 0,
+      message: messageText,
+    };
 
     try {
       const token = await getUserToken();
       let currentConvId = activeId;
 
-      // Create conversation if first message
+      pendingMessagesRef.current.set(messageText, optimisticId);
+
       if (!currentConvId) {
-        const newConvo = await createConversation({ receiver_id: Number(id) }, token);
+        const newConvo = await createConversation(
+          { receiver_id: Number(id) },
+          token
+        );
         currentConvId = newConvo.id;
-        setActiveId(currentConvId);
         setConversation(newConvo);
-        setupWebsocket(currentConvId);
+        setActiveId(currentConvId); 
       }
 
-      // Send message
-      const newMsg = await sendMessage(currentConvId, text, token, false);
-      setMessages(prev => [...prev, newMsg]);
-      setText('');
+      setMessages((prev) => deduplicateMessages([...prev, optimisticMsg]));
+      setText("");
+
+      const confirmed = await sendMessage(currentConvId!, messageText, token, false);
+
+      setMessages((prev) => {
+        const hasOptimistic = prev.some((m) => m.id === optimisticId);
+        
+        if (!hasOptimistic) {
+          return prev.some((m) => m.id === confirmed.id) ? prev : [...prev, confirmed];
+        }
+        
+        const updated = prev.map((m) => (m.id === optimisticId ? confirmed : m));
+        return deduplicateMessages(updated);
+      });
     } catch (err) {
-      console.error('Send message error:', err);
+      console.error("Send message error:", err);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
     } finally {
-      setSending(false);
+      // Small timeout buffer lets the async UI cycles finish mapping before clearing key maps
+      setTimeout(() => {
+        pendingMessagesRef.current.delete(messageText);
+        setSending(false);
+      }, 300);
     }
+  };
+
+  const getTitle = (): string => {
+    if (!conversation) return "";
+    return conversation.is_group
+      ? conversation.name
+      : conversation.name || name || "";
   };
 
   if (loading) {
@@ -110,54 +223,64 @@ const ChatScreen = () => {
     );
   }
 
-  const getTitle = () => {
-    if (!conversation) return '';
-    return conversation.is_group ? conversation.name : conversation.name || name;
-  };
-
   return (
     <View className="flex-1 bg-[#F8FAFC]">
       <StatusBar style="dark" />
-      
+
       {/* HEADER */}
       <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
         <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
           <Feather name="chevron-left" size={28} color="#1E293B" />
         </Pressable>
-        
+
         <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center">
-          <Text className="text-purple-600 font-bold">{getTitle()?.charAt(0)}</Text>
+          <Text className="text-purple-600 font-bold">
+            {getTitle()?.charAt(0)?.toUpperCase()}
+          </Text>
         </View>
-        
+
         <View className="ml-3 flex-1">
-          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>{getTitle()}</Text>
+          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>
+            {getTitle()}
+          </Text>
           <Text className="text-slate-400 text-[11px] font-medium">
-            {typingUser ? `${typingUser} is typing...` : 'Online'}
+            {typingUser ? `${typingUser} is typing...` : "Online"}
           </Text>
         </View>
       </View>
 
-      {/* MESSAGES */}
+      {/* MESSAGES LIST */}
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <LegendList
           data={messages}
           estimatedItemSize={70}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
-          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 20,
+          }}
+          // Fail-safe composite key fallback to keep LegendList from crashing on collisions
+          keyExtractor={(item, index) => item?.id ? `${item.id}-${index}` : index.toString()}
           renderItem={({ item }) => {
             const isMe = item.sender_id === user?.id;
             return (
-              <View className={`mb-4 max-w-[85%] ${isMe ? 'self-end' : 'self-start'}`}>
-                <View className={`p-4 rounded-3xl ${isMe ? 'bg-purple-600 rounded-tr-none shadow-md shadow-purple-200' : 'bg-white border border-slate-100 rounded-tl-none shadow-sm'}`}>
-                  <Text className={`${isMe ? 'text-white' : 'text-slate-800'} text-[15px] leading-5`}>
+              <View className={`mb-4 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}>
+                <View
+                  className={`p-4 rounded-3xl ${
+                    isMe
+                      ? "bg-purple-600 rounded-tr-none shadow-md shadow-purple-200"
+                      : "bg-white border border-slate-100 rounded-tl-none shadow-sm"
+                  }`}
+                >
+                  <Text className={`${isMe ? "text-white" : "text-slate-800"} text-[15px] leading-5`}>
                     {item.message}
                   </Text>
                 </View>
-                <Text className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                  {isMe ? 'Sent' : item.sender?.name}
+                <Text className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? "text-right" : "text-left"}`}>
+                  {isMe ? "Sent" : item.sender?.name}
                 </Text>
               </View>
             );
@@ -171,15 +294,15 @@ const ChatScreen = () => {
           }
         />
 
-        {/* INPUT */}
-        <SafeAreaView edges={['bottom']} className="bg-white border-t border-slate-100">
+        {/* INPUT BAR */}
+        <SafeAreaView edges={["bottom"]} className="bg-white border-t border-slate-100">
           <View className="p-3 flex-row items-end space-x-2">
             <View className="flex-1 bg-slate-50 rounded-[24px] px-4 py-2 border border-slate-200 flex-row items-end">
               <TextInput
                 className="flex-1 text-slate-800 text-[15px] max-h-32 py-1"
                 placeholder="Type a message..."
                 value={text}
-                onChangeText={(v) => setText(v)}
+                onChangeText={setText}
                 multiline
                 placeholderTextColor="#94A3B8"
               />
@@ -188,10 +311,12 @@ const ChatScreen = () => {
               </Pressable>
             </View>
 
-            <Pressable 
-              onPress={handleSend} 
+            <Pressable
+              onPress={handleSend}
               disabled={!text.trim() || sending}
-              className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${text.trim() ? 'bg-purple-600 shadow-purple-300' : 'bg-slate-200 shadow-none'}`}
+              className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${
+                text.trim() ? "bg-purple-600 shadow-purple-300" : "bg-slate-200 shadow-none"
+              }`}
             >
               {sending ? (
                 <ActivityIndicator size="small" color="#fff" />
