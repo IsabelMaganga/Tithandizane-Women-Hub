@@ -41,9 +41,9 @@ export default function Splash() {
   }));
 
   return (
-    <SafeAreaView className="flex-1 flex-col bg-white py-0 mt-2">
+    <SafeAreaView className="flex-1 flex-col bg-white py-0 justify-center mt-2">
 
-      <View className="flex-1 items-center">
+      <View className="flex-1 items-center mt-8">
         {/* Logo */}
         <Animated.View style={logoStyle}>
           <Image
@@ -80,7 +80,7 @@ export default function Splash() {
           title="Get Started"
           style={{ width: "80%" }}
           textStyle={{ color: "white" }}
-          onPress={() => router.push("/(auth)/login")}
+          onPress={() => router.replace("/(auth)/login")}
           disabled={false}
         />
       </Animated.View>

@@ -161,7 +161,7 @@ export default function UserDashboard() {
             />
             <GridItem 
               title="Intelligence" 
-              icon="brain" // <--- FIXED: Valid FontAwesome6 design token mapping
+              icon="brain" 
               color="#10b981" 
               family={FontAwesome6}
               onPress={() => router.push("/(protected)/inteligency")} 
@@ -184,7 +184,7 @@ export default function UserDashboard() {
           <TouchableOpacity 
             className="bg-white dark:bg-slate-800 w-16 h-16 rounded-full items-center justify-center shadow-2xl border border-gray-100 dark:border-slate-700"
             activeOpacity={0.9}
-            onPress={() => router.push("/(protected)/inteligency")}
+            onPress={() => router.push("/(protected)/faqScreen")}
           >
             <MaterialCommunityIcons 
               name="robot-confused" 

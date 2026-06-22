@@ -1,4 +1,14 @@
-import { View, Text, TextInput, Image, KeyboardAvoidingView, Platform, TouchableOpacity, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Pressable
+} from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import MyButton from "../../components/MyButton";
@@ -7,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Entypo from "@expo/vector-icons/Entypo";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
@@ -16,17 +26,25 @@ export default function Login() {
   const { t } = useTranslation("auth");
   const { login, user, logout } = useAuth();
 
-  // form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // messages
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
   const [loading, setLoading] = useState(false);
+
+  // ✅ FIX: handle admin redirect AFTER user updates
+  useEffect(() => {
+    if (user?.role === "admin") {
+      setError("Admin accounts cannot log in here");
+      logout();
+    }
+  }, [user]);
+
+  const safeText = (value) =>
+    typeof value === "string" ? value : "";
 
   const handleLogIn = async () => {
 
@@ -43,38 +61,26 @@ export default function Login() {
 
       await login(email, password);
 
-      // success message
-      if (user?.role === "admin") {
-        setError("Admin accounts cannot log in here");
-        logout();
-        
-      }
       setSuccessMessage("Login successful, getting things ready...");
+
       setTimeout(() => {
         setSuccessMessage("");
-      }, 8000);
+      }, 5000);
 
     } catch (err: any) {
-
 
       if (err?.response?.data?.message) {
         setError(err.response.data.message);
       }
-
-      
       else if (err?.message === "Network Error") {
         setError("You are not connected to internet");
       }
-
-      // fallback
       else {
         setError("Login failed. Please try again.");
       }
 
     } finally {
-
       setLoading(false);
-
     }
   };
 
@@ -104,7 +110,7 @@ export default function Login() {
           }}
         >
 
-          {/* avatar image */}
+          {/* avatar */}
           <Image
             source={require("../../assets/images/Ellipse 3.png")}
             style={{
@@ -116,20 +122,23 @@ export default function Login() {
             }}
           />
 
+          {/* TITLE */}
           <Text className="text-2xl font-bold mt-12">
-            {t("login")}
+            {safeText(t("login"))}
           </Text>
 
           <Text className="text-gray-600 mb-5">
-            {t("please_enter_account_details")}
+            {safeText(t("please_enter_account_details"))}
           </Text>
 
-          {/* error message */}
+          {/* ERROR */}
           {error ? (
-            <Text className="text-red-500 mb-2">{error}</Text>
+            <Text className="text-red-500 mb-2">
+              {error}
+            </Text>
           ) : null}
 
-          {/* username input */}
+          {/* EMAIL */}
           <View className="flex-row items-center bg-gray-200 rounded-xl p-2 mb-3">
 
             <FontAwesome5
@@ -140,7 +149,7 @@ export default function Login() {
             />
 
             <TextInput
-              placeholder={t("username")}
+              placeholder={safeText(t("username"))}
               className="flex-1 text-black"
               value={email}
               onChangeText={setEmail}
@@ -148,7 +157,7 @@ export default function Login() {
 
           </View>
 
-          {/* password input */}
+          {/* PASSWORD */}
           <View className="flex-row items-center bg-gray-200 rounded-xl p-2 mb-5">
 
             <Entypo
@@ -159,7 +168,7 @@ export default function Login() {
             />
 
             <TextInput
-              placeholder={t("password")}
+              placeholder={safeText(t("password"))}
               secureTextEntry={!showPassword}
               className="flex-1 text-black"
               value={password}
@@ -170,50 +179,46 @@ export default function Login() {
               onPress={() => setShowPassword(!showPassword)}
               style={{ position: "absolute", right: 10 }}
             >
-
               <AntDesign
                 name={showPassword ? "eye-invisible" : "eye"}
                 size={24}
                 color="black"
               />
-
             </TouchableOpacity>
 
           </View>
 
+          {/* FORGOT */}
           <Pressable onPress={() => router.push("/(auth)/forgotPasswordScreen")}>
             <Text className="text-purple-400 text-sm mb-2 text-right">
-            {t("forgot_password")}
-          </Text>
+              {safeText(t("forgot_password"))}
+            </Text>
           </Pressable>
 
-          {/* login button */}
+          {/* LOGIN BUTTON */}
           <MyButton
-            title={loading ?  "Logging in..." : t("login")}
+            title={loading ? "Logging in..." : safeText(t("login"))}
             style={{ width: "100%", alignSelf: "center" }}
-            textStyle={{}}
             onPress={handleLogIn}
             disabled={loading}
-
           />
 
-          {/* register link */}
+          {/* SIGNUP */}
           <Text className="mt-4 text-center text-gray-700">
-
-            {t("don_t_have_an_account")}{" "}
+            {safeText(t("don_t_have_an_account"))}{" "}
 
             <Text
               className="text-purple-600"
               onPress={() => router.push("/(auth)/register")}
             >
-              {t("signup")}
+              {safeText(t("signup"))}
             </Text>
 
           </Text>
 
-          {/* success message */}
+          {/* SUCCESS */}
           {successMessage ? (
-            <Text className="text-green-500 mt-3 p-4 rounded shadow-sm bg-green-100 text-center">
+            <Text className="text-green-500 mt-3 p-4 rounded bg-green-100 text-center">
               {successMessage}
             </Text>
           ) : null}
