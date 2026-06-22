@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ReportsIssues;
 use App\Models\HarassmentReport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -91,6 +92,65 @@ class ReportController extends Controller
         ];
 
         return view('mentor.harassment.index', array_merge($this->mentorCommon(), compact('reports', 'stats')));
+    }
+
+    /**
+     * Show analytics (reports by incident type) for the mentor
+     */
+    public function harassmentAnalytics(Request $request)
+    {
+        $mentorId = $this->mentorUser()?->id;
+
+        // Date range handling: allow presets (7,30,90) or explicit start_date/end_date
+        $start = null;
+        $end = now();
+
+        if ($request->has('preset')) {
+            $preset = (int) $request->preset;
+            if (in_array($preset, [7,30,90])) {
+                $start = now()->subDays($preset);
+            }
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            try {
+                $start = \Carbon\Carbon::parse($request->start_date)->startOfDay();
+                $end = \Carbon\Carbon::parse($request->end_date)->endOfDay();
+            } catch (\Exception $e) {
+                // ignore parse errors and fallback
+            }
+        }
+
+        $query = HarassmentReport::select('incident_type', DB::raw('count(*) as count'))
+            ->where('assigned_mentor_id', $mentorId);
+
+        if ($start) {
+            $query->whereBetween('created_at', [$start, $end]);
+        }
+
+        $typeStats = $query->groupBy('incident_type')->get();
+
+        $labels = $typeStats->pluck('incident_type');
+        $data = $typeStats->pluck('count')->map(fn($n) => (int) $n);
+
+        $total = $data->sum();
+        $percentages = $data->map(fn($n) => $total ? round(($n / $total) * 100, 1) : 0);
+
+        // Also load detailed report rows in the same range for CSV/PDF exports
+        $reportQuery = HarassmentReport::where('assigned_mentor_id', $mentorId)->orderBy('created_at', 'desc');
+        if ($start) {
+            $reportQuery->whereBetween('created_at', [$start, $end]);
+        }
+
+        $reportRows = $reportQuery->get(['reference_number', 'incident_type', 'incident_title', 'incident_date', 'status', 'created_at']);
+
+        $range = [
+            'preset' => $request->input('preset'),
+            'start_date' => $request->input('start_date'),
+            'end_date' => $request->input('end_date'),
+        ];
+
+        return view('mentor.harassment.analytics', array_merge($this->mentorCommon(), compact('labels', 'data', 'percentages', 'total', 'range', 'reportRows')));
     }
 
     public function showHarassmentReport($id)

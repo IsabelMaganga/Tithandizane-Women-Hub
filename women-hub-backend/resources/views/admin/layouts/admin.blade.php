@@ -122,6 +122,35 @@
         .active-nav span {
             color: #FFFFFF !important;
         }
+
+        /* Settings Submenu Styles */
+        .settings-submenu {
+            margin-left: 1.5rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+            border-left: 2px solid rgba(255,255,255,0.1);
+            padding-left: 0.5rem;
+        }
+
+        .settings-submenu .nav-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+        }
+
+        .settings-submenu .nav-item.active-nav {
+            background: var(--blue) !important;
+            color: #FFFFFF !important;
+        }
+
+        .settings-submenu .nav-item.active-nav i,
+        .settings-submenu .nav-item.active-nav span {
+            color: #FFFFFF !important;
+        }
+
+        .settings-submenu .nav-item:not(.active-nav):hover {
+            background: rgba(255,255,255,0.08);
+        }
         
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         
@@ -319,6 +348,16 @@
         .pagination .page-link:hover {
             background: var(--light-gray);
         }
+
+        /* Settings card styles */
+        .settings-card {
+            transition: all 0.3s ease;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15);
+        }
     </style>
     
     @stack('styles')
@@ -364,14 +403,46 @@
                 <a href="{{ route('admin.users.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active-nav' : '' }}" data-page="users" style="color: var(--sidebar-text);">
                     <i class="fas fa-user-circle w-5"></i>
                     <span class="ml-3">Users</span>
-                    <span class="ml-auto text-xs px-2 py-0.5  text-white" id="totalUsersBadge"></span>
-                </a>
-                <a href="{{ route('admin.settings') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings') ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);">
-                    <i class="fas fa-cog w-5"></i>
-                    <span class="ml-3">Settings</span>
+                    <span class="ml-auto text-xs px-2 py-0.5 text-white" id="totalUsersBadge"></span>
                 </a>
                 
-                <!-- Analytics Reports Link - UPDATED with proper route -->
+                <!-- Settings with Submenu -->
+                @php
+                    $settingsRoutes = ['admin.settings', 'admin.settings.general', 'admin.settings.admins', 'admin.settings.email', 'admin.settings.security', 'admin.settings.backup'];
+                    $isSettingsActive = request()->routeIs(...$settingsRoutes);
+                @endphp
+                
+                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ $isSettingsActive ? 'active-nav' : '' }}" data-page="settings" style="color: var(--sidebar-text);" onclick="toggleSettingsMenu(event)">
+                    <i class="fas fa-cog w-5"></i>
+                    <span class="ml-3">Settings</span>
+                    <i class="fas fa-chevron-down ml-auto text-xs" id="settingsChevron"></i>
+                </a>
+                
+                <!-- Settings Submenu -->
+                <div id="settingsSubmenu" class="settings-submenu {{ $isSettingsActive ? '' : 'hidden' }}">
+                    <a href="{{ route('admin.settings.general') }}" class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.general') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                        <i class="fas fa-sliders-h w-4 text-sm"></i>
+                        <span class="ml-3 text-sm">General</span>
+                    </a>
+                    <a href="{{ route('admin.settings.admins') }}" class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.admins') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                        <i class="fas fa-user-shield w-4 text-sm"></i>
+                        <span class="ml-3 text-sm">Admin Users</span>
+                    </a>
+                    <a href="{{ route('admin.settings.email') }}" class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.email') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                        <i class="fas fa-envelope w-4 text-sm"></i>
+                        <span class="ml-3 text-sm">Email Templates</span>
+                    </a>
+                    <a href="{{ route('admin.settings.security') }}" class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.security') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                        <i class="fas fa-lock w-4 text-sm"></i>
+                        <span class="ml-3 text-sm">Security</span>
+                    </a>
+                    <a href="{{ route('admin.settings.backup') }}" class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.backup') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                        <i class="fas fa-database w-4 text-sm"></i>
+                        <span class="ml-3 text-sm">Backup</span>
+                    </a>
+                </div>
+                
+                <!-- Analytics Reports Link -->
                 <div class="mt-4 pt-2 border-t border-gray-700"></div>
                 <a href="{{ route('admin.analytics.index') }}" 
                    class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.analytics.*') ? 'active-nav' : '' }}" 
@@ -477,6 +548,24 @@
 </div>
 
 <script>
+    // Settings menu toggle
+    function toggleSettingsMenu(event) {
+        event.preventDefault();
+        const submenu = document.getElementById('settingsSubmenu');
+        const chevron = document.getElementById('settingsChevron');
+        
+        if (submenu) {
+            submenu.classList.toggle('hidden');
+            if (chevron) {
+                if (submenu.classList.contains('hidden')) {
+                    chevron.className = 'fas fa-chevron-down ml-auto text-xs';
+                } else {
+                    chevron.className = 'fas fa-chevron-up ml-auto text-xs';
+                }
+            }
+        }
+    }
+
     // Dark/Light Mode Toggle with localStorage persistence
     function initTheme() {
         const savedTheme = localStorage.getItem('theme');
@@ -568,6 +657,15 @@
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        // Auto-expand settings menu if on a settings page
+        const isSettingsPage = {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }};
+        if (isSettingsPage) {
+            const submenu = document.getElementById('settingsSubmenu');
+            const chevron = document.getElementById('settingsChevron');
+            if (submenu) submenu.classList.remove('hidden');
+            if (chevron) chevron.className = 'fas fa-chevron-up ml-auto text-xs';
         }
     });
 </script>

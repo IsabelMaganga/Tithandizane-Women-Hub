@@ -10,11 +10,21 @@ class NotificationController extends Controller
 {
     public function getNotifications(Request $request)
     {
-        $notifications = Notification::where('user_id', auth()->id())
+        // Support multiple auth guards (admin, mentor, default user)
+        $userId = null;
+        if (auth()->guard('admin')->check()) {
+            $userId = auth()->guard('admin')->id();
+        } else if (auth()->guard('mentor')->check()) {
+            $userId = auth()->guard('mentor')->id();
+        } else {
+            $userId = auth()->id();
+        }
+
+        $notifications = Notification::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $unreadCount = Notification::where('user_id', auth()->id())
+        $unreadCount = Notification::where('user_id', $userId)
             ->where('is_read', false)
             ->count();
 

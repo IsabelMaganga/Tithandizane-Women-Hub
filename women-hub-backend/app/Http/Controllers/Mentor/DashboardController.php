@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Mentor;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log};
-use App\Models\{MentorshipSession, ReportsIssues};
+use App\Models\{MentorshipSession, ReportsIssues, HarassmentReport};
 use App\Events\NewChatRequest;
 use App\Http\Controllers\Controller;
 
@@ -36,10 +36,21 @@ class DashboardController extends Controller
         $unreadCount = $notifications->where('read_at', null)->count();
         $unreadNotifications = Auth::user()->unreadNotifications()->paginate(3);
 
-        // count reports grouped by type
-        $reportCounts = ReportsIssues::selectRaw('type, COUNT(*) as total')
-            ->groupBy('type')
-            ->pluck('total','type');
+        // prefer harassment reports assigned to this mentor grouped by incident_type
+        $mentorId = $mentorUser?->id;
+        $harassmentCounts = HarassmentReport::where('assigned_mentor_id', $mentorId)
+            ->selectRaw('incident_type, COUNT(*) as total')
+            ->groupBy('incident_type')
+            ->pluck('total','incident_type');
+
+        // fallback to general ReportsIssues if no harassment data
+        if ($harassmentCounts->isNotEmpty()) {
+            $reportCounts = $harassmentCounts;
+        } else {
+            $reportCounts = ReportsIssues::selectRaw('type, COUNT(*) as total')
+                ->groupBy('type')
+                ->pluck('total','type');
+        }
 
         return view('mentor.dashboard.index', compact(
             'mentorName',

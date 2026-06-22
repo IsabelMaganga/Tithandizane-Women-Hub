@@ -302,49 +302,75 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.reports && Array.isArray(data.reports)) {
-                const pendingReports = data.reports.filter(r => r.status === 'new' || r.status === 'in_review').length;
-                document.getElementById('statPendingReports').innerText = pendingReports;
-                document.getElementById('reportsCountBadge').innerText = `${pendingReports} new`;
-                document.getElementById('notificationBadge').innerText = pendingReports;
-                document.getElementById('summaryOpenReports').innerText = pendingReports;
+            // Normalize reports array from paginated or direct response
+            let reports = [];
+            if (Array.isArray(data.reports)) reports = data.reports;
+            else if (data.reports && Array.isArray(data.reports.data)) reports = data.reports.data;
+            else if (Array.isArray(data.data)) reports = data.data;
 
-                const inReview = data.reports.filter(r => r.status === 'in_review').length;
-                document.getElementById('statInReview').innerHTML = `${inReview} in review`;
+            // Map alternate status names used elsewhere (new -> pending, in_review -> reviewing)
+            const normalizeStatus = (s) => {
+                if (!s) return s;
+                if (s === 'new') return 'pending';
+                if (s === 'in_review') return 'reviewing';
+                return s;
+            };
 
-                renderRecentReports(data.reports.slice(0, 3));
-            }
+            const pendingReports = reports.filter(r => {
+                const st = normalizeStatus(r.status);
+                return st === 'pending' || st === 'reviewing' || st === 'assigned';
+            }).length;
+
+            document.getElementById('statPendingReports').innerText = pendingReports;
+            document.getElementById('reportsCountBadge').innerText = `${pendingReports} new`;
+            const notif = document.getElementById('notificationBadge');
+            if (notif) notif.innerText = pendingReports;
+            const summaryOpen = document.getElementById('summaryOpenReports');
+            if (summaryOpen) summaryOpen.innerText = pendingReports;
+
+            const inReview = reports.filter(r => normalizeStatus(r.status) === 'reviewing').length;
+            const inReviewEl = document.getElementById('statInReview');
+            if (inReviewEl) inReviewEl.innerHTML = `${inReview} in review`;
+
+            renderRecentReports(reports.slice(0, 3));
         })
         .catch(error => console.error('Error loading reports:', error));
     }
 
     function renderRecentReports(reports) {
-    const container = document.getElementById('reportsListContainer');
+        const container = document.getElementById('reportsListContainer');
 
-    if (!reports || reports.length === 0) {
-        container.innerHTML = '<div class="p-6 text-center" style="color: var(--text-secondary);"> No pending reports</div>';
-        return;
-    }
+        if (!reports || reports.length === 0) {
+            container.innerHTML = '<div class="p-6 text-center" style="color: var(--text-secondary);"> No pending reports</div>';
+            return;
+        }
 
-    container.innerHTML = reports.map(r => `
-        <div class="p-4 transition hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/admin/reports/${r.id}'">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="font-mono text-sm font-bold" style="color: var(--text-primary);">#${escapeHtml(r.reference_number || r.id)}</span>
-                    ${r.status === 'pending' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-red); color: var(--red);">New</span>' : ''}
-                    ${r.status === 'reviewing' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-orange); color: var(--orange);">Review</span>' : ''}
-                    ${r.status === 'assigned' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-purple); color: var(--purple);">Assigned</span>' : ''}
+        container.innerHTML = reports.map(r => {
+            const status = (r.status === 'new') ? 'pending' : (r.status === 'in_review' ? 'reviewing' : (r.status || 'pending'));
+            const badgeHtml = status === 'pending'
+                ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-red); color: var(--red);">New</span>'
+                : (status === 'reviewing' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-orange); color: var(--orange);">Review</span>' : (status === 'assigned' ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full" style="background: var(--light-purple); color: var(--purple);">Assigned</span>' : ''));
+
+            const assignedHtml = (r.assigned_mentor_id || r.assigned_mentor) ? '<span class="text-xs text-green-600"><i class="fas fa-user-check"></i> Assigned</span>' : '<span class="text-xs text-yellow-600"><i class="fas fa-clock"></i> Pending</span>';
+
+            return `
+            <div class="p-4 transition hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/admin/reports/${r.id}'">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="font-mono text-sm font-bold" style="color: var(--text-primary);">#${escapeHtml(r.reference_number || r.id)}</span>
+                        ${badgeHtml}
+                    </div>
+                    <span class="text-xs" style="color: var(--text-secondary);">${new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <span class="text-xs" style="color: var(--text-secondary);">${new Date(r.created_at).toLocaleDateString()}</span>
+                <p class="text-sm mt-1 line-clamp-2" style="color: var(--text-secondary);">${escapeHtml(r.incident_title || (r.incident_description ? (r.incident_description.substring(0,80)) : 'No description'))}</p>
+                <div class="mt-2 flex justify-between items-center">
+                    <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--light-gray); color: var(--text-secondary);">${escapeHtml(r.incident_type || 'harassment')}</span>
+                    ${assignedHtml}
+                </div>
             </div>
-            <p class="text-sm mt-1 line-clamp-2" style="color: var(--text-secondary);">${escapeHtml(r.incident_title || r.incident_description?.substring(0, 80) || 'No description')}</p>
-            <div class="mt-2 flex justify-between items-center">
-                <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--light-gray); color: var(--text-secondary);">${escapeHtml(r.incident_type || 'harassment')}</span>
-                ${r.assigned_mentor_id ? '<span class="text-xs text-green-600"><i class="fas fa-user-check"></i> Assigned</span>' : '<span class="text-xs text-yellow-600"><i class="fas fa-clock"></i> Pending</span>'}
-            </div>
-        </div>
-    `).join('');
-}
+        `;
+        }).join('');
+    }
 
     // Load total users count for stat card
     function loadTotalUsersStat() {
@@ -373,13 +399,35 @@
         .catch(error => console.error('Error loading users stat:', error));
     }
 
+    function loadNotificationBadge() {
+        const url = '{{ route("admin.notifications") }}';
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            if (badge && data.unread_count !== undefined) {
+                badge.innerText = data.unread_count;
+            }
+        })
+        .catch(error => console.error('Error loading notifications:', error));
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         loadMentors();
         loadRecentReports();
         loadTotalUsersStat();
+        loadNotificationBadge();
         
         document.getElementById('scheduleTrainingBtn')?.addEventListener('click', () => {
-            alert(' Schedule training: Calendar integration ready.');
+            // Redirect to mentor management where admin can arrange training or schedule sessions
+            window.location.href = '{{ route("admin.mentors.index") }}';
         });
     });
 </script>

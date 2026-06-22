@@ -47,26 +47,55 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Settings Routes
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    // ============================================
+    // SETTINGS ROUTES - UPDATED WITH SEPARATE PAGES
+    // ============================================
+    Route::prefix('settings')->name('settings.')->group(function () {
+        // Main settings dashboard (card view)
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        
+        // General Settings
+        Route::get('/general', [SettingsController::class, 'general'])->name('general');
+        Route::put('/general', [SettingsController::class, 'updateGeneral'])->name('general.update');
+        
+        // Admin Users
+        Route::get('/admins', [SettingsController::class, 'admins'])->name('admins');
+        Route::post('/admins', [SettingsController::class, 'storeAdmin'])->name('admins.store');
+        Route::put('/admins/{id}', [SettingsController::class, 'updateAdmin'])->name('admins.update');
+        Route::delete('/admins/{id}', [SettingsController::class, 'deleteAdmin'])->name('admins.delete');
+        
+        // Email Templates
+        Route::get('/email', [SettingsController::class, 'email'])->name('email');
+        Route::put('/email/{id}', [SettingsController::class, 'updateEmail'])->name('email.update');
+        
+        // Security Settings
+        Route::get('/security', [SettingsController::class, 'security'])->name('security');
+        Route::put('/security', [SettingsController::class, 'updateSecurity'])->name('security.update');
+        
+        // Backup Settings
+        Route::get('/backup', [SettingsController::class, 'backup'])->name('backup');
+        Route::post('/backup/run', [SettingsController::class, 'runBackup'])->name('backup.run');
+        Route::get('/backup/download/{file}', [SettingsController::class, 'downloadBackup'])->name('backup.download');
+        Route::delete('/backup/{file}', [SettingsController::class, 'deleteBackup'])->name('backup.delete');
+    });
+
+    // Keep backward compatibility for old settings routes
     Route::post('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
     Route::post('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
-    Route::post('/settings/backup', [SettingsController::class, 'createBackup'])->name('settings.backup.create');
+    Route::post('/settings/backup', [SettingsController::class, 'runBackup'])->name('settings.backup.create');
     Route::delete('/settings/backup/{file}', [SettingsController::class, 'deleteBackup'])->name('settings.backup.delete');
     Route::post('/settings/api/generate', [SettingsController::class, 'generateApiKey'])->name('settings.api.generate');
     Route::delete('/settings/api/{key}', [SettingsController::class, 'revokeApiKey'])->name('settings.api.revoke');
-    Route::post('/settings/email/template/update', [SettingsController::class, 'updateEmailTemplate'])->name('settings.email.template.update');
+    Route::post('/settings/email/template/update', [SettingsController::class, 'updateEmail'])->name('settings.email.template.update');
     Route::post('/settings/guidance/store', [SettingsController::class, 'storeGuidance'])->name('settings.guidance.store');
     Route::put('/settings/guidance/{id}', [SettingsController::class, 'updateGuidance'])->name('settings.guidance.update');
     Route::delete('/settings/guidance/{id}', [SettingsController::class, 'deleteGuidance'])->name('settings.guidance.delete');
-    
-    // Admin Management Routes
-    Route::post('/settings/admins', [SettingsController::class, 'storeAdmin'])->name('settings.admins.store');
-    Route::put('/settings/admins/{id}', [SettingsController::class, 'updateAdmin'])->name('settings.admins.update');
-    Route::delete('/settings/admins/{id}', [SettingsController::class, 'deleteAdmin'])->name('settings.admins.delete');
 
     // Mentors - Full resource route
     Route::resource('mentors', MentorController::class);
+
+    // Admin notifications (AJAX)
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->name('notifications');
 
     // Additional mentor routes
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
@@ -92,7 +121,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     });
 
     // ============================================
-    // HARASSMENT REPORTS ROUTES - FIXED
+    // HARASSMENT REPORTS ROUTES
     // ============================================
     Route::prefix('reports')->name('reports.')->group(function () {
         // Main index route (GET)
@@ -169,6 +198,7 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
 
     // harassment reports assigned to this mentor
     Route::get('/harassment-reports', [ReportController::class, 'harassmentReports'])->name('harassment.index');
+    Route::get('/harassment-analytics', [ReportController::class, 'harassmentAnalytics'])->name('harassment.analytics');
     Route::get('/harassment-reports/{id}', [ReportController::class, 'showHarassmentReport'])->name('harassment.show');
     Route::post('/harassment-reports/{id}/respond', [ReportController::class, 'respondToHarassmentReport'])->name('harassment.respond');
 
@@ -207,6 +237,7 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     Route::get('/settings/security', [MentorSecurityController::class, 'showSecurity'])->name('showSecurity');
     Route::put('/settings/security', [MentorSecurityController::class, 'updateSecurity'])->name('updateSecurity');
 });
+
 // Analytics Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
     Route::get('/analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
