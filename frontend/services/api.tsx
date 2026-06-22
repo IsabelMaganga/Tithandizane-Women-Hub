@@ -108,6 +108,33 @@ export interface Message {
   created_at: string;
 }
 
+export interface ChatListItem {
+  id: number;
+  name?: string;
+  is_group: boolean;
+  avatar?: string;
+  unread_count: number;
+  participants?: {
+    id: number;
+    name: string;
+    avatar?: string;
+    is_online?: boolean;
+  }[];
+  messages?: {
+    id: number;
+    sender_id: number;
+    message: string;
+    type?: string;
+    image?: string;
+    file?: string;
+    audio?: string;
+    video?: string;
+    attachment_type?: string;
+    created_at: string;
+  }[];
+  created_at: string;
+}
+
 export interface HarassmentReport {
   id: number;
   reference_number?: string;
@@ -637,10 +664,22 @@ export const getMentor = async (): Promise<Mentor[]> => {
 // ============================================
 
 // Fetch chat list
-export const getChatList = async (): Promise<Conversation[]> => {
+// Fix getChatList to return correct type
+export const getChatList = async (): Promise<ChatListItem[]> => {
   try {
-    const response = await api.get<Conversation[]>('/conversations');
-    return response.data;
+    const response = await api.get('/conversations');
+    console.log("CHAT DATA SAMPLE:", JSON.stringify(response.data?.[0], null, 2));
+
+    // Handle wrapped response
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+
+    return [];
   } catch (error: any) {
     console.error('❌ Error fetching chats:', error.message);
     throw error;

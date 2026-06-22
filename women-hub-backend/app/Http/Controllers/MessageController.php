@@ -26,9 +26,9 @@ class MessageController extends Controller
             'message' => $request->message,
             'is_anonymous' => $request->is_anonymous ?? false
         ]);
-        
-        $message->load('sender'); 
-        
+
+        $message->load('sender');
+
         // Trigger WebSocket broadcast
         broadcast(new MessageSent($message))->toOthers();
 
@@ -42,12 +42,19 @@ class MessageController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        // Mark all messages in this conversation as read
+        // (only messages sent by others that haven't been read yet)
+        Message::where('conversation_id', $conversationId)
+            ->where('sender_id', '!=', auth()->id())
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
+
         $messages->transform(function ($message) {
             if ($message->is_anonymous) {
                 $message->setRelation('sender', [
                     'id' => null,
                     'name' => 'Anonymous User',
-                    'avatar' => null 
+                    'avatar' => null
                 ]);
             }
             return $message;
@@ -70,20 +77,30 @@ class MessageController extends Controller
 
         $user = auth()->user();
         $isGroup = $request->boolean('is_group', false);
-        $targetUserId = $request->target_user_id ?? $request->mentor_id ?? $request->receiver_id;
+        $targetUserId = $request->target_user_id
+            ?? $request->mentor_id
+            ?? $request->receiver_id;
 
         if ($isGroup) {
             if (!$user->isAdmin() && $user->role !== 'mentor') {
-                return response()->json(['message' => 'Only admins and mentors can create groups.'], 403);
+                return response()->json([
+                    'message' => 'Only admins and mentors can create groups.'
+                ], 403);
             }
         } else {
             if (!$targetUserId) {
-                return response()->json(['message' => 'Target user is required.'], 422);
+                return response()->json([
+                    'message' => 'Target user is required.'
+                ], 422);
             }
 
             $targetUser = User::findOrFail($targetUserId);
 
-            if ($targetUser->role === 'mentor' && !$user->isAdmin() && $user->role !== 'mentor') {
+            if (
+                $targetUser->role === 'mentor' &&
+                !$user->isAdmin() &&
+                $user->role !== 'mentor'
+            ) {
                 $hasApprovedSession = MentorshipSession::where('mentee_id', $user->id)
                     ->where('mentor_id', $targetUser->id)
                     ->where('status', 'accepted')
@@ -95,15 +112,18 @@ class MessageController extends Controller
                     ->exists();
 
                 if (!$hasApprovedSession && !$hasReportAssignment) {
-                    return response()->json(['message' => 'Approved mentorship session or identified harassment report required.'], 403);
+                    return response()->json([
+                        'message' => 'Approved mentorship session or identified harassment report required.'
+                    ], 403);
                 }
             }
-            
+
+            // Return existing conversation if it already exists
             $existingConvo = Conversation::where('is_group', false)
-                ->whereHas('participants', function($q) use ($user) {
+                ->whereHas('participants', function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 })
-                ->whereHas('participants', function($q) use ($targetUser) {
+                ->whereHas('participants', function ($q) use ($targetUser) {
                     $q->where('user_id', $targetUser->id);
                 })->first();
 
@@ -119,7 +139,7 @@ class MessageController extends Controller
 
         if ($isGroup) {
             $participants = $request->users ?? [];
-            $participants[] = $user->id; 
+            $participants[] = $user->id;
             $conversation->participants()->attach(array_unique($participants));
         } else {
             $conversation->participants()->attach([
@@ -131,26 +151,27 @@ class MessageController extends Controller
         return response()->json($conversation->load('participants'));
     }
 
-    //Allow users to join a group
+    // Allow users to join a group
     public function joinGroup($conversationId)
     {
         $conversation = Conversation::findOrFail($conversationId);
 
         if (!$conversation->is_group) {
-            return response()->json(['message' => 'This is not a group chat.'], 422);
+            return response()->json([
+                'message' => 'This is not a group chat.'
+            ], 422);
         }
 
-        // Add the user to the group
         $conversation->participants()->syncWithoutDetaching([auth()->id()]);
 
         return response()->json(['message' => 'Successfully joined the group']);
     }
 
-    //List groups available to join
+    // List groups available to join
     public function getAvailableGroups()
     {
         $groups = Conversation::where('is_group', true)
-            ->whereDoesntHave('participants', function($q) {
+            ->whereDoesntHave('participants', function ($q) {
                 $q->where('user_id', auth()->id());
             })->get();
 
@@ -163,28 +184,36 @@ class MessageController extends Controller
 
         $conversations = $user->conversations()
             ->with(['participants', 'messages' => function ($q) {
-                $q->latest()->limit(1); 
+                $q->latest()->limit(1);
             }])
-            ->get();
+            ->get()
+            ->map(function ($conversation) use ($user) {
+                // Count unread messages (sent by others, not yet read)
+                $conversation->unread_count = $conversation->messages()
+                    ->where('sender_id', '!=', $user->id)
+                    ->where('is_read', 0)
+                    ->count();
+                return $conversation;
+            });
 
         return response()->json($conversations);
     }
 
-public function showInfo($id)
-{
-    $conversation = Conversation::with('participants')->findOrFail($id);
+    public function showInfo($id)
+    {
+        $conversation = Conversation::with('participants')->findOrFail($id);
 
-    return response()->json([
-        'id' => $conversation->id,
-        'name' => $conversation->name,
-        'is_group' => $conversation->is_group,
-        'participants' => $conversation->participants->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'is_admin' => $user->pivot->is_admin ?? false,
-            ];
-        }),
-    ]);
-}
+        return response()->json([
+            'id' => $conversation->id,
+            'name' => $conversation->name,
+            'is_group' => $conversation->is_group,
+            'participants' => $conversation->participants->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'is_admin' => $user->pivot->is_admin ?? false,
+                ];
+            }),
+        ]);
+    }
 }
