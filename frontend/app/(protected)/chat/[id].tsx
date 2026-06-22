@@ -61,9 +61,12 @@ const ChatScreen = () => {
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
   const unsubscribeRef = useRef<(() => void) | null>(null);
-  const pendingMessagesRef = useRef<Map<string, number>>(new Map());
+  // Track optimistic IDs so WebSocket knows to replace, not duplicate
+  const optimisticIdsRef = useRef<Set<number>>(new Set());
+  // Track confirmed server IDs to avoid WS duplicates
+  const confirmedIdsRef = useRef<Set<number>>(new Set());
 
-  // Helper to strictly ensure unique IDs in an array of messages
+  // ─── Deduplicate by ID only ────────────────────────────────────────────────
   const deduplicateMessages = (arr: Message[]): Message[] => {
     return Array.from(new Map(arr.map((m) => [m.id, m])).values());
   };
@@ -80,18 +83,37 @@ const ChatScreen = () => {
       convId,
       (e: any) => {
         const incoming: Message = e.message;
-        
-        // Strict duplicate pre-check on text and maps
-        if (pendingMessagesRef.current.has(incoming.message)) {
+
+        // Skip if we already have this confirmed server ID
+        if (confirmedIdsRef.current.has(incoming.id)) {
           return;
         }
 
+        confirmedIdsRef.current.add(incoming.id);
+
         setMessages((prev) => {
-          // Double guard check: check text match or ID match in state
-          const isDuplicate = prev.some(
-            (m) => m.id === incoming.id || (m.message === incoming.message && m.sender_id === incoming.sender_id)
+          // Replace optimistic message from same sender if exists
+          const optimisticIndex = prev.findIndex(
+            (m) =>
+              optimisticIdsRef.current.has(m.id) &&
+              m.sender_id === incoming.sender_id &&
+              m.message === incoming.message
           );
-          if (isDuplicate) return prev;
+
+          if (optimisticIndex !== -1) {
+            // Replace optimistic with real message
+            optimisticIdsRef.current.delete(prev[optimisticIndex].id);
+            const updated = [...prev];
+            updated[optimisticIndex] = incoming;
+            return updated;
+          }
+
+          // Check if already in list by ID
+          if (prev.some((m) => m.id === incoming.id)) {
+            return prev;
+          }
+
+          // New message from other user — add directly
           return [...prev, incoming];
         });
       }
@@ -109,14 +131,14 @@ const ChatScreen = () => {
     };
   }, []);
 
-  // ─── Chat Initialization & WS Sync ─────────────────────────────────────────
+  // ─── Chat Initialization ───────────────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
 
     const initChat = async () => {
       try {
         const token = await getUserToken();
-        
+
         if (isNew === "true" && !activeId) {
           if (isMounted) {
             setConversation({ id: 0, name: name ?? "", is_group: false });
@@ -134,7 +156,12 @@ const ChatScreen = () => {
 
         if (!isMounted) return;
 
-        setMessages(deduplicateMessages(msgs));
+        const deduped = deduplicateMessages(msgs);
+
+        // Seed confirmed IDs from history
+        deduped.forEach((m) => confirmedIdsRef.current.add(m.id));
+
+        setMessages(deduped);
         setConversation(convo);
 
         setupWebsocket(targetId, token);
@@ -152,24 +179,29 @@ const ChatScreen = () => {
     };
   }, [id, activeId]);
 
-  // ─── Send Message ─────────────────────────────────────────────────────────
+  // ─── Send Message ──────────────────────────────────────────────────────────
   const handleSend = async () => {
     const messageText = text.trim();
     if (!messageText || sending) return;
     setSending(true);
+    setText(""); // Clear immediately for better UX
 
-    const optimisticId = Date.now();
+    // Use negative ID to clearly mark as optimistic
+    const optimisticId = -Date.now();
+    optimisticIdsRef.current.add(optimisticId);
+
     const optimisticMsg: Message = {
       id: optimisticId,
       sender_id: user?.id ?? 0,
       message: messageText,
     };
 
+    // Show optimistic message immediately
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     try {
       const token = await getUserToken();
       let currentConvId = activeId;
-
-      pendingMessagesRef.current.set(messageText, optimisticId);
 
       if (!currentConvId) {
         const newConvo = await createConversation(
@@ -178,33 +210,36 @@ const ChatScreen = () => {
         );
         currentConvId = newConvo.id;
         setConversation(newConvo);
-        setActiveId(currentConvId); 
+        setActiveId(currentConvId);
       }
 
-      setMessages((prev) => deduplicateMessages([...prev, optimisticMsg]));
-      setText("");
+      const confirmed = await sendMessage(
+        currentConvId!,
+        messageText,
+        token,
+        false
+      );
 
-      const confirmed = await sendMessage(currentConvId!, messageText, token, false);
+      // Add confirmed ID so WS won't duplicate it
+      confirmedIdsRef.current.add(confirmed.id);
 
+      // Replace optimistic with confirmed
       setMessages((prev) => {
-        const hasOptimistic = prev.some((m) => m.id === optimisticId);
-        
-        if (!hasOptimistic) {
-          return prev.some((m) => m.id === confirmed.id) ? prev : [...prev, confirmed];
-        }
-        
-        const updated = prev.map((m) => (m.id === optimisticId ? confirmed : m));
+        const updated = prev.map((m) =>
+          m.id === optimisticId ? confirmed : m
+        );
         return deduplicateMessages(updated);
       });
+
+      optimisticIdsRef.current.delete(optimisticId);
     } catch (err) {
       console.error("Send message error:", err);
+      // Remove optimistic on failure
       setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      optimisticIdsRef.current.delete(optimisticId);
+      setText(messageText); // Restore text on failure
     } finally {
-      // Small timeout buffer lets the async UI cycles finish mapping before clearing key maps
-      setTimeout(() => {
-        pendingMessagesRef.current.delete(messageText);
-        setSending(false);
-      }, 300);
+      setSending(false);
     }
   };
 
@@ -229,7 +264,10 @@ const ChatScreen = () => {
 
       {/* HEADER */}
       <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
-        <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
+        <Pressable
+          onPress={() => router.back()}
+          className="pr-3 active:opacity-50"
+        >
           <Feather name="chevron-left" size={28} color="#1E293B" />
         </Pressable>
 
@@ -240,7 +278,10 @@ const ChatScreen = () => {
         </View>
 
         <View className="ml-3 flex-1">
-          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>
+          <Text
+            className="text-slate-900 font-bold text-base"
+            numberOfLines={1}
+          >
             {getTitle()}
           </Text>
           <Text className="text-slate-400 text-[11px] font-medium">
@@ -262,12 +303,14 @@ const ChatScreen = () => {
             paddingTop: 16,
             paddingBottom: 20,
           }}
-          // Fail-safe composite key fallback to keep LegendList from crashing on collisions
-          keyExtractor={(item, index) => item?.id ? `${item.id}-${index}` : index.toString()}
+          // ← Use only the message ID as key, no index
+          keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => {
             const isMe = item.sender_id === user?.id;
             return (
-              <View className={`mb-4 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}>
+              <View
+                className={`mb-4 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}
+              >
                 <View
                   className={`p-4 rounded-3xl ${
                     isMe
@@ -275,11 +318,15 @@ const ChatScreen = () => {
                       : "bg-white border border-slate-100 rounded-tl-none shadow-sm"
                   }`}
                 >
-                  <Text className={`${isMe ? "text-white" : "text-slate-800"} text-[15px] leading-5`}>
+                  <Text
+                    className={`${isMe ? "text-white" : "text-slate-800"} text-[15px] leading-5`}
+                  >
                     {item.message}
                   </Text>
                 </View>
-                <Text className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? "text-right" : "text-left"}`}>
+                <Text
+                  className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? "text-right" : "text-left"}`}
+                >
                   {isMe ? "Sent" : item.sender?.name}
                 </Text>
               </View>
@@ -288,14 +335,18 @@ const ChatScreen = () => {
           ListEmptyComponent={
             <View className="items-center mt-10 px-10">
               <Text className="text-slate-300 text-center font-medium">
-                Your conversation starts here. Messages are encrypted and private.
+                Your conversation starts here. Messages are encrypted and
+                private.
               </Text>
             </View>
           }
         />
 
         {/* INPUT BAR */}
-        <SafeAreaView edges={["bottom"]} className="bg-white border-t border-slate-100">
+        <SafeAreaView
+          edges={["bottom"]}
+          className="bg-white border-t border-slate-100"
+        >
           <View className="p-3 flex-row items-end space-x-2">
             <View className="flex-1 bg-slate-50 rounded-[24px] px-4 py-2 border border-slate-200 flex-row items-end">
               <TextInput
@@ -315,13 +366,20 @@ const ChatScreen = () => {
               onPress={handleSend}
               disabled={!text.trim() || sending}
               className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${
-                text.trim() ? "bg-purple-600 shadow-purple-300" : "bg-slate-200 shadow-none"
+                text.trim()
+                  ? "bg-purple-600 shadow-purple-300"
+                  : "bg-slate-200 shadow-none"
               }`}
             >
               {sending ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Ionicons name="send" size={20} color="white" style={{ marginLeft: 3 }} />
+                <Ionicons
+                  name="send"
+                  size={20}
+                  color="white"
+                  style={{ marginLeft: 3 }}
+                />
               )}
             </Pressable>
           </View>
