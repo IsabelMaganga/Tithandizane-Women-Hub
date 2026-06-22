@@ -25,12 +25,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type MessageStatus = "sending" | "sent" | "delivered" | "read";
+
 interface Message {
   id: number;
   sender_id: number;
   message: string;
   sender?: { name: string };
   created_at?: string;
+  status?: MessageStatus;
+  read_at?: string | null;
 }
 
 interface Conversation {
@@ -38,6 +42,59 @@ interface Conversation {
   name: string;
   is_group: boolean;
 }
+
+// ─── Read Receipt Component ────────────────────────────────────────────────────
+
+const ReadReceipt = ({ status }: { status: MessageStatus }) => {
+  if (status === "sending") {
+    return (
+      <Text style={{ color: "#94A3B8", fontSize: 10, marginLeft: 2 }}>
+        ●
+      </Text>
+    );
+  }
+
+  if (status === "sent") {
+    // Single grey tick
+    return (
+      <View style={{ flexDirection: "row", marginLeft: 2 }}>
+        <Ionicons name="checkmark" size={12} color="#CBD5E1" />
+      </View>
+    );
+  }
+
+  if (status === "delivered") {
+    // Double grey ticks
+    return (
+      <View style={{ flexDirection: "row", marginLeft: 2 }}>
+        <Ionicons
+          name="checkmark"
+          size={12}
+          color="#CBD5E1"
+          style={{ marginRight: -5 }}
+        />
+        <Ionicons name="checkmark" size={12} color="#CBD5E1" />
+      </View>
+    );
+  }
+
+  if (status === "read") {
+    // Double BLUE ticks
+    return (
+      <View style={{ flexDirection: "row", marginLeft: 2 }}>
+        <Ionicons
+          name="checkmark"
+          size={12}
+          color="#3B82F6"
+          style={{ marginRight: -5 }}
+        />
+        <Ionicons name="checkmark" size={12} color="#3B82F6" />
+      </View>
+    );
+  }
+
+  return null;
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -61,14 +118,36 @@ const ChatScreen = () => {
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
   const unsubscribeRef = useRef<(() => void) | null>(null);
-  // Track optimistic IDs so WebSocket knows to replace, not duplicate
   const optimisticIdsRef = useRef<Set<number>>(new Set());
-  // Track confirmed server IDs to avoid WS duplicates
   const confirmedIdsRef = useRef<Set<number>>(new Set());
 
-  // ─── Deduplicate by ID only ────────────────────────────────────────────────
-  const deduplicateMessages = (arr: Message[]): Message[] => {
-    return Array.from(new Map(arr.map((m) => [m.id, m])).values());
+  // ─── Deduplicate by ID ─────────────────────────────────────────────────────
+  const deduplicateMessages = (arr: Message[]): Message[] =>
+    Array.from(new Map(arr.map((m) => [m.id, m])).values());
+
+  // ─── Derive status from server data ───────────────────────────────────────
+  const deriveStatus = (msg: Message): MessageStatus => {
+    if (msg.read_at) return "read";
+    if (msg.created_at) return "delivered";
+    return "sent";
+  };
+
+  // ─── Mark all incoming messages as read ───────────────────────────────────
+  const markMessagesAsRead = async (convId: number, token: string) => {
+    try {
+      // Call your backend endpoint to mark as read
+      // e.g. await markConversationRead(convId, token);
+      // Then update local state
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.sender_id !== user?.id && !m.read_at
+            ? { ...m, read_at: new Date().toISOString(), status: "read" }
+            : m
+        )
+      );
+    } catch {
+      // silently fail — not critical
+    }
   };
 
   // ─── WebSocket Sub / Unsub ─────────────────────────────────────────────────
@@ -82,17 +161,15 @@ const ChatScreen = () => {
       token,
       convId,
       (e: any) => {
-        const incoming: Message = e.message;
+        const incoming: Message = {
+          ...e.message,
+          status: deriveStatus(e.message),
+        };
 
-        // Skip if we already have this confirmed server ID
-        if (confirmedIdsRef.current.has(incoming.id)) {
-          return;
-        }
-
+        if (confirmedIdsRef.current.has(incoming.id)) return;
         confirmedIdsRef.current.add(incoming.id);
 
         setMessages((prev) => {
-          // Replace optimistic message from same sender if exists
           const optimisticIndex = prev.findIndex(
             (m) =>
               optimisticIdsRef.current.has(m.id) &&
@@ -101,23 +178,32 @@ const ChatScreen = () => {
           );
 
           if (optimisticIndex !== -1) {
-            // Replace optimistic with real message
             optimisticIdsRef.current.delete(prev[optimisticIndex].id);
             const updated = [...prev];
             updated[optimisticIndex] = incoming;
             return updated;
           }
 
-          // Check if already in list by ID
-          if (prev.some((m) => m.id === incoming.id)) {
-            return prev;
-          }
+          if (prev.some((m) => m.id === incoming.id)) return prev;
 
-          // New message from other user — add directly
-          return [...prev, incoming];
+          // If it's from another user, mark as read immediately (chat is open)
+          const finalMsg =
+            incoming.sender_id !== user?.id
+              ? {
+                  ...incoming,
+                  read_at: new Date().toISOString(),
+                  status: "read" as MessageStatus,
+                }
+              : incoming;
+
+          return [...prev, finalMsg];
         });
       }
     );
+
+    // Listen for read receipt events from server
+    // e.g. subscribeToChatChannel also handles "MessageRead" events:
+    // when the other user reads, update your sent messages to "read"
 
     console.log(`📡 Subscribed to chat.${convId}`);
   };
@@ -125,9 +211,7 @@ const ChatScreen = () => {
   // ─── Global Cleanup ────────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
+      if (unsubscribeRef.current) unsubscribeRef.current();
     };
   }, []);
 
@@ -156,15 +240,22 @@ const ChatScreen = () => {
 
         if (!isMounted) return;
 
-        const deduped = deduplicateMessages(msgs);
+        // Attach derived status to each historical message
+        const withStatus: Message[] = msgs.map((m: Message) => ({
+          ...m,
+          status: m.sender_id === user?.id ? deriveStatus(m) : undefined,
+        }));
 
-        // Seed confirmed IDs from history
+        const deduped = deduplicateMessages(withStatus);
         deduped.forEach((m) => confirmedIdsRef.current.add(m.id));
 
         setMessages(deduped);
         setConversation(convo);
 
         setupWebsocket(targetId, token);
+
+        // Mark received messages as read now that chat is open
+        markMessagesAsRead(targetId, token);
       } catch (err) {
         console.error("Init chat error:", err);
       } finally {
@@ -173,10 +264,7 @@ const ChatScreen = () => {
     };
 
     initChat();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [id, activeId]);
 
   // ─── Send Message ──────────────────────────────────────────────────────────
@@ -184,9 +272,8 @@ const ChatScreen = () => {
     const messageText = text.trim();
     if (!messageText || sending) return;
     setSending(true);
-    setText(""); // Clear immediately for better UX
+    setText("");
 
-    // Use negative ID to clearly mark as optimistic
     const optimisticId = -Date.now();
     optimisticIdsRef.current.add(optimisticId);
 
@@ -194,9 +281,9 @@ const ChatScreen = () => {
       id: optimisticId,
       sender_id: user?.id ?? 0,
       message: messageText,
+      status: "sending",
     };
 
-    // Show optimistic message immediately
     setMessages((prev) => [...prev, optimisticMsg]);
 
     try {
@@ -220,13 +307,14 @@ const ChatScreen = () => {
         false
       );
 
-      // Add confirmed ID so WS won't duplicate it
       confirmedIdsRef.current.add(confirmed.id);
 
-      // Replace optimistic with confirmed
+      // Replace optimistic with confirmed — status = "sent"
       setMessages((prev) => {
         const updated = prev.map((m) =>
-          m.id === optimisticId ? confirmed : m
+          m.id === optimisticId
+            ? { ...confirmed, status: "sent" as MessageStatus }
+            : m
         );
         return deduplicateMessages(updated);
       });
@@ -234,10 +322,9 @@ const ChatScreen = () => {
       optimisticIdsRef.current.delete(optimisticId);
     } catch (err) {
       console.error("Send message error:", err);
-      // Remove optimistic on failure
       setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       optimisticIdsRef.current.delete(optimisticId);
-      setText(messageText); // Restore text on failure
+      setText(messageText);
     } finally {
       setSending(false);
     }
@@ -303,16 +390,17 @@ const ChatScreen = () => {
             paddingTop: 16,
             paddingBottom: 20,
           }}
-          // ← Use only the message ID as key, no index
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => {
             const isMe = item.sender_id === user?.id;
+            const status = item.status ?? (isMe ? "sent" : undefined);
+
             return (
               <View
-                className={`mb-4 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}
+                className={`mb-3 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}
               >
                 <View
-                  className={`p-4 rounded-3xl ${
+                  className={`px-4 py-3 rounded-3xl ${
                     isMe
                       ? "bg-purple-600 rounded-tr-none shadow-md shadow-purple-200"
                       : "bg-white border border-slate-100 rounded-tl-none shadow-sm"
@@ -324,11 +412,34 @@ const ChatScreen = () => {
                     {item.message}
                   </Text>
                 </View>
-                <Text
-                  className={`text-[10px] text-slate-400 mt-1 px-1 ${isMe ? "text-right" : "text-left"}`}
+
+                {/* ── Status row ── */}
+                <View
+                  className={`flex-row items-center mt-0.5 px-1 ${
+                    isMe ? "justify-end" : "justify-start"
+                  }`}
                 >
-                  {isMe ? "Sent" : item.sender?.name}
-                </Text>
+                  {!isMe && (
+                    <Text className="text-[10px] text-slate-400">
+                      {item.sender?.name ?? ""}
+                    </Text>
+                  )}
+
+                  {isMe && status && (
+                    <View className="flex-row items-center space-x-0.5">
+                      <Text className="text-[10px] text-slate-400 mr-0.5">
+                        {status === "sending"
+                          ? "Sending…"
+                          : status === "sent"
+                            ? "Sent"
+                            : status === "delivered"
+                              ? "Delivered"
+                              : "Read"}
+                      </Text>
+                      <ReadReceipt status={status} />
+                    </View>
+                  )}
+                </View>
               </View>
             );
           }}

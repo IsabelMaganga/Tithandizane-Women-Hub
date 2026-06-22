@@ -26,7 +26,8 @@ type Mentor = {
   linkedin_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
-  rating?: number | null;
+  average_rating?: number | null; // ✅ matches API response key
+  rating?: number | null;         // ✅ kept for backward compatibility
   total_sessions?: number;
   status?: string;
 };
@@ -46,11 +47,11 @@ const MentorshipScreen = () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching mentors...');
-      
+
       const data = await getActiveMentors();
       const safeData = Array.isArray(data) ? data : [];
       console.log('📊 Received mentors:', safeData.length);
-      
+
       if (safeData.length === 0) {
         console.warn('⚠️ No mentors received');
         Toast.show({
@@ -60,7 +61,7 @@ const MentorshipScreen = () => {
           position: 'top',
         });
       }
-      
+
       setMentors(safeData);
     } catch (error: any) {
       console.error("❌ fetchMentors error:", error?.message || error);
@@ -78,16 +79,16 @@ const MentorshipScreen = () => {
 
   const filteredMentors = useMemo(() => {
     if (!searchQuery.trim()) return mentors;
-    
+
     const query = searchQuery.toLowerCase().trim();
     return mentors.filter((mentor) => {
       if (!mentor) return false;
       const nameMatch = mentor.name?.toLowerCase().includes(query) ?? false;
       const bioMatch = mentor.bio?.toLowerCase().includes(query) ?? false;
-      const expertiseMatch = Array.isArray(mentor.expertise) && mentor.expertise.some(exp => 
+      const expertiseMatch = Array.isArray(mentor.expertise) && mentor.expertise.some(exp =>
         exp?.toLowerCase().includes(query)
       );
-      
+
       return nameMatch || bioMatch || expertiseMatch;
     });
   }, [searchQuery, mentors]);
@@ -103,7 +104,7 @@ const MentorshipScreen = () => {
     }
 
     const roundedRating = Math.round(rating);
-    
+
     return (
       <View className="flex-row items-center space-x-0.5">
         {[1, 2, 3, 4, 5].map((starIndex) => (
@@ -143,7 +144,7 @@ const MentorshipScreen = () => {
         {/* --- Top Utility Bar Row --- */}
         <View className="flex-row justify-between items-center mb-5">
           <BackButton />
-          
+
           <Pressable
             onPress={() => router.push('/(protected)/sessionsDashboard')}
             className="flex-row items-center bg-white/20 px-4 py-2 rounded-xl active:bg-white/30 border border-white/10"
@@ -158,7 +159,7 @@ const MentorshipScreen = () => {
           <Text className="text-white text-2xl font-black tracking-tight">{t("Expert Mentors")}</Text>
           <Text className="text-violet-200 text-sm font-medium mt-1">Connect with leaders to guide your journey</Text>
         </View>
-        
+
         {/* Search Architecture Box */}
         <View className="flex-row items-center bg-white/10 mt-4 px-4 py-3 rounded-2xl border border-white/20">
           <Feather name="search" size={18} color="#ddd6fe" />
@@ -187,11 +188,14 @@ const MentorshipScreen = () => {
         renderItem={({ item }) => {
           if (!item) return null;
 
-          const expertiseArea = Array.isArray(item.expertise) && item.expertise.length > 0 
-            ? item.expertise.join(', ') 
+          const expertiseArea = Array.isArray(item.expertise) && item.expertise.length > 0
+            ? item.expertise.join(', ')
             : 'Mentor';
-          
+
           const avatarUrl = item.avatar || item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name || 'M')}&background=8b5cf6&color=fff`;
+
+          // ✅ FIX: use average_rating first, fall back to rating
+          const displayRating = item.average_rating ?? item.rating ?? null;
 
           return (
             <View className="bg-white rounded-3xl mb-5 overflow-hidden shadow-xs border border-slate-100">
@@ -207,15 +211,15 @@ const MentorshipScreen = () => {
                       />
                       <View className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
                     </View>
-                    
+
                     <View className="ml-4 flex-1">
                       <Text className="text-slate-900 text-lg font-bold" numberOfLines={1}>
                         {item.name}
                       </Text>
-                      
-                      {/* Heart Ratings Insertion */}
+
+                      {/* ✅ FIX: pass displayRating (average_rating) to heart component */}
                       <View className="mt-1">
-                        <RenderHeartRating rating={item.rating} />
+                        <RenderHeartRating rating={displayRating} />
                       </View>
 
                       <View className="bg-violet-50 self-start px-2 py-0.5 rounded-md mt-2">
@@ -225,7 +229,7 @@ const MentorshipScreen = () => {
                       </View>
                     </View>
                   </View>
-                  
+
                   <Pressable className="bg-slate-50 p-2 rounded-full active:bg-slate-100">
                     <Feather name="bookmark" size={18} color="#64748b" />
                   </Pressable>
@@ -286,11 +290,11 @@ const MentorshipScreen = () => {
               {searchQuery ? "No Matches Found" : "No Mentors Yet"}
             </Text>
             <Text className="text-slate-400 text-center mt-2 leading-5">
-              {searchQuery 
-                ? "Try adjusting your spelling or searching for clear alternative skills." 
+              {searchQuery
+                ? "Try adjusting your spelling or searching for clear alternative skills."
                 : "We're currently onboarding new experts. Please check back later!"}
             </Text>
-            <Pressable 
+            <Pressable
               onPress={() => {
                 setSearchQuery('');
                 fetchMentors();

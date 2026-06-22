@@ -83,7 +83,8 @@ export interface Mentor {
   linkedin_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
-  rating?: number | null;
+  average_rating?: number | null; // ✅ matches API response key (MentorshipController returns average_rating)
+  rating?: number | null;         // ✅ kept for backward compatibility
   total_sessions?: number;
   status?: string;
   created_at?: string;
@@ -177,8 +178,6 @@ export interface AppNotification {
   created_at: string;
 }
 
-
-// Types to add to your existing types section at the top of api.ts
 export interface MentorshipSession {
   id: number;
   mentor_id: number;
@@ -200,7 +199,7 @@ export interface MentorshipSession {
   created_at: string;
   updated_at: string;
 }
- 
+
 export interface MentorReview {
   id: number;
   mentorship_session_id: number;
@@ -211,7 +210,7 @@ export interface MentorReview {
   reviewer?: User;
   created_at: string;
 }
- 
+
 export interface MentorshipRequestData {
   mentor_id: number;
   topic: string;
@@ -267,14 +266,14 @@ api.interceptors.request.use(
     // Public routes that don't need authentication
     const publicRoutes = ['/register', '/login', '/password/forgot', '/password/reset', '/mentors/active', '/mentors/', '/harassment-reports', '/anonymous-reports'];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
-    
+
     if (!isPublicRoute) {
       const token = await AsyncStorage.getItem('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    
+
     console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     if (config.data) {
       console.log('📦 Request data:', config.data);
@@ -306,20 +305,20 @@ api.interceptors.response.use(
       console.error(`   4. Can phone access: ${error.config?.baseURL}/mentors/active`);
       console.error('   5. Windows Firewall might be blocking port 8000');
       console.error('   ');
-      
+
       throw new Error('Unable to connect to server. Please check:\n' +
         '• Backend is running (php artisan serve --host=0.0.0.0)\n' +
         '• Phone and computer on same WiFi\n' +
         `• Can access ${COMPUTER_IP}:8000 from phone browser\n` +
         '• Firewall allows port 8000');
     }
-    
+
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       console.log('🔐 Unauthorized - clearing token');
       await AsyncStorage.removeItem('token');
     }
-    
+
     // Log other errors
     if (error.response) {
       console.error('❌ API Error:', {
@@ -328,7 +327,7 @@ api.interceptors.response.use(
         url: error.config?.url,
       });
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -338,23 +337,23 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
   try {
     console.log('📝 Registering user:', userData.email);
     console.log('📍 Endpoint:', `${api.defaults.baseURL}/register`);
-    
+
     const response = await api.post<LoginResponse>('/register', userData);
-    
+
     console.log('✅ Registration successful!');
-    
+
     if (response.data.token) {
       await AsyncStorage.setItem('token', response.data.token);
     }
-    
+
     return response.data;
   } catch (error: any) {
     console.error('❌ Registration error:', error.message);
-    
+
     if (error.message?.includes('Unable to connect')) {
       throw error;
     }
-    
+
     if (error.response?.data?.errors) {
       const errors = error.response.data.errors as Record<string, string[]>;
       const errorValues = Object.values(errors);
@@ -362,11 +361,11 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
       const firstError = Array.isArray(firstErrorArray) ? firstErrorArray[0] : undefined;
       throw new Error(firstError || 'Validation failed');
     }
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw error;
   }
 };
@@ -375,13 +374,13 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
   try {
     console.log('📝 Logging in:', email);
-    
+
     const response = await api.post<LoginResponse>('/login', { email, password });
-    
+
     if (response.data.token) {
       await AsyncStorage.setItem('token', response.data.token);
     }
-    
+
     return response.data;
   } catch (error: any) {
     console.error('❌ Login error:', error.response?.data?.message || error.message);
@@ -464,18 +463,18 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
     if (search) params.append('search', search);
     if (expertise) params.append('expertise', expertise);
     if (params.toString()) url += `?${params.toString()}`;
-    
+
     console.log('🔍 getActiveMentors: Fetching from URL:', url);
     const response = await api.get(url);
     console.log('📥 getActiveMentors: Response status:', response.status);
-    
+
     let mentorsArray: any[] = [];
-    
+
     // Your API returns: { success: true, message: "...", mentors: [...], total: X }
     if (response.data && response.data.success === true && Array.isArray(response.data.mentors)) {
       mentorsArray = response.data.mentors;
       console.log('✅ Extracted mentors from response.data.mentors, count:', mentorsArray.length);
-    } 
+    }
     // Fallback for direct array
     else if (Array.isArray(response.data)) {
       mentorsArray = response.data;
@@ -490,9 +489,9 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
       console.warn('⚠️ Unknown response format:', response.data);
       return [];
     }
-    
+
     console.log(`📊 Found ${mentorsArray.length} mentors from API`);
-    
+
     // Transform each mentor to match the Mentor interface
     const transformedMentors: Mentor[] = mentorsArray.map((mentor: any) => {
       // Handle expertise - could be array or null
@@ -509,7 +508,7 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
           }
         }
       }
-      
+
       // Handle available_days
       let availableDaysArray: string[] = [];
       if (mentor.available_days) {
@@ -524,10 +523,10 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
           }
         }
       }
-      
+
       // Determine status - default to 'active' if not specified
       const status = mentor.status || 'active';
-      
+
       return {
         id: mentor.id,
         name: mentor.name || 'Unknown',
@@ -545,21 +544,23 @@ export const getActiveMentors = async (search?: string, expertise?: string): Pro
         linkedin_url: mentor.linkedin_url || null,
         twitter_url: mentor.twitter_url || null,
         website_url: mentor.website_url || null,
-        rating: mentor.rating || null,
+        // ✅ FIX: API returns 'average_rating', not 'rating'
+        average_rating: mentor.average_rating ?? null,
+        rating: mentor.average_rating ?? mentor.rating ?? null,
         total_sessions: mentor.total_sessions || 0,
         status: status,
         created_at: mentor.created_at,
         updated_at: mentor.updated_at,
       };
     });
-    
+
     console.log(`✅ Transformed ${transformedMentors.length} active mentors`);
     if (transformedMentors.length > 0) {
-      console.log('📝 First mentor:', transformedMentors[0].name, 'Status:', transformedMentors[0].status);
+      console.log('📝 First mentor:', transformedMentors[0].name, 'Rating:', transformedMentors[0].average_rating);
     } else {
       console.warn('⚠️ No active mentors found. Make sure mentors have status="active" in database');
     }
-    
+
     return transformedMentors;
   } catch (error: any) {
     console.error('❌ Error fetching active mentors:', error.message);
@@ -578,9 +579,9 @@ export const getMentorDetails = async (mentorId: number): Promise<Mentor | null>
   try {
     const response = await api.get(`/mentors/${mentorId}`);
     console.log('📥 Raw mentor details response:', response.data);
-    
+
     let mentor = null;
-    
+
     // Extract mentor from response
     if (response.data && response.data.success === true && response.data.mentor) {
       mentor = response.data.mentor;
@@ -589,12 +590,12 @@ export const getMentorDetails = async (mentorId: number): Promise<Mentor | null>
     } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
       mentor = response.data;
     }
-    
+
     if (!mentor) {
       console.log('⚠️ No mentor found in response');
       return null;
     }
-    
+
     // Handle expertise parsing
     let expertiseArray: string[] = mentor.expertise || [];
     if (typeof expertiseArray === 'string') {
@@ -605,7 +606,7 @@ export const getMentorDetails = async (mentorId: number): Promise<Mentor | null>
         expertiseArray = [];
       }
     }
-    
+
     // Parse available days if it's a string
     let availableDays = mentor.available_days;
     if (typeof availableDays === 'string') {
@@ -615,12 +616,15 @@ export const getMentorDetails = async (mentorId: number): Promise<Mentor | null>
         availableDays = [];
       }
     }
-    
+
     return {
       ...mentor,
       expertise: expertiseArray,
       available_days: availableDays,
-      avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff`
+      // ✅ FIX: map average_rating correctly
+      average_rating: mentor.average_rating ?? null,
+      rating: mentor.average_rating ?? mentor.rating ?? null,
+      avatar: mentor.photo || mentor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=874179&color=fff`,
     };
   } catch (error: any) {
     console.error('❌ Error fetching mentor details:', error.message);
@@ -636,9 +640,9 @@ export const getAllMentors = async (): Promise<Mentor[]> => {
   try {
     const response = await api.get('/mentors');
     console.log('📥 Raw all mentors response:', response.data);
-    
+
     let mentorsArray = [];
-    
+
     if (response.data && response.data.success === true && response.data.mentors) {
       mentorsArray = response.data.mentors;
     } else if (Array.isArray(response.data)) {
@@ -646,7 +650,7 @@ export const getAllMentors = async (): Promise<Mentor[]> => {
     } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
       mentorsArray = response.data.data;
     }
-    
+
     return mentorsArray;
   } catch (error: any) {
     console.error('❌ Error fetching all mentors:', error.message);
@@ -664,7 +668,6 @@ export const getMentor = async (): Promise<Mentor[]> => {
 // ============================================
 
 // Fetch chat list
-// Fix getChatList to return correct type
 export const getChatList = async (): Promise<ChatListItem[]> => {
   try {
     const response = await api.get('/conversations');
@@ -737,11 +740,9 @@ export const getMessages = async (conversationId: number, token?: string): Promi
 };
 
 // ============================================
-// HARASSMENT REPORT FUNCTIONS - COMPLETELY FIXED
+// HARASSMENT REPORT FUNCTIONS
 // ============================================
 
-// Get harassment reports for the current user
-// Note: uses explicit token header because the interceptor skips auth for URLs containing '/harassment-reports'
 export const getMyReports = async (): Promise<HarassmentReport[]> => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -761,7 +762,6 @@ export const getMyReports = async (): Promise<HarassmentReport[]> => {
 /** @deprecated use getMyReports instead */
 export const getReportHarassment = getMyReports;
 
-// Submit harassment report - Works for both anonymous and non-anonymous
 export const submitHarassmentReport = async (data: {
   incident_type: string;
   incident_title: string;
@@ -775,7 +775,6 @@ export const submitHarassmentReport = async (data: {
   victim_phone?: string;
 }): Promise<any> => {
   try {
-    // Prepare data exactly as Laravel expects
     const requestData: any = {
       incident_type: data.incident_type,
       incident_title: data.incident_title,
@@ -785,14 +784,13 @@ export const submitHarassmentReport = async (data: {
       perpetrator_info: data.perpetrator_info || null,
       is_anonymous: data.is_anonymous ? 1 : 0,
     };
-    
-    // Only add contact info if NOT anonymous
+
     if (!data.is_anonymous) {
       requestData.victim_name = data.victim_name;
       requestData.victim_email = data.victim_email;
       requestData.victim_phone = data.victim_phone || null;
     }
-    
+
     console.log('📤 Submitting harassment report:', JSON.stringify(requestData, null, 2));
     const token = await AsyncStorage.getItem('token');
     const response = await api.post('/harassment-reports', requestData, {
@@ -812,7 +810,6 @@ export const submitHarassmentReport = async (data: {
   }
 };
 
-// Submit anonymous report - Simplified version for anonymous reports
 export const submitAnonymousReport = async (data: {
   title: string;
   description: string;
@@ -826,9 +823,9 @@ export const submitAnonymousReport = async (data: {
       incident_location: data.location || 'Not specified',
       incident_date: new Date().toISOString().split('T')[0],
       perpetrator_info: null,
-      is_anonymous: 1, // Always anonymous
+      is_anonymous: 1,
     };
-    
+
     console.log('📤 Submitting anonymous report:', JSON.stringify(requestData, null, 2));
     const response = await api.post('/harassment-reports', requestData);
     console.log('✅ Anonymous report submitted successfully:', response.data);
@@ -836,14 +833,13 @@ export const submitAnonymousReport = async (data: {
   } catch (error: any) {
     console.error('❌ Error submitting anonymous report:', error.message);
     console.error("Status:", error.response?.status);
-  console.error("Data:", JSON.stringify(error.response?.data, null, 2));
-  console.error("Headers:", error.response?.headers);
-  console.error("Message:", error.message);
-  throw error;
+    console.error("Data:", JSON.stringify(error.response?.data, null, 2));
+    console.error("Headers:", error.response?.headers);
+    console.error("Message:", error.message);
+    throw error;
   }
 };
 
-// Get report by reference number (public — no auth required)
 export const getReportByReference = async (referenceNumber: string): Promise<ReportTracking | null> => {
   try {
     const response = await api.get(`/harassment-reports/reference/${encodeURIComponent(referenceNumber)}`);
@@ -1055,7 +1051,6 @@ export const deleteGuidanceContent = async (id: number): Promise<void> => {
 // USER & ADMIN FUNCTIONS
 // ============================================
 
-// Get all users
 export const getAllUsers = async (token: string) => {
   try {
     const response = await api.get("/users", {
@@ -1068,7 +1063,6 @@ export const getAllUsers = async (token: string) => {
   }
 };
 
-// Get conversation
 export const getConversation = async (conversationId: number, token?: string) => {
   try {
     const response = await api.get(`/conversations/${conversationId}`, token ? {
@@ -1081,7 +1075,6 @@ export const getConversation = async (conversationId: number, token?: string) =>
   }
 };
 
-// Get user
 export const getUser = async (userId: number, token: string) => {
   try {
     const response = await api.get(`users/${userId}`, {
@@ -1094,7 +1087,6 @@ export const getUser = async (userId: number, token: string) => {
   }
 };
 
-// Send mentorship request — now includes date/time for availability checking
 export const sendMentorshipRequest = async (
   data: MentorshipRequestData,
   token: string
@@ -1104,8 +1096,7 @@ export const sendMentorshipRequest = async (
   });
   return response.data;
 };
- 
-// Get mentorship sessions (outgoing + incoming)
+
 export const getMentorshipSessions = async (token: string): Promise<{
   outgoing: MentorshipSession[];
   incoming: MentorshipSession[];
@@ -1115,16 +1106,14 @@ export const getMentorshipSessions = async (token: string): Promise<{
   });
   return response.data;
 };
- 
-// Get mentor sessions (mentor view)
+
 export const getMentorSessions = async (token: string): Promise<MentorshipSession[]> => {
   const response = await api.get('/mentorship/mentor-sessions', {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
- 
-// Accept / decline / complete a session
+
 export const updateSessionStatus = async (
   sessionId: number | string,
   token: string,
@@ -1146,8 +1135,7 @@ export const updateSessionStatus = async (
     throw error.response?.data || error;
   }
 };
- 
-// Start the conversation for an accepted session (enforces scheduled time)
+
 export const startMentorshipConversation = async (
   sessionId: number | string,
   token: string
@@ -1164,8 +1152,7 @@ export const startMentorshipConversation = async (
     throw error.response?.data || error;
   }
 };
- 
-// Submit a review after a completed session
+
 export const submitSessionReview = async (
   sessionId: number | string,
   token: string,
@@ -1183,8 +1170,7 @@ export const submitSessionReview = async (
     throw error.response?.data || error;
   }
 };
- 
-// Get reviews for a mentor
+
 export const getMentorReviews = async (
   mentorId: number
 ): Promise<{ average_rating: number; total: number; reviews: MentorReview[] }> => {
@@ -1196,8 +1182,7 @@ export const getMentorReviews = async (
     throw error;
   }
 };
- 
-// Get groups
+
 export const getGroups = async (token: string) => {
   try {
     const response = await api.get('/groups/available', {
@@ -1210,7 +1195,6 @@ export const getGroups = async (token: string) => {
   }
 };
 
-// Join group
 export const joinGroup = async (token: string, conversationID: number) => {
   try {
     const response = await api.post(`/conversations/${conversationID}/join`, {}, {
@@ -1223,12 +1207,11 @@ export const joinGroup = async (token: string, conversationID: number) => {
   }
 };
 
-// Test connection helper
 export const testConnection = async (): Promise<boolean> => {
   try {
     console.log('🔍 Testing connection to:', api.defaults.baseURL);
-    const response = await api.get('/mentors/active', { 
-      validateStatus: (status) => status < 500 
+    const response = await api.get('/mentors/active', {
+      validateStatus: (status) => status < 500
     });
     console.log('Connection successful! Server responded with status:', response.status);
     return true;
@@ -1238,7 +1221,6 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
-
 export const inteligencyRequest = async (query: string) => {
   try {
     const response = await api.post("/ask", {
@@ -1246,10 +1228,8 @@ export const inteligencyRequest = async (query: string) => {
     });
     console.log(response.data)
     return response.data;
-    
   } catch (error: any) {
     console.error("Error fetching intelligence predictions:", error?.response?.data || error.message);
-    
     return null;
   }
 };
