@@ -137,6 +137,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/community/posts', [CommunityController::class, 'index']);
         Route::post('/community/posts', [CommunityController::class, 'store']);
         Route::post('/community/posts/{post}/comments', [CommunityController::class, 'comment']);
+        Route::post('/community/posts/{post}/like', [CommunityController::class, 'like']);
 
         Route::prefix('mentor')->middleware('mentor.api')->group(function () {
             Route::get('/content', [GuidanceContentController::class, 'mentorIndex']);
