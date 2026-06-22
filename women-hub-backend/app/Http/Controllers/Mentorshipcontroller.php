@@ -16,6 +16,51 @@ class MentorshipController extends Controller
     public function __construct(private MentorAvailabilityService $availability) {}
 
     // ──────────────────────────────────────────────────────────────────────────
+// Mentor terminates / ends the active conversation
+// ──────────────────────────────────────────────────────────────────────────
+
+public function terminateSession(Request $request, MentorshipSession $session)
+{
+    $user = $request->user();
+
+    // Only the mentor (or an admin) can terminate
+    if ($session->mentor_id !== $user->id && !$user->isAdmin()) {
+        return response()->json(['message' => 'Only the mentor can end this session.'], 403);
+    }
+
+    if ($session->status !== 'accepted') {
+        return response()->json([
+            'message' => 'Only an active (accepted) session can be terminated.',
+        ], 422);
+    }
+
+    if (!$session->conversation_started_at) {
+        return response()->json([
+            'message' => 'The conversation was never started.',
+        ], 422);
+    }
+
+    $validated = $request->validate([
+        'mentor_notes' => 'nullable|string|max:2000',
+    ]);
+
+    $session->update([
+        'status'           => 'completed',
+        'ended_at'         => now(),
+        'mentor_notes'     => $validated['mentor_notes'] ?? $session->mentor_notes,
+    ]);
+
+    // Notify the mentee that the session has ended and they can leave a review
+    $session->load('mentee');
+    $session->mentee?->notify(new \App\Notifications\SessionCompletedNotification($session));
+
+    return response()->json([
+        'message' => 'Session marked as completed. The mentee can now leave a review.',
+        'session' => $session->fresh(),
+    ]);
+}
+
+    // ──────────────────────────────────────────────────────────────────────────
     // List active mentors
     // ──────────────────────────────────────────────────────────────────────────
 

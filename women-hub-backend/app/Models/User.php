@@ -231,4 +231,20 @@ class User extends Authenticatable
             ->where('is_active', true)
             ->where('is_available', true);
     }
+
+        //comunity relationships
+    public function communityPosts()
+{
+    return $this->hasMany(CommunityPost::class);
+}
+
+public function communityComments()
+{
+    return $this->hasMany(CommunityComment::class);
+}
+
+public function communityLikes()
+{
+    return $this->hasMany(CommunityLike::class);
+}
 }

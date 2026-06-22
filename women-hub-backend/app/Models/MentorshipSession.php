@@ -24,13 +24,14 @@ class MentorshipSession extends Model
         'is_missed',
         'missed_at',
         'conversation_started_at',
+        'conversation_id',           // ← added
     ];
 
     protected $casts = [
-        'scheduled_at'           => 'datetime',
-        'missed_at'              => 'datetime',
-        'conversation_started_at'=> 'datetime',
-        'is_missed'              => 'boolean',
+        'scheduled_at'            => 'datetime',
+        'missed_at'               => 'datetime',
+        'conversation_started_at' => 'datetime',
+        'is_missed'               => 'boolean',
     ];
 
     // ──────────────────────────────────────────────────
@@ -52,19 +53,21 @@ class MentorshipSession extends Model
         return $this->hasOne(MentorReview::class, 'mentorship_session_id');
     }
 
+    /**
+     * The conversation (chat room) that belongs to this session.
+     * conversation_id lives on mentorship_sessions, so this is a belongsTo.
+     */
+    public function conversation()
+    {
+        return $this->belongsTo(Conversation::class);
+    }
+
     // ──────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────
 
-    /**
-     * The window after scheduled_at within which the conversation must start
-     * before the session is flagged as missed (in minutes).
-     */
     public const GRACE_PERIOD_MINUTES = 15;
 
-    /**
-     * Return true when the session window has passed and no conversation was started.
-     */
     public function shouldBeFlaggedAsMissed(): bool
     {
         if ($this->status !== 'accepted' || $this->is_missed || $this->conversation_started_at) {

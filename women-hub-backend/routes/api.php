@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\MentorController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CommunityController;
 
 // ============================================
 // PUBLIC API ROUTES (No Authentication Required)
@@ -23,6 +24,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/mentors/active', [MentorController::class, 'getActiveMentors']);
 Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']);
 Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']);
+Route::get('/community/posts', [CommunityController::class, 'index']);
 
 // Content routes
 Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
@@ -33,6 +35,7 @@ Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts'
 // Harassment report routes (public - anonymous)
 Route::post('/harassment-report/submit', [HarassmentReportController::class, 'submitReport']);
 Route::post('/harassment-report/anonymous', [HarassmentReportController::class, 'submitAnonymousReport']);
+ Route::post('/community/posts', [CommunityController::class, 'store']);
 
 // Guidance content (authenticated users) - outside v1 prefix for compatibility
 Route::middleware('auth:sanctum')->group(function () {
@@ -75,6 +78,8 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/ask', [IncidentController::class, 'incident']);
 
+   
+
     // ── Protected ─────────────────────────────────────────────────────────────
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -112,6 +117,9 @@ Route::prefix('v1')->group(function () {
         Route::patch('/mentorship/sessions/{session}/status', [MentorshipController::class, 'updateStatus']);
         Route::post('/mentorship/sessions/{session}/start', [MentorshipController::class, 'startConversation']);
         Route::post('/mentorship/sessions/{session}/review', [MentorshipController::class, 'submitReview']);
+        Route::post('/mentorship/sessions/{session}/start', [MentorshipController::class, 'startConversation']);
+        Route::post('/mentorship/sessions/{session}/terminate', [MentorshipController::class, 'terminateSession']);
+        Route::post('/mentorship/sessions/{session}/review', [MentorshipController::class, 'submitReview']);
 
         // ── Harassment reports (authenticated) ───────────────────────────────
         Route::get('/harassment-reports/my-reports', [HarassmentReportController::class, 'myReports']);
@@ -124,6 +132,11 @@ Route::prefix('v1')->group(function () {
         // ── Guidance content ─────────────────────────────────────────────────
         Route::get('/content', [GuidanceContentController::class, 'publicIndex']);
         Route::get('/content/{id}', [GuidanceContentController::class, 'publicShow']);
+
+        //------───community routes────────────────────────
+        Route::get('/community/posts', [CommunityController::class, 'index']);
+        Route::post('/community/posts', [CommunityController::class, 'store']);
+        Route::post('/community/posts/{post}/comments', [CommunityController::class, 'comment']);
 
         Route::prefix('mentor')->middleware('mentor.api')->group(function () {
             Route::get('/content', [GuidanceContentController::class, 'mentorIndex']);

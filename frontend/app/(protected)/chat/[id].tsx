@@ -7,6 +7,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -16,6 +19,7 @@ import {
   sendMessage,
   getConversation,
   createConversation,
+  BASE_URL,
 } from "@/services/api";
 import { getUserToken } from "@/hooks/useAuth";
 import { useAuth } from "@/context/AuthContext";
@@ -43,101 +47,497 @@ interface Conversation {
   is_group: boolean;
 }
 
-// ─── Read Receipt Component ────────────────────────────────────────────────────
+// ─── Read Receipt ─────────────────────────────────────────────────────────────
 
 const ReadReceipt = ({ status }: { status: MessageStatus }) => {
   if (status === "sending") {
-    return (
-      <Text style={{ color: "#94A3B8", fontSize: 10, marginLeft: 2 }}>
-        ●
-      </Text>
-    );
+    return <Text style={{ color: "#94A3B8", fontSize: 10, marginLeft: 2 }}>●</Text>;
   }
-
   if (status === "sent") {
-    // Single grey tick
     return (
       <View style={{ flexDirection: "row", marginLeft: 2 }}>
         <Ionicons name="checkmark" size={12} color="#CBD5E1" />
       </View>
     );
   }
-
   if (status === "delivered") {
-    // Double grey ticks
     return (
       <View style={{ flexDirection: "row", marginLeft: 2 }}>
-        <Ionicons
-          name="checkmark"
-          size={12}
-          color="#CBD5E1"
-          style={{ marginRight: -5 }}
-        />
+        <Ionicons name="checkmark" size={12} color="#CBD5E1" style={{ marginRight: -5 }} />
         <Ionicons name="checkmark" size={12} color="#CBD5E1" />
       </View>
     );
   }
-
   if (status === "read") {
-    // Double BLUE ticks
     return (
       <View style={{ flexDirection: "row", marginLeft: 2 }}>
-        <Ionicons
-          name="checkmark"
-          size={12}
-          color="#3B82F6"
-          style={{ marginRight: -5 }}
-        />
+        <Ionicons name="checkmark" size={12} color="#3B82F6" style={{ marginRight: -5 }} />
         <Ionicons name="checkmark" size={12} color="#3B82F6" />
       </View>
     );
   }
-
   return null;
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Heart Rating ─────────────────────────────────────────────────────────────
+
+const HeartRating = ({
+  rating,
+  onChange,
+}: {
+  rating: number;
+  onChange: (val: number) => void;
+}) => (
+  <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 4 }}>
+    {[1, 2, 3, 4, 5].map((val) => (
+      <Pressable
+        key={val}
+        onPress={() => onChange(val)}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.7 : 1,
+          transform: [{ scale: pressed ? 0.9 : 1 }],
+        })}
+      >
+        <Ionicons
+          name={rating >= val ? "heart" : "heart-outline"}
+          size={36}
+          color={rating >= val ? "#7C3AED" : "#CBD5E1"}
+        />
+      </Pressable>
+    ))}
+  </View>
+);
+
+// ─── Review Modal ─────────────────────────────────────────────────────────────
+
+const ReviewModal = ({
+  visible,
+  mentorName,
+  onClose,
+  onSubmit,
+  submitting,
+}: {
+  visible: boolean;
+  mentorName: string;
+  onClose: () => void;
+  onSubmit: (rating: number, comment: string) => void;
+  submitting: boolean;
+}) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
+
+  const handleSubmit = () => {
+    if (rating === 0) {
+      Alert.alert("Rating required", "Please select a rating before submitting.");
+      return;
+    }
+    onSubmit(rating, comment);
+  };
+
+  const handleClose = () => {
+    setRating(0);
+    setComment("");
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={handleClose}
+    >
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(15, 10, 30, 0.6)",
+            justifyContent: "flex-end",
+          }}
+        >
+          <TouchableWithoutFeedback>
+            <View
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                paddingHorizontal: 24,
+                paddingTop: 12,
+                paddingBottom: 40,
+              }}
+            >
+              {/* Drag handle */}
+              <View
+                style={{
+                  width: 40,
+                  height: 4,
+                  backgroundColor: "#E2E8F0",
+                  borderRadius: 2,
+                  alignSelf: "center",
+                  marginBottom: 24,
+                }}
+              />
+
+              {/* Header */}
+              <View style={{ alignItems: "center", marginBottom: 24 }}>
+                <View
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: "#EDE9FE",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 14,
+                    borderWidth: 2,
+                    borderColor: "#DDD6FE",
+                  }}
+                >
+                  <Text style={{ fontSize: 26, fontWeight: "700", color: "#7C3AED" }}>
+                    {mentorName?.charAt(0)?.toUpperCase() ?? "M"}
+                  </Text>
+                </View>
+                <Text
+                  style={{ fontSize: 20, fontWeight: "700", color: "#0F172A", marginBottom: 4 }}
+                >
+                  How was your session?
+                </Text>
+                <Text style={{ fontSize: 14, color: "#64748B", textAlign: "center" }}>
+                  Share your experience with{" "}
+                  <Text style={{ fontWeight: "600", color: "#4C1D95" }}>{mentorName}</Text>
+                </Text>
+              </View>
+
+              <View style={{ height: 1, backgroundColor: "#F1F5F9", marginBottom: 24 }} />
+
+              {/* Rating */}
+              <View style={{ marginBottom: 24 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.8,
+                    textAlign: "center",
+                    marginBottom: 14,
+                  }}
+                >
+                  Rate your mentor
+                </Text>
+                <HeartRating rating={rating} onChange={setRating} />
+                {rating > 0 && (
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      marginTop: 10,
+                      fontSize: 14,
+                      fontWeight: "600",
+                      color: "#7C3AED",
+                    }}
+                  >
+                    {ratingLabels[rating]}
+                  </Text>
+                )}
+              </View>
+
+              {/* Comment */}
+              <View style={{ marginBottom: 28 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.8,
+                    marginBottom: 10,
+                  }}
+                >
+                  Leave a note{" "}
+                  <Text
+                    style={{
+                      color: "#94A3B8",
+                      fontWeight: "400",
+                      textTransform: "none",
+                      letterSpacing: 0,
+                    }}
+                  >
+                    (optional)
+                  </Text>
+                </Text>
+                <TextInput
+                  value={comment}
+                  onChangeText={setComment}
+                  placeholder={`What did ${mentorName} do well? Any suggestions?`}
+                  placeholderTextColor="#94A3B8"
+                  multiline
+                  numberOfLines={4}
+                  maxLength={500}
+                  textAlignVertical="top"
+                  style={{
+                    backgroundColor: "#F8FAFC",
+                    borderWidth: 1.5,
+                    borderColor: comment.length > 0 ? "#A78BFA" : "#E2E8F0",
+                    borderRadius: 16,
+                    padding: 14,
+                    fontSize: 15,
+                    color: "#1E293B",
+                    minHeight: 110,
+                    lineHeight: 22,
+                  }}
+                />
+                <Text
+                  style={{ textAlign: "right", marginTop: 6, fontSize: 11, color: "#94A3B8" }}
+                >
+                  {comment.length}/500
+                </Text>
+              </View>
+
+              {/* Actions */}
+              <View style={{ gap: 10 }}>
+                <Pressable
+                  onPress={handleSubmit}
+                  disabled={submitting || rating === 0}
+                  style={({ pressed }) => ({
+                    backgroundColor:
+                      rating === 0 ? "#E2E8F0" : pressed ? "#6D28D9" : "#7C3AED",
+                    borderRadius: 16,
+                    paddingVertical: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  })}
+                >
+                  {submitting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: rating === 0 ? "#94A3B8" : "#FFFFFF",
+                        letterSpacing: 0.2,
+                      }}
+                    >
+                      Submit Review
+                    </Text>
+                  )}
+                </Pressable>
+
+                <Pressable
+                  onPress={handleClose}
+                  style={({ pressed }) => ({
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    alignItems: "center",
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <Text style={{ fontSize: 15, color: "#94A3B8", fontWeight: "500" }}>
+                    Skip for now
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+};
+
+// ─── Terminate Confirm Modal ──────────────────────────────────────────────────
+
+const TerminateConfirmModal = ({
+  visible,
+  onCancel,
+  onConfirm,
+  terminating,
+}: {
+  visible: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+  terminating: boolean;
+}) => (
+  <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+    <TouchableWithoutFeedback onPress={onCancel}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(15, 10, 30, 0.6)",
+          justifyContent: "center",
+          paddingHorizontal: 24,
+        }}
+      >
+        <TouchableWithoutFeedback>
+          <View style={{ backgroundColor: "#FFFFFF", borderRadius: 24, padding: 28 }}>
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: "#FEF2F2",
+                alignItems: "center",
+                justifyContent: "center",
+                alignSelf: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Ionicons name="stop-circle" size={28} color="#EF4444" />
+            </View>
+
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#0F172A",
+                textAlign: "center",
+                marginBottom: 8,
+              }}
+            >
+              End this session?
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#64748B",
+                textAlign: "center",
+                lineHeight: 20,
+                marginBottom: 24,
+              }}
+            >
+              This will close the session permanently. The mentee will be asked to leave a review.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Pressable
+                onPress={onCancel}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                  backgroundColor: pressed ? "#F1F5F9" : "#F8FAFC",
+                  borderWidth: 1.5,
+                  borderColor: "#E2E8F0",
+                })}
+              >
+                <Text style={{ fontSize: 15, fontWeight: "600", color: "#475569" }}>
+                  Keep Going
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={onConfirm}
+                disabled={terminating}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                  backgroundColor: pressed ? "#DC2626" : "#EF4444",
+                })}
+              >
+                {terminating ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
+                    End Session
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
+    </TouchableWithoutFeedback>
+  </Modal>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const ChatScreen = () => {
-  const { id, isNew, name } = useLocalSearchParams<{
+  // ── Route params ──────────────────────────────────────────────────────────
+  // expo-router can return string | string[] — normalise everything up front.
+  const params = useLocalSearchParams<{
     id: string;
     isNew?: string;
     name?: string;
+    sessionId?: string;
+    isMentor?: string;
   }>();
-  const { user } = useAuth();
-  const router = useRouter();
 
-  const [activeId, setActiveId] = useState<number | null>(
+  const id            = Array.isArray(params.id)         ? params.id[0]         : params.id;
+  const isNew         = Array.isArray(params.isNew)       ? params.isNew[0]      : params.isNew;
+  const name          = Array.isArray(params.name)        ? params.name[0]       : params.name;
+  const sessionId     = Array.isArray(params.sessionId)   ? params.sessionId[0]  : params.sessionId;
+  const isMentorParam = Array.isArray(params.isMentor)    ? params.isMentor[0]   : params.isMentor;
+
+  const { user } = useAuth();
+  const router   = useRouter();
+
+  // ── Core state ────────────────────────────────────────────────────────────
+  const [activeId, setActiveId]           = useState<number | null>(
     isNew === "true" ? null : Number(id)
   );
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [conversation, setConversation] = useState<Conversation | null>(null);
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [messages, setMessages]           = useState<Message[]>([]);
+  const [conversation, setConversation]   = useState<Conversation | null>(null);
+  const [text, setText]                   = useState("");
+  const [loading, setLoading]             = useState(true);
+  const [sending, setSending]             = useState(false);
+  const [typingUser, setTypingUser]       = useState<string | null>(null);
 
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  // ── Session state ─────────────────────────────────────────────────────────
+  const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
+  const [terminating, setTerminating]         = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [sessionEnded, setSessionEnded]       = useState(false);
+
+  // ── Derived session values ────────────────────────────────────────────────
+
+  // Parse sessionId safely — "0", "", "undefined", "null" all become null
+  const activeSessionId: number | null = (() => {
+    if (!sessionId || sessionId === "undefined" || sessionId === "null") return null;
+    const n = Number(sessionId);
+    return isNaN(n) || n === 0 ? null : n;
+  })();
+
+  // Parse isMentor safely — "true", "1", true all become true
+  const isSessionMentor: boolean = (() => {
+    if (!isMentorParam) return false;
+    const s = String(isMentorParam).toLowerCase().trim();
+    return s === "true" || s === "1";
+  })();
+
+  // Fallback: also check the user's own role stored in auth context
+  const isMentorByRole = user?.role === "mentor";
+
+  // The End button is visible when ANY of these are true for mentor identity,
+  // AND there's a linked session, AND the session hasn't ended yet.
+  const showEndButton =
+    (isSessionMentor || isMentorByRole) &&
+    activeSessionId !== null &&
+    !sessionEnded;
+
+  // ── Refs ──────────────────────────────────────────────────────────────────
+  const unsubscribeRef   = useRef<(() => void) | null>(null);
   const optimisticIdsRef = useRef<Set<number>>(new Set());
-  const confirmedIdsRef = useRef<Set<number>>(new Set());
+  const confirmedIdsRef  = useRef<Set<number>>(new Set());
 
-  // ─── Deduplicate by ID ─────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
   const deduplicateMessages = (arr: Message[]): Message[] =>
     Array.from(new Map(arr.map((m) => [m.id, m])).values());
 
-  // ─── Derive status from server data ───────────────────────────────────────
   const deriveStatus = (msg: Message): MessageStatus => {
-    if (msg.read_at) return "read";
+    if (msg.read_at)    return "read";
     if (msg.created_at) return "delivered";
     return "sent";
   };
 
-  // ─── Mark all incoming messages as read ───────────────────────────────────
-  const markMessagesAsRead = async (convId: number, token: string) => {
+  const markMessagesAsRead = async (_convId: number, _token: string) => {
     try {
-      // Call your backend endpoint to mark as read
-      // e.g. await markConversationRead(convId, token);
-      // Then update local state
       setMessages((prev) =>
         prev.map((m) =>
           m.sender_id !== user?.id && !m.read_at
@@ -146,76 +546,132 @@ const ChatScreen = () => {
         )
       );
     } catch {
-      // silently fail — not critical
+      // silently fail
     }
   };
 
-  // ─── WebSocket Sub / Unsub ─────────────────────────────────────────────────
+  // ── Terminate session ─────────────────────────────────────────────────────
+  const handleTerminateConfirmed = async () => {
+    if (!activeSessionId) return;
+    setTerminating(true);
+    try {
+      const token = await getUserToken();
+      const res = await fetch(
+        `${BASE_URL}/api/mentorship/sessions/${activeSessionId}/terminate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message ?? "Failed to terminate session");
+      }
+
+      setSessionEnded(true);
+      setShowTerminateConfirm(false);
+      setTimeout(() => setShowReviewModal(true), 400);
+    } catch (err: any) {
+      console.error("Terminate session error:", err);
+      Alert.alert("Error", err?.message ?? "Could not end the session. Please try again.");
+    } finally {
+      setTerminating(false);
+    }
+  };
+
+  // ── Submit review ─────────────────────────────────────────────────────────
+  const handleSubmitReview = async (rating: number, comment: string) => {
+    if (!activeSessionId) {
+      setShowReviewModal(false);
+      router.back();
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const token = await getUserToken();
+      const res = await fetch(
+        `${BASE_URL}/api/mentorship/sessions/${activeSessionId}/review`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ rating, comment }),
+        }
+      );
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message ?? "Failed to submit review");
+      }
+
+      setShowReviewModal(false);
+      setTimeout(() => router.back(), 300);
+    } catch (err: any) {
+      console.error("Submit review error:", err);
+      Alert.alert("Error", err?.message ?? "Could not submit your review. Please try again.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  // ── WebSocket ─────────────────────────────────────────────────────────────
   const setupWebsocket = (convId: number, token: string) => {
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
 
-    unsubscribeRef.current = subscribeToChatChannel(
-      token,
-      convId,
-      (e: any) => {
-        const incoming: Message = {
-          ...e.message,
-          status: deriveStatus(e.message),
-        };
+    unsubscribeRef.current = subscribeToChatChannel(token, convId, (e: any) => {
+      const incoming: Message = { ...e.message, status: deriveStatus(e.message) };
 
-        if (confirmedIdsRef.current.has(incoming.id)) return;
-        confirmedIdsRef.current.add(incoming.id);
+      if (confirmedIdsRef.current.has(incoming.id)) return;
+      confirmedIdsRef.current.add(incoming.id);
 
-        setMessages((prev) => {
-          const optimisticIndex = prev.findIndex(
-            (m) =>
-              optimisticIdsRef.current.has(m.id) &&
-              m.sender_id === incoming.sender_id &&
-              m.message === incoming.message
-          );
+      setMessages((prev) => {
+        const optimisticIndex = prev.findIndex(
+          (m) =>
+            optimisticIdsRef.current.has(m.id) &&
+            m.sender_id === incoming.sender_id &&
+            m.message === incoming.message
+        );
 
-          if (optimisticIndex !== -1) {
-            optimisticIdsRef.current.delete(prev[optimisticIndex].id);
-            const updated = [...prev];
-            updated[optimisticIndex] = incoming;
-            return updated;
-          }
+        if (optimisticIndex !== -1) {
+          optimisticIdsRef.current.delete(prev[optimisticIndex].id);
+          const updated = [...prev];
+          updated[optimisticIndex] = incoming;
+          return updated;
+        }
 
-          if (prev.some((m) => m.id === incoming.id)) return prev;
+        if (prev.some((m) => m.id === incoming.id)) return prev;
 
-          // If it's from another user, mark as read immediately (chat is open)
-          const finalMsg =
-            incoming.sender_id !== user?.id
-              ? {
-                  ...incoming,
-                  read_at: new Date().toISOString(),
-                  status: "read" as MessageStatus,
-                }
-              : incoming;
+        const finalMsg =
+          incoming.sender_id !== user?.id
+            ? {
+                ...incoming,
+                read_at: new Date().toISOString(),
+                status: "read" as MessageStatus,
+              }
+            : incoming;
 
-          return [...prev, finalMsg];
-        });
-      }
-    );
-
-    // Listen for read receipt events from server
-    // e.g. subscribeToChatChannel also handles "MessageRead" events:
-    // when the other user reads, update your sent messages to "read"
-
-    console.log(`📡 Subscribed to chat.${convId}`);
+        return [...prev, finalMsg];
+      });
+    });
   };
 
-  // ─── Global Cleanup ────────────────────────────────────────────────────────
+  // ── Cleanup ───────────────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
       if (unsubscribeRef.current) unsubscribeRef.current();
     };
   }, []);
 
-  // ─── Chat Initialization ───────────────────────────────────────────────────
+  // ── Init chat ─────────────────────────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
 
@@ -240,7 +696,6 @@ const ChatScreen = () => {
 
         if (!isMounted) return;
 
-        // Attach derived status to each historical message
         const withStatus: Message[] = msgs.map((m: Message) => ({
           ...m,
           status: m.sender_id === user?.id ? deriveStatus(m) : undefined,
@@ -253,8 +708,6 @@ const ChatScreen = () => {
         setConversation(convo);
 
         setupWebsocket(targetId, token);
-
-        // Mark received messages as read now that chat is open
         markMessagesAsRead(targetId, token);
       } catch (err) {
         console.error("Init chat error:", err);
@@ -264,13 +717,15 @@ const ChatScreen = () => {
     };
 
     initChat();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [id, activeId]);
 
-  // ─── Send Message ──────────────────────────────────────────────────────────
+  // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = async () => {
     const messageText = text.trim();
-    if (!messageText || sending) return;
+    if (!messageText || sending || sessionEnded) return;
     setSending(true);
     setText("");
 
@@ -291,25 +746,15 @@ const ChatScreen = () => {
       let currentConvId = activeId;
 
       if (!currentConvId) {
-        const newConvo = await createConversation(
-          { receiver_id: Number(id) },
-          token
-        );
+        const newConvo = await createConversation({ receiver_id: Number(id) }, token);
         currentConvId = newConvo.id;
         setConversation(newConvo);
         setActiveId(currentConvId);
       }
 
-      const confirmed = await sendMessage(
-        currentConvId!,
-        messageText,
-        token,
-        false
-      );
-
+      const confirmed = await sendMessage(currentConvId!, messageText, token, false);
       confirmedIdsRef.current.add(confirmed.id);
 
-      // Replace optimistic with confirmed — status = "sent"
       setMessages((prev) => {
         const updated = prev.map((m) =>
           m.id === optimisticId
@@ -331,12 +776,11 @@ const ChatScreen = () => {
   };
 
   const getTitle = (): string => {
-    if (!conversation) return "";
-    return conversation.is_group
-      ? conversation.name
-      : conversation.name || name || "";
+    if (!conversation) return name ?? "";
+    return conversation.is_group ? conversation.name : conversation.name || name || "";
   };
 
+  // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -345,16 +789,14 @@ const ChatScreen = () => {
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View className="flex-1 bg-[#F8FAFC]">
       <StatusBar style="dark" />
 
-      {/* HEADER */}
+      {/* ── HEADER ── */}
       <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
-        <Pressable
-          onPress={() => router.back()}
-          className="pr-3 active:opacity-50"
-        >
+        <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
           <Feather name="chevron-left" size={28} color="#1E293B" />
         </Pressable>
 
@@ -365,19 +807,87 @@ const ChatScreen = () => {
         </View>
 
         <View className="ml-3 flex-1">
-          <Text
-            className="text-slate-900 font-bold text-base"
-            numberOfLines={1}
-          >
+          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>
             {getTitle()}
           </Text>
           <Text className="text-slate-400 text-[11px] font-medium">
-            {typingUser ? `${typingUser} is typing...` : "Online"}
+            {sessionEnded
+              ? "Session ended"
+              : typingUser
+              ? `${typingUser} is typing...`
+              : "Online"}
           </Text>
         </View>
+
+        {/* END SESSION button — only for mentor, only when session active */}
+        {showEndButton && (
+          <Pressable
+            onPress={() => setShowTerminateConfirm(true)}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              backgroundColor: pressed ? "#FEE2E2" : "#FEF2F2",
+              paddingHorizontal: 12,
+              paddingVertical: 7,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: "#FECACA",
+              marginLeft: 8,
+            })}
+          >
+            <Ionicons name="stop-circle" size={15} color="#EF4444" />
+            <Text
+              style={{ fontSize: 12, fontWeight: "700", color: "#EF4444", letterSpacing: 0.2 }}
+            >
+              End
+            </Text>
+          </Pressable>
+        )}
+
+        {/* CLOSED badge — after session ended */}
+        {sessionEnded && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              backgroundColor: "#F1F5F9",
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 20,
+              marginLeft: 8,
+            }}
+          >
+            <Ionicons name="lock-closed" size={12} color="#94A3B8" />
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#94A3B8" }}>Closed</Text>
+          </View>
+        )}
       </View>
 
-      {/* MESSAGES LIST */}
+      {/* ── SESSION ENDED BANNER ── */}
+      {sessionEnded && (
+        <View
+          style={{
+            backgroundColor: "#F8FAFC",
+            borderBottomWidth: 1,
+            borderBottomColor: "#E2E8F0",
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Ionicons name="information-circle" size={15} color="#94A3B8" />
+          <Text style={{ fontSize: 12, color: "#94A3B8", fontWeight: "500" }}>
+            This session has ended. No new messages can be sent.
+          </Text>
+        </View>
+      )}
+
+      {/* ── MESSAGES ── */}
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -392,13 +902,11 @@ const ChatScreen = () => {
           }}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => {
-            const isMe = item.sender_id === user?.id;
+            const isMe   = item.sender_id === user?.id;
             const status = item.status ?? (isMe ? "sent" : undefined);
 
             return (
-              <View
-                className={`mb-3 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}
-              >
+              <View className={`mb-3 max-w-[85%] ${isMe ? "self-end" : "self-start"}`}>
                 <View
                   className={`px-4 py-3 rounded-3xl ${
                     isMe
@@ -413,7 +921,6 @@ const ChatScreen = () => {
                   </Text>
                 </View>
 
-                {/* ── Status row ── */}
                 <View
                   className={`flex-row items-center mt-0.5 px-1 ${
                     isMe ? "justify-end" : "justify-start"
@@ -424,17 +931,16 @@ const ChatScreen = () => {
                       {item.sender?.name ?? ""}
                     </Text>
                   )}
-
                   {isMe && status && (
                     <View className="flex-row items-center space-x-0.5">
                       <Text className="text-[10px] text-slate-400 mr-0.5">
                         {status === "sending"
                           ? "Sending…"
                           : status === "sent"
-                            ? "Sent"
-                            : status === "delivered"
-                              ? "Delivered"
-                              : "Read"}
+                          ? "Sent"
+                          : status === "delivered"
+                          ? "Delivered"
+                          : "Read"}
                       </Text>
                       <ReadReceipt status={status} />
                     </View>
@@ -446,38 +952,44 @@ const ChatScreen = () => {
           ListEmptyComponent={
             <View className="items-center mt-10 px-10">
               <Text className="text-slate-300 text-center font-medium">
-                Your conversation starts here. Messages are encrypted and
-                private.
+                Your conversation starts here. Messages are encrypted and private.
               </Text>
             </View>
           }
         />
 
-        {/* INPUT BAR */}
-        <SafeAreaView
-          edges={["bottom"]}
-          className="bg-white border-t border-slate-100"
-        >
+        {/* ── INPUT BAR ── */}
+        <SafeAreaView edges={["bottom"]} className="bg-white border-t border-slate-100">
           <View className="p-3 flex-row items-end space-x-2">
-            <View className="flex-1 bg-slate-50 rounded-[24px] px-4 py-2 border border-slate-200 flex-row items-end">
+            <View
+              className={`flex-1 rounded-[24px] px-4 py-2 border flex-row items-end ${
+                sessionEnded
+                  ? "bg-slate-100 border-slate-200"
+                  : "bg-slate-50 border-slate-200"
+              }`}
+            >
               <TextInput
-                className="flex-1 text-slate-800 text-[15px] max-h-32 py-1"
-                placeholder="Type a message..."
+                className="flex-1 text-[15px] max-h-32 py-1"
+                style={{ color: sessionEnded ? "#CBD5E1" : "#1E293B" }}
+                placeholder={sessionEnded ? "Session has ended" : "Type a message..."}
                 value={text}
                 onChangeText={setText}
                 multiline
                 placeholderTextColor="#94A3B8"
+                editable={!sessionEnded}
               />
-              <Pressable className="pb-1 pl-2">
-                <Feather name="smile" size={20} color="#94A3B8" />
-              </Pressable>
+              {!sessionEnded && (
+                <Pressable className="pb-1 pl-2">
+                  <Feather name="smile" size={20} color="#94A3B8" />
+                </Pressable>
+              )}
             </View>
 
             <Pressable
               onPress={handleSend}
-              disabled={!text.trim() || sending}
+              disabled={!text.trim() || sending || sessionEnded}
               className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${
-                text.trim()
+                text.trim() && !sessionEnded
                   ? "bg-purple-600 shadow-purple-300"
                   : "bg-slate-200 shadow-none"
               }`}
@@ -485,17 +997,31 @@ const ChatScreen = () => {
               {sending ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Ionicons
-                  name="send"
-                  size={20}
-                  color="white"
-                  style={{ marginLeft: 3 }}
-                />
+                <Ionicons name="send" size={20} color="white" style={{ marginLeft: 3 }} />
               )}
             </Pressable>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
+
+      {/* ── MODALS ── */}
+      <TerminateConfirmModal
+        visible={showTerminateConfirm}
+        onCancel={() => setShowTerminateConfirm(false)}
+        onConfirm={handleTerminateConfirmed}
+        terminating={terminating}
+      />
+
+      <ReviewModal
+        visible={showReviewModal}
+        mentorName={getTitle()}
+        onClose={() => {
+          setShowReviewModal(false);
+          setTimeout(() => router.back(), 300);
+        }}
+        onSubmit={handleSubmitReview}
+        submitting={submittingReview}
+      />
     </View>
   );
 };

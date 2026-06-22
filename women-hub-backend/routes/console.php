@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-
-Schedule::command('mentorship:check-missed')->everyFiveMinutes();
+use App\Console\Commands\CheckMissedSessions;
+use Illuminate\Foundation\Inspiring;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Schedule::command(CheckMissedSessions::class)->everyFifteenMinutes();

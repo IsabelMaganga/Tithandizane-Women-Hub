@@ -220,6 +220,26 @@ export interface MentorshipRequestData {
   requested_time_to: string;     // e.g. "10:00"
 }
 
+export interface CommunityComment {
+  id: number;
+  user_id: number;
+  comment: string;
+  user?: User;
+  created_at: string;
+}
+
+export interface CommunityPost {
+  id: number;
+  user_id: number;
+  category: string;
+  text: string;
+  user: User;
+  comments: CommunityComment[];
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+}
+
 // Update this to your computer's WiFi IPv4 (run: ipconfig)
 const COMPUTER_IP = '192.168.1.170';
 const BACKEND_PORT = '8000';
@@ -1231,6 +1251,55 @@ export const inteligencyRequest = async (query: string) => {
   } catch (error: any) {
     console.error("Error fetching intelligence predictions:", error?.response?.data || error.message);
     return null;
+  }
+};
+
+export const getCommunityPosts = async (): Promise<CommunityPost[]> => {
+  try {
+    const response = await api.get('/community/posts');
+    return response.data.posts;
+  } catch (error: any) {
+    console.error('❌ getCommunityPosts error:', error.message);
+    return [];
+  }
+};
+
+export const createCommunityPost = async (data: {
+  text: string;
+  category: string;
+}) => {
+  try {
+    const response = await api.post('/community/posts', data);
+    return response.data.post;
+  } catch (error: any) {
+    console.error('❌ createCommunityPost error:', error.message);
+    throw error;
+  }
+};
+
+export const likeCommunityPost = async (postId: number) => {
+  try {
+    const response = await api.post(`/community/posts/${postId}/like`);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ likeCommunityPost error:', error.message);
+    throw error;
+  }
+};
+
+export const commentCommunityPost = async (
+  postId: number,
+  comment: string
+) => {
+  try {
+    const response = await api.post(
+      `/community/posts/${postId}/comments`,
+      { comment }
+    );
+    return response.data.comment;
+  } catch (error: any) {
+    console.error('❌ commentCommunityPost error:', error.message);
+    throw error;
   }
 };
 

@@ -17,4 +17,13 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class);
     }
+
+    /**
+     * The mentorship session this conversation was created for (if any).
+     * Inverse of MentorshipSession::conversation().
+     */
+    public function mentorshipSession()
+    {
+        return $this->hasOne(MentorshipSession::class);
+    }
 }
