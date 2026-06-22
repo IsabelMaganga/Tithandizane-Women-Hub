@@ -156,6 +156,12 @@
                         <span class="ml-0 capitalize">Assigned Cases</span>
                     </a>
                 </div>
+                <div class="border-t div border-white/30">
+                    <a href="{{ route('mentor.harassment.analytics') }}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800">
+                        <i class="w-5 fa-solid fa-chart-pie"></i>
+                        <span class="ml-0 capitalize">Analytics</span>
+                    </a>
+                </div>
 
                 {{-- Guidance tab --}}
                 <div class="border-t border-white/30">

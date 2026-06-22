@@ -198,6 +198,7 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
 
     // harassment reports assigned to this mentor
     Route::get('/harassment-reports', [ReportController::class, 'harassmentReports'])->name('harassment.index');
+    Route::get('/harassment-analytics', [ReportController::class, 'harassmentAnalytics'])->name('harassment.analytics');
     Route::get('/harassment-reports/{id}', [ReportController::class, 'showHarassmentReport'])->name('harassment.show');
     Route::post('/harassment-reports/{id}/respond', [ReportController::class, 'respondToHarassmentReport'])->name('harassment.respond');
 

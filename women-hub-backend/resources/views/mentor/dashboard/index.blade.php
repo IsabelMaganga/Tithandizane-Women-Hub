@@ -94,10 +94,18 @@
 
             <div class="p-5 bg-white border shadow-sm rounded-xl border-slate-900/10">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-base font-semibold text-slate-800">Reports by type</h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-base font-semibold text-slate-800">Reports by type</h3>
+                        <a href="{{ route('mentor.harassment.analytics') }}" class="text-xs inline-flex items-center text-indigo-600 hover:underline">
+                            View details
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
                     <span class="text-xs text-slate-400">All time</span>
                 </div>
-                <div id="bar"></div>
+                <a href="{{ route('mentor.harassment.analytics') }}" class="block">
+                    <div id="bar"></div>
+                </a>
             </div>
 
             <div class="p-5 bg-white border shadow-sm rounded-xl border-slate-900/10">
@@ -174,15 +182,26 @@
             const sharedGrid = { borderColor: '#F1F5F9' };
 
             if (document.getElementById('bar')) {
+                const categories = @json(array_keys($reportsArray));
+                const seriesData = @json(array_values($reportsArray));
+
+                // color mapping consistent with analytics view
+                const colorMap = {
+                    physical: '#7c3aed',
+                    verbal:   '#dc2626',
+                    sexual:   '#f97316',
+                    cyber:    '#06b6d4',
+                    other:    '#6b7280'
+                };
+
+                const colors = categories.map(c => colorMap[c] ?? '#4F46E5');
+
                 new ApexCharts(document.querySelector('#bar'), {
                     chart: { type: 'bar', toolbar: { show: false } },
-                    series: [{
-                        name: 'Reports',
-                        data: @json(array_values($reportsArray))
-                    }],
-                    xaxis: { categories: @json(array_keys($reportsArray)) },
-                    colors: [palette.indigo],
-                    plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
+                    series: [{ name: 'Reports', data: seriesData }],
+                    xaxis: { categories: categories },
+                    colors: colors,
+                    plotOptions: { bar: { borderRadius: 6, columnWidth: '50%', distributed: true } },
                     dataLabels: { enabled: false },
                     grid: sharedGrid,
                 }).render();
