@@ -7,8 +7,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ScreenCapture from "expo-screen-capture";
-
-// ✅ IMPORT REAL API
 import {
   getCommunityPosts,
   createCommunityPost,
@@ -38,7 +36,7 @@ export default function Community() {
     return () => ScreenCapture.allowScreenCaptureAsync();
   }, []);
 
-  // 📥 Load posts
+  //Load posts
   useEffect(() => {
     loadPosts();
   }, []);
@@ -52,7 +50,7 @@ export default function Community() {
     }
   };
 
-  // 📝 Create post
+  //Create post
   const handlePost = async () => {
     if (!postText.trim()) return;
 
@@ -69,7 +67,7 @@ export default function Community() {
     }
   };
 
-  // 💬 Comment
+  //Comment
   const handleComment = async () => {
     if (!commentText.trim() || !selectedPostId) return;
 
