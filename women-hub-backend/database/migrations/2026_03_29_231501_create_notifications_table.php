@@ -6,31 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateNotificationsTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        // First, check if table exists and drop it to recreate properly
         Schema::dropIfExists('notifications');
-        
-        // Create fresh table with correct schema
+
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id(); // This creates AUTO_INCREMENT primary key
+            $table->uuid('id')->primary();        // Laravel needs uuid, NOT auto-increment
             $table->string('type');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('report_id')->nullable();
-            $table->string('title');
-            $table->text('message');
-            $table->json('data')->nullable();
+            $table->string('title')->nullable();  // nullable — Laravel never writes this
+            $table->text('message')->nullable();  // nullable — Laravel never writes this
+            $table->json('data')->nullable();     // Laravel writes everything here
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
-            
-            // Add foreign key constraints
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('report_id')->references('id')->on('harassment_reports')->onDelete('cascade');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('notifications');
     }

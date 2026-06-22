@@ -218,3 +218,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(functi
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
+
+//debugging route for mentor available_days casting issue
+Route::get('/debug-mentor', function () {
+    $mentor = \App\Models\User::find(4);
+    return [
+        'raw' => $mentor->getRawOriginal('available_days'),
+        'cast' => $mentor->available_days,
+    ];
+});

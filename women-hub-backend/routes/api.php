@@ -16,11 +16,10 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC API ROUTES (No Authentication Required)
 // ============================================
 
-// Direct routes (without v1 prefix) for frontend compatibility
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Mentor routes - PUBLIC (for React Native frontend)
+// Mentor routes - PUBLIC
 Route::get('/mentors/active', [MentorController::class, 'getActiveMentors']);
 Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']);
 Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']);
@@ -35,7 +34,7 @@ Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts'
 Route::post('/harassment-report/submit', [HarassmentReportController::class, 'submitReport']);
 Route::post('/harassment-report/anonymous', [HarassmentReportController::class, 'submitAnonymousReport']);
 
-// Guidance content routes (authenticated users)
+// Guidance content (authenticated users) - outside v1 prefix for compatibility
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/content', [GuidanceContentController::class, 'publicIndex']);
     Route::get('/content/{id}', [GuidanceContentController::class, 'publicShow']);
@@ -54,69 +53,75 @@ Route::middleware('auth:sanctum')->group(function () {
 // ============================================
 
 Route::prefix('v1')->group(function () {
-    
-    // Auth routes (public)
+
+    // ── Public ────────────────────────────────────────────────────────────────
+
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    
-    // Public content
+
     Route::get('/hygiene-articles', [ContentController::class, 'hygieneArticles']);
     Route::get('/hygiene-articles/{article}', [ContentController::class, 'hygieneArticle']);
     Route::get('/general-guides', [ContentController::class, 'generalGuides']);
     Route::get('/emergency-contacts', [ContentController::class, 'emergencyContacts']);
-    
-    // Mentor routes - PUBLIC (for React Native frontend)
+
+    // Mentor routes - PUBLIC
     Route::get('/mentors/active', [MentorController::class, 'getActiveMentors']);
-    Route::get('/mentors/{id}', [MentorController::class, 'getMentorDetails']);
     Route::get('/mentor-stats', [MentorController::class, 'getMentorStats']);
-    
-    // Anonymous harassment report (public)
+
+    // Anonymous harassment reports
     Route::post('/harassment-reports/anonymous', [HarassmentReportController::class, 'store']);
     Route::post('/harassment-reports', [HarassmentReportController::class, 'store']);
-
-    // Public reference-code lookup — no auth needed so anonymous users can track their report
     Route::get('/harassment-reports/reference/{referenceNumber}', [HarassmentReportController::class, 'showByReference']);
 
-    //inteligency apache_child_terminate
-    Route::post('/ask',[IncidentController::class,'incident']);
-    
-    // ============================================
-    // PROTECTED ROUTES (Authentication Required)
-    // ============================================
-    
+    Route::post('/ask', [IncidentController::class, 'incident']);
+
+    // ── Protected ─────────────────────────────────────────────────────────────
+
     Route::middleware('auth:sanctum')->group(function () {
-        
+
         // Auth
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
-        
-        // Messaging routes
+
+        // ── Messaging ────────────────────────────────────────────────────────
         Route::post('/messages', [MessageController::class, 'send']);
         Route::get('/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
         Route::post('/conversations', [MessageController::class, 'createConversation']);
         Route::get('/conversations', [MessageController::class, 'getConversations']);
         Route::get('/conversations/{id}', [MessageController::class, 'showInfo']);
-        
-        // User routes
+
+        // Group discovery & joining
+        Route::get('/groups/available', [MessageController::class, 'getAvailableGroups']);
+        Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
+
+        // ── Users ────────────────────────────────────────────────────────────
         Route::get('/users', [UserController::class, 'getAllUsers']);
         Route::get('/users/{userId}', [UserController::class, 'getUser']);
-        
-        // Mentorship routes
+
+        // ── Mentorship ───────────────────────────────────────────────────────
+
+        // Mentor listings
         Route::get('/available-mentors', [MentorshipController::class, 'mentors']);
+        Route::get('/mentors', [MentorshipController::class, 'mentors']);
+        Route::get('/mentors/{mentor}/reviews', [MentorshipController::class, 'mentorReviews']);
+
+        // Session management
         Route::post('/mentorship/request', [MentorshipController::class, 'request']);
         Route::get('/mentorship/my-sessions', [MentorshipController::class, 'mySessions']);
         Route::get('/mentorship/mentor-sessions', [MentorshipController::class, 'mentorSessions']);
-        Route::patch('/mentorship/sessions/{session}', [MentorshipController::class, 'updateStatus']);
-        
-        // Harassment reports (authenticated)
+        Route::patch('/mentorship/sessions/{session}/status', [MentorshipController::class, 'updateStatus']);
+        Route::post('/mentorship/sessions/{session}/start', [MentorshipController::class, 'startConversation']);
+        Route::post('/mentorship/sessions/{session}/review', [MentorshipController::class, 'submitReview']);
+
+        // ── Harassment reports (authenticated) ───────────────────────────────
         Route::get('/harassment-reports/my-reports', [HarassmentReportController::class, 'myReports']);
-        
-        // Notifications
+
+        // ── Notifications ────────────────────────────────────────────────────
         Route::get('/notifications', [NotificationController::class, 'getNotifications']);
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
 
-        // Guidance content (authenticated users)
+        // ── Guidance content ─────────────────────────────────────────────────
         Route::get('/content', [GuidanceContentController::class, 'publicIndex']);
         Route::get('/content/{id}', [GuidanceContentController::class, 'publicShow']);
 
@@ -127,21 +132,18 @@ Route::prefix('v1')->group(function () {
             Route::patch('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
             Route::delete('/content/{id}', [GuidanceContentController::class, 'destroy']);
         });
-        
-        // ============================================
-        // ADMIN ROUTES
-        // ============================================
-        
+
+        // ── Admin ────────────────────────────────────────────────────────────
         Route::prefix('admin')->group(function () {
-            
-            // Harassment reports management
+
+            // Harassment reports
             Route::get('/harassment-reports', [HarassmentReportController::class, 'index']);
             Route::patch('/harassment-reports/{report}', [HarassmentReportController::class, 'updateStatus']);
-            
-            // Groups management
+
+            // Groups
             Route::get('/conversations', [MessageController::class, 'getAllGroups']);
-            
-            // Mentor management (admin view - includes inactive/pending)
+
+            // Mentor management
             Route::get('/mentors', [MentorController::class, 'index']);
             Route::get('/mentors/{id}', [MentorController::class, 'show']);
             Route::post('/mentors', [MentorController::class, 'store']);
@@ -150,10 +152,6 @@ Route::prefix('v1')->group(function () {
             Route::delete('/mentors/{id}', [MentorController::class, 'destroy']);
             Route::patch('/mentors/{id}/status', [MentorController::class, 'toggleStatus']);
         });
-        
-        // Group Discovery & Joining
-        Route::get('/groups/available', [MessageController::class, 'getAvailableGroups']);
-        Route::post('/conversations/{conversationId}/join', [MessageController::class, 'joinGroup']);
     });
 });
 
@@ -164,6 +162,6 @@ Route::prefix('v1')->group(function () {
 Route::fallback(function () {
     return response()->json([
         'success' => false,
-        'message' => 'API endpoint not found'
+        'message' => 'API endpoint not found',
     ], 404);
 });

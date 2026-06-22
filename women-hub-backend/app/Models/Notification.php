@@ -9,6 +9,15 @@ class Notification extends Model
 {
     use HasFactory;
 
+    /**
+     * Tell Eloquent which table to use.
+     */
+    protected $table = 'app_notifications';
+
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'type',
         'user_id',
@@ -21,9 +30,9 @@ class Notification extends Model
     ];
 
     protected $casts = [
-        'data' => 'array',
+        'data'    => 'array',
         'is_read' => 'boolean',
-        'read_at' => 'datetime'
+        'read_at' => 'datetime',
     ];
 
     public function user()
@@ -40,7 +49,7 @@ class Notification extends Model
     {
         $this->update([
             'is_read' => true,
-            'read_at' => now()
+            'read_at' => now(),
         ]);
     }
 }

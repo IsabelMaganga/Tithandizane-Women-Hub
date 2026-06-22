@@ -45,18 +45,18 @@ class AuthController extends Controller
             }
 
             // Create a local notification record matching our custom schema
-            AppNotification::create([
-                'type' => WelcomeNotification::class,
-                'user_id' => $user->id,
-                'report_id' => null,
-                'title' => "Tithandizane Women's Hub,",
-                'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
-                'data' => [
-                    'title' => "Tithandizane Women's Hub,",
-                    'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
-                    'time' => now()->toDateTimeString(),
-                ],
-            ]);
+            // AppNotification::create([
+            //     'type' => WelcomeNotification::class,
+            //     'user_id' => $user->id,
+            //     'report_id' => null,
+            //     'title' => "Tithandizane Women's Hub,",
+            //     'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
+            //     'data' => [
+            //         'title' => "Tithandizane Women's Hub,",
+            //         'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
+            //         'time' => now()->toDateTimeString(),
+            //     ],
+            // ]);
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');
