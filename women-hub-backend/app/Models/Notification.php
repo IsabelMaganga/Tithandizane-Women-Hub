@@ -9,14 +9,10 @@ class Notification extends Model
 {
     use HasFactory;
 
-    /**
-     * Tell Eloquent which table to use.
-     */
     protected $table = 'app_notifications';
-
     protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;    // ← fixed
+    protected $keyType = 'int';     // ← fixed
 
     protected $fillable = [
         'type',
