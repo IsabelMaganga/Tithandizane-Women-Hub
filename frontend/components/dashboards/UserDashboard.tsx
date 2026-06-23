@@ -173,11 +173,18 @@ export default function UserDashboard() {
               family={MaterialIcons}
               onPress={() => router.push("/reportHarrasmentScreen")} 
             />
+            <GridItem 
+              title="FAQ" 
+              icon="robot-confused" 
+              color="#f50bca" 
+              family={MaterialCommunityIcons}
+              onPress={() => router.push("/(protected)/faqScreen")} 
+            />
           </View>
         </ScrollView>
 
         {/* --- FLOATING FAQ BOT --- */}
-        <Animated.View
+        {/* <Animated.View
           entering={BounceIn.delay(800)}
           className="absolute bottom-10 right-8"
         >
@@ -195,7 +202,7 @@ export default function UserDashboard() {
               {t("FAQ")}
             </Text>
           </TouchableOpacity>
-        </Animated.View>
+        </Animated.View> */}
       </SafeAreaView>
     </View>
   );

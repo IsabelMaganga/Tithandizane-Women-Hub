@@ -9,14 +9,11 @@ import Toast from "react-native-toast-message";
 
 // Context & Providers
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { LanguageProvider } from "../context/LanguageContext"; // Add this
+import { LanguageProvider } from "../context/LanguageContext";
 
 // Global Styles & i18n
 import "../global.css";
 import "../src/i18n/i18n";
-
-// Prevent the splash screen from auto-hiding before we check Auth/Onboarding state
-//SplashScreen.preventAutoHideAsync();
 
 function Navigation() {
   const router = useRouter();
@@ -30,7 +27,6 @@ function Navigation() {
       try {
         const opened = await AsyncStorage.getItem("alreadyOpened");
         if (!opened) {
-          // Keep this false for production if you want onboarding to show every time until finished
           await AsyncStorage.setItem("alreadyOpened", "true");
           setFirstLaunch(true);
         } else {
@@ -43,7 +39,7 @@ function Navigation() {
     checkFirstLaunch();
   }, []);
 
-  // 2. High-Performance Guard Logic
+  // 2. Navigation Guard Logic
   useEffect(() => {
     // Wait until both Auth and AsyncStorage are ready
     if (firstLaunch === null || loading) return;
@@ -51,10 +47,11 @@ function Navigation() {
     const inAuthGroup = segments[0] === "(auth)";
     const inOnboardingGroup = segments[0] === "(onboarding)";
     const inProtectedRoute = segments[0] === "(protected)";
-    //const isMentorRoute = segments[1] === "(mentor)";
 
     // --- CASE A: ONBOARDING ---
-    if (firstLaunch && !inOnboardingGroup) {
+    // Only redirect to onboarding if NOT already in onboarding or auth
+    // This prevents the guard from bouncing the user back after "Get Started"
+    if (firstLaunch && !inOnboardingGroup && !inAuthGroup) {
       router.replace("/(onboarding)/splash");
       SplashScreen.hideAsync();
       return;
@@ -62,7 +59,6 @@ function Navigation() {
 
     // --- CASE B: UNAUTHENTICATED ---
     if (!user) {
-      // If they are trying to access protected content, send to login
       if (inProtectedRoute) {
         router.replace("/(auth)/login");
       }
@@ -72,14 +68,11 @@ function Navigation() {
 
     // --- CASE C: AUTHENTICATED (USER LOGGED IN) ---
     if (user) {
-      // If user is logged in but hits Auth/Onboarding, send them to the Tab root
       if (inAuthGroup || inOnboardingGroup) {
-        // Both roles now go to the same place!
         router.replace("/(protected)/(tabs)");
       }
     }
 
-    // Final hide of splash screen once routing is settled
     SplashScreen.hideAsync();
   }, [user, loading, firstLaunch, segments]);
 
@@ -87,10 +80,9 @@ function Navigation() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'fade', // Clean transition for role-switching
+        animation: "fade",
       }}
     >
-      {/* Define explicit stacks if needed, otherwise Slot/Stack handles it */}
       <Stack.Screen name="(auth)" options={{ gestureEnabled: false }} />
       <Stack.Screen name="(protected)" options={{ gestureEnabled: false }} />
     </Stack>
@@ -100,7 +92,7 @@ function Navigation() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <LanguageProvider> {/* Wrap with LanguageProvider */}
+      <LanguageProvider>
         <Navigation />
         <Toast position="top" topOffset={60} />
       </LanguageProvider>

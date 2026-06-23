@@ -80,7 +80,7 @@ export default function Splash() {
           title="Get Started"
           style={{ width: "80%" }}
           textStyle={{ color: "white" }}
-          onPress={() => router.replace("/(auth)/login")}
+          onPress={() => router.replace("/login")}
           disabled={false}
         />
       </Animated.View>
