@@ -22,8 +22,8 @@ class AnalyticsController extends Controller
             $startDate = $request->get('start', now()->subDays(30)->format('Y-m-d'));
             $endDate = $request->get('end', now()->format('Y-m-d'));
             
-            // Base query with date filter
-            $reportsQuery = HarassmentReport::whereBetween('created_at', [$startDate, $endDate]);
+            // Base query with date filter (end-of-day so the last day is fully included)
+            $reportsQuery = HarassmentReport::whereBetween('created_at', [$startDate, $endDate . ' 23:59:59']);
             
             // ========== KPI Calculations ==========
             
@@ -115,22 +115,8 @@ class AnalyticsController extends Controller
             $statusData = $statusStats->pluck('count')->toArray();
             
             // Severity Breakdown
-            $severityStats = HarassmentReport::select('severity', DB::raw('count(*) as count'))
-                ->whereNotNull('severity')
-                ->groupBy('severity')
-                ->get();
-            
-            $severityData = [
-                'high' => 0,
-                'medium' => 0,
-                'low' => 0
-            ];
-            
-            foreach ($severityStats as $stat) {
-                if (isset($severityData[$stat->severity])) {
-                    $severityData[$stat->severity] = $stat->count;
-                }
-            }
+            // Note: severity column not in schema; chart shows zeros until column is added
+            $severityData = ['high' => 0, 'medium' => 0, 'low' => 0];
             
             // Mentor Performance (Top 5 mentors by cases handled)
             $mentorPerformance = User::withCount(['assignedReports as cases_count'])
@@ -177,12 +163,13 @@ class AnalyticsController extends Controller
             } elseif ($mostCommonType && $mostCommonType->incident_type === 'physical') {
                 $alertMessage = "Physical harassment reports are prevalent. Consider adding self-defense workshops and safety resources.";
             } else {
-                $alertMessage = ucfirst($mostCommonType->incident_type ?? 'Harassment') . " reports are the most common type, requiring focused intervention strategies.";
+                $incidentType = $mostCommonType ? $mostCommonType->incident_type : 'harassment';
+                $alertMessage = ucfirst($incidentType) . " reports are the most common type, requiring focused intervention strategies.";
             }
             
             // Recommendation based on data
             $pendingCount = HarassmentReport::where('status', 'pending')->count();
-            $highSeverityCount = HarassmentReport::where('severity', 'high')->where('status', '!=', 'resolved')->count();
+            $highSeverityCount = 0; // severity column not in schema
             
             $recommendation = "";
             if ($pendingCount > 10) {
