@@ -1,57 +1,54 @@
-import { Stack, useRouter } from "expo-router";
+// app/(protected)/_layout.tsx
+import { Stack } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
-import { ActivityIndicator, View, Text } from "react-native";
-import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 export default function ProtectedLayout() {
   const { user, loading } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/(auth)/login");
-    }
-  }, [user, loading]);
+  // ✅ Removed the useEffect + router.replace entirely
+  // Reason: _layout.tsx (root) already handles unauthenticated redirects.
+  // Having a second guard here caused a race condition:
+  // login() sets user → router.replace("/(protected)/(tabs)") fires →
+  // ProtectedLayout mounts → user object is "new reference" → 
+  // useEffect fires → router.replace("/(auth)/login") fires → loop!
 
-  if (loading)
+  if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-
-  if (!user) {
-
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Redirecting to login...</Text>
+        <ActivityIndicator size="large" color="#7c3aed" />
       </View>
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="(tabs)"  options={ { headerShown:false } }/>
-    <Stack.Screen name="articles/[id]" options={ { headerShown:false,headerTitle: "Article Details" } } />
-    <Stack.Screen name="emergencyScreen" options={ { headerShown:false,headerTitle: "Emergency Contacts" } } />
-    <Stack.Screen name="mentorshipScreen" options={ { headerShown:false,headerTitle: "Mentorship" } } />
-    <Stack.Screen name="reportHarrasmentScreen" options={ { headerShown:false,headerTitle: "Report Harassment" } } />
-    <Stack.Screen name="menstrualHealthScreen" options={ { headerShown:false,headerTitle: "Menstrual Health"  } } />
-    <Stack.Screen name="chat/[id]" options={ { headerShown:false } } />
-    <Stack.Screen name="settingsScreen" options={ { headerShown:false} } />
-    <Stack.Screen name="usersScreen" options={{ headerShown:false}} />
-    <Stack.Screen name="group-info/[id]" options={{ headerShown:true}} />
-    <Stack.Screen name="user-info/[id]" options={{ headerShown:false}} />
-    <Stack.Screen name="sessionsDashboard"/>
-    <Stack.Screen name="editProfile" />
-    <Stack.Screen name="changePasswordScreen" />
-    <Stack.Screen name="twoFactorAuthScreen" />
-    <Stack.Screen name="aboutScreen" />
-    <Stack.Screen name="privacyPolicyScreen" />
-    <Stack.Screen name="guidanceScreen" />
-    <Stack.Screen name="contentDetailScreen" />
-    <Stack.Screen name="myContentScreen" />
-    <Stack.Screen name="publishContentScreen" />
+  // ✅ Removed the !user render block too — root layout handles this redirect
+  // Rendering "Redirecting..." while root layout is already navigating
+  // caused a flash + double navigation
 
-
-  </Stack>
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)"                    options={{ headerShown: false }} />
+      <Stack.Screen name="articles/[id]"             options={{ headerShown: false }} />
+      <Stack.Screen name="emergencyScreen"           options={{ headerShown: false }} />
+      <Stack.Screen name="mentorshipScreen"          options={{ headerShown: false }} />
+      <Stack.Screen name="reportHarrasmentScreen"    options={{ headerShown: false }} />
+      <Stack.Screen name="menstrualHealthScreen"     options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[id]"                 options={{ headerShown: false }} />
+      <Stack.Screen name="settingsScreen"            options={{ headerShown: false }} />
+      <Stack.Screen name="usersScreen"               options={{ headerShown: false }} />
+      <Stack.Screen name="group-info/[id]"           options={{ headerShown: true  }} />
+      <Stack.Screen name="user-info/[id]"            options={{ headerShown: false }} />
+      <Stack.Screen name="sessionsDashboard"         options={{ headerShown: false }} />
+      <Stack.Screen name="editProfile"               options={{ headerShown: false }} />
+      <Stack.Screen name="changePasswordScreen"      options={{ headerShown: false }} />
+      <Stack.Screen name="twoFactorAuthScreen"       options={{ headerShown: false }} />
+      <Stack.Screen name="aboutScreen"               options={{ headerShown: false }} />
+      <Stack.Screen name="privacyPolicyScreen"       options={{ headerShown: false }} />
+      <Stack.Screen name="guidanceScreen"            options={{ headerShown: false }} />
+      <Stack.Screen name="contentDetailScreen"       options={{ headerShown: false }} />
+      <Stack.Screen name="myContentScreen"           options={{ headerShown: false }} />
+      <Stack.Screen name="publishContentScreen"      options={{ headerShown: false }} />
+      <Stack.Screen name="notificationScreen"        options={{ headerShown: false }} />
+    </Stack>
+  );
 }

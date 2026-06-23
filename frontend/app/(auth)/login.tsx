@@ -17,87 +17,80 @@ import { useTranslation } from "react-i18next";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Entypo from "@expo/vector-icons/Entypo";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
 
   const router = useRouter();
   const { t } = useTranslation("auth");
-  const { login, user, logout } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
-
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ FIX: handle admin redirect AFTER user updates
-  useEffect(() => {
-    if (user?.role === "admin") {
-      setError("Admin accounts cannot log in here");
-      logout();
-    }
-  }, [user]);
+  // ✅ Prevent double press / double login call
+  const isLoggingIn = useRef(false);
 
-  const safeText = (value) =>
+  const safeText = (value: any) =>
     typeof value === "string" ? value : "";
 
   const handleLogIn = async () => {
+    // ✅ Block if already in progress
+    if (isLoggingIn.current) return;
+    isLoggingIn.current = true;
 
     if (!email || !password) {
       setError("Please fill in all fields");
+      isLoggingIn.current = false;
       return;
     }
 
     setLoading(true);
     setError("");
-    setSuccessMessage("");
 
     try {
-
       await login(email, password);
 
-      setSuccessMessage("Login successful, getting things ready...");
+      console.log("✅ Login done, navigating to dashboard...");
 
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
+      // ✅ Navigate directly — don't rely on _layout.tsx guard
+      router.replace("/(protected)/(tabs)");
+
+      console.log("✅ router.replace called");
 
     } catch (err: any) {
+      console.log("❌ Login error:", err.message);
 
-      if (err?.response?.data?.message) {
+      if (err?.message === "Admin accounts cannot log in here") {
+        setError("Admin accounts cannot log in here");
+      } else if (err?.response?.data?.message) {
         setError(err.response.data.message);
-      }
-      else if (err?.message === "Network Error") {
+      } else if (err?.message === "Network Error") {
         setError("You are not connected to internet");
+      } else {
+        setError(err?.message || "Login failed. Please try again.");
       }
-      else {
-        setError("Login failed. Please try again.");
-      }
-
     } finally {
       setLoading(false);
+      isLoggingIn.current = false;
     }
   };
 
   return (
-
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-gray-200 justify-center"
     >
-
       <Image
         source={require('../../assets/images/shape.png')}
         style={{ width: 136, height: 141 }}
       />
 
       <SafeAreaView className="items-center w-full flex-1 justify-center">
-
         <Card
           style={{
             backgroundColor: "#fff",
@@ -109,8 +102,7 @@ export default function Login() {
             marginTop: -30,
           }}
         >
-
-          {/* avatar */}
+          {/* Avatar */}
           <Image
             source={require("../../assets/images/Ellipse 3.png")}
             style={{
@@ -122,51 +114,45 @@ export default function Login() {
             }}
           />
 
-          {/* TITLE */}
+          {/* Title */}
           <Text className="text-2xl font-bold mt-12">
             {safeText(t("login"))}
           </Text>
-
           <Text className="text-gray-600 mb-5">
             {safeText(t("please_enter_account_details"))}
           </Text>
 
-          {/* ERROR */}
+          {/* Error */}
           {error ? (
-            <Text className="text-red-500 mb-2">
-              {error}
-            </Text>
+            <Text className="text-red-500 mb-2">{error}</Text>
           ) : null}
 
-          {/* EMAIL */}
+          {/* Email */}
           <View className="flex-row items-center bg-gray-200 rounded-xl p-2 mb-3">
-
             <FontAwesome5
               name="user"
               size={20}
               color="black"
               style={{ marginRight: 10 }}
             />
-
             <TextInput
               placeholder={safeText(t("username"))}
               className="flex-1 text-black"
               value={email}
               onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
             />
-
           </View>
 
-          {/* PASSWORD */}
+          {/* Password */}
           <View className="flex-row items-center bg-gray-200 rounded-xl p-2 mb-5">
-
             <Entypo
               name="lock"
               size={20}
               color="black"
               style={{ marginRight: 10 }}
             />
-
             <TextInput
               placeholder={safeText(t("password"))}
               secureTextEntry={!showPassword}
@@ -174,7 +160,6 @@ export default function Login() {
               value={password}
               onChangeText={setPassword}
             />
-
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={{ position: "absolute", right: 10 }}
@@ -185,17 +170,16 @@ export default function Login() {
                 color="black"
               />
             </TouchableOpacity>
-
           </View>
 
-          {/* FORGOT */}
+          {/* Forgot */}
           <Pressable onPress={() => router.push("/(auth)/forgotPasswordScreen")}>
             <Text className="text-purple-400 text-sm mb-2 text-right">
               {safeText(t("forgot_password"))}
             </Text>
           </Pressable>
 
-          {/* LOGIN BUTTON */}
+          {/* Login Button */}
           <MyButton
             title={loading ? "Logging in..." : safeText(t("login"))}
             style={{ width: "100%", alignSelf: "center" }}
@@ -203,30 +187,19 @@ export default function Login() {
             disabled={loading}
           />
 
-          {/* SIGNUP */}
+          {/* Signup */}
           <Text className="mt-4 text-center text-gray-700">
             {safeText(t("don_t_have_an_account"))}{" "}
-
             <Text
               className="text-purple-600"
               onPress={() => router.push("/(auth)/register")}
             >
               {safeText(t("signup"))}
             </Text>
-
           </Text>
 
-          {/* SUCCESS */}
-          {successMessage ? (
-            <Text className="text-green-500 mt-3 p-4 rounded bg-green-100 text-center">
-              {successMessage}
-            </Text>
-          ) : null}
-
         </Card>
-
       </SafeAreaView>
-
     </KeyboardAvoidingView>
   );
 }

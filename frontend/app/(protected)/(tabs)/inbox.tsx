@@ -3,9 +3,8 @@ import { View, Text, Pressable, Image, RefreshControl } from "react-native";
 import { LegendList } from "@legendapp/list";
 import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { getChatList, ChatListItem } from "@/services/api";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext"; // ✅ only this import
 import { useRouter, useSegments, useFocusEffect } from "expo-router";
-import { getUserToken } from "@/hooks/useAuth";
 import { subscribeToChatChannel } from "@/services/echo";
 import LottieView from "lottie-react-native";
 
@@ -14,7 +13,7 @@ export default function ChatListScreen() {
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { user } = useAuth();
+  const { user, token } = useAuth(); // ✅ get token directly from AuthContext
   const router = useRouter();
   const segments = useSegments();
 
@@ -28,13 +27,13 @@ export default function ChatListScreen() {
   };
 
   // ─── Subscribe to all conversations for real-time updates ─────────────────
-  const subscribeToAllConversations = async (chatList: ChatListItem[]) => {
+  const subscribeToAllConversations = useCallback((chatList: ChatListItem[]) => {
     cleanupAllSubscriptions();
-    const token = await getUserToken();
+
+    // ✅ use token from AuthContext directly — no AsyncStorage call needed
     if (!token) return;
 
     chatList.forEach((chat) => {
-      // Skip if already subscribed
       if (unsubscribeRefs.current.has(chat.id)) return;
 
       const unsub = subscribeToChatChannel(token, chat.id, (e: any) => {
@@ -44,15 +43,10 @@ export default function ChatListScreen() {
         setChats((prev) =>
           prev.map((c) => {
             if (c.id !== chat.id) return c;
-
-            // If message is from someone else, increment unread
             const isFromMe = incoming.sender_id === user?.id;
-
             return {
               ...c,
-              // Replace last message preview
               messages: [incoming],
-              // Increment unread only if message is from someone else
               unread_count: isFromMe
                 ? c.unread_count || 0
                 : (c.unread_count || 0) + 1,
@@ -63,36 +57,32 @@ export default function ChatListScreen() {
 
       unsubscribeRefs.current.set(chat.id, unsub);
     });
-  };
+  }, [token, user?.id]); // ✅ stable deps — primitives only
 
   // ─── Fetch Chats ───────────────────────────────────────────────────────────
-  const fetchChats = async (silent = false) => {
+  const fetchChats = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       const chatData = await getChatList();
       const list = Array.isArray(chatData) ? chatData : [];
       setChats(list);
-
-      // Subscribe to real-time updates for all conversations
-      await subscribeToAllConversations(list);
+      subscribeToAllConversations(list); // ✅ no longer async — token from context
     } catch (error) {
       console.error("Error fetching chats:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [subscribeToAllConversations]);
 
   // Refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchChats(true);
-
-      // Cleanup subscriptions when leaving screen
       return () => {
         cleanupAllSubscriptions();
       };
-    }, [])
+    }, [fetchChats])
   );
 
   const onRefresh = () => {
@@ -127,14 +117,10 @@ export default function ChatListScreen() {
   // ─── Filter & Sort ─────────────────────────────────────────────────────────
   const filteredChats = useMemo(() => {
     return chats
-      .filter((chat) =>
-        activeTab === "chats" ? !chat.is_group : !!chat.is_group
-      )
+      .filter((chat) => activeTab === "chats" ? !chat.is_group : !!chat.is_group)
       .sort((a, b) => {
-        const aTime = a.messages?.[0]?.created_at
-          ? new Date(a.messages[0].created_at).getTime() : 0;
-        const bTime = b.messages?.[0]?.created_at
-          ? new Date(b.messages[0].created_at).getTime() : 0;
+        const aTime = a.messages?.[0]?.created_at ? new Date(a.messages[0].created_at).getTime() : 0;
+        const bTime = b.messages?.[0]?.created_at ? new Date(b.messages[0].created_at).getTime() : 0;
         return bTime - aTime;
       });
   }, [chats, activeTab]);
@@ -254,7 +240,6 @@ export default function ChatListScreen() {
             return (
               <Pressable
                 onPress={() => {
-                  // Reset unread count locally when opening chat
                   setChats((prev) =>
                     prev.map((c) =>
                       c.id === item.id ? { ...c, unread_count: 0 } : c
@@ -291,9 +276,7 @@ export default function ChatListScreen() {
                     </Text>
                     <Text
                       className={`text-[10px] ${
-                        hasUnread
-                          ? "text-violet-600 font-bold"
-                          : "text-slate-400"
+                        hasUnread ? "text-violet-600 font-bold" : "text-slate-400"
                       }`}
                     >
                       {time}
@@ -303,9 +286,7 @@ export default function ChatListScreen() {
                   <View className="flex-row justify-between items-center mt-1">
                     <Text
                       className={`text-sm flex-1 mr-2 ${
-                        hasUnread
-                          ? "text-slate-800 font-semibold"
-                          : "text-slate-400"
+                        hasUnread ? "text-slate-800 font-semibold" : "text-slate-400"
                       }`}
                       numberOfLines={1}
                     >

@@ -1,21 +1,24 @@
-import React from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import UserDashboard from '../../../components/dashboards/UserDashboard';
-import MentorDashboard from '../../../components/dashboards/MentorDashboard';
-import { ActivityIndicator, View } from 'react-native';
+// app/(protected)/(tabs)/index.tsx
+import { useAuth } from "../../../context/AuthContext";
+import UserDashboard from "../../../components/dashboards/UserDashboard";
+import MentorDashboard from "../../../components/dashboards/MentorDashboard";
+import { View, ActivityIndicator } from "react-native";
 
-export default function SmartLandingPage() {
+export default function Index() {
   const { user, loading } = useAuth();
 
-  // 1. Safety check for the "Hydration" period
-  if (loading || !user) {
+  if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-slate-900">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#7c3aed" />
       </View>
     );
   }
 
-  // deciding which landing screen to show
-  return user.role?.toLowerCase() === 'mentor' ? <MentorDashboard /> : <UserDashboard />;
+  // ✅ Show the correct dashboard based on role
+  if (user?.role === "mentor") {
+    return <MentorDashboard />;
+  }
+
+  return <UserDashboard />;
 }

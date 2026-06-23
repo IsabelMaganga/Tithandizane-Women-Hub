@@ -4,6 +4,7 @@ import {
   useEffect,
   useContext,
   useCallback,
+  useRef,
   ReactNode,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -57,6 +58,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [echo, setEcho]       = useState<any | null>(null);
 
+  // ✅ Track socket setup to prevent duplicate connections
+  const socketInitialized = useRef(false);
+
   // ─── Hydrate from storage on mount ──────────────────────────────────────────
   useEffect(() => {
     const hydrate = async () => {
@@ -74,8 +78,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(JSON.parse(savedUser));
           }
 
-          // Refresh user profile in background
-          refreshUser();
+          // ✅ Refresh in background WITHOUT triggering socket loop
+          // We call this separately after user is set from storage
+          try {
+            const response = await api.get("/me");
+            const freshUser = response.data;
+            // ✅ Only update if data actually changed
+            if (JSON.stringify(freshUser) !== savedUser) {
+              setUser(freshUser);
+              await AsyncStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+            }
+          } catch (error: any) {
+            if (error.response?.status === 401) {
+              await AsyncStorage.removeItem(TOKEN_KEY);
+              await AsyncStorage.removeItem(USER_KEY);
+              setToken(null);
+              setUser(null);
+            }
+          }
         }
       } catch (error) {
         console.error("Hydration error:", error);
@@ -85,55 +105,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     hydrate();
-  }, []);
+  }, []); // ✅ Empty deps — runs once only
 
-  // ─── Manage WebSocket connection based on user state ─────────────────────────
+  // ─── Manage WebSocket connection based on user ID only ───────────────────────
   useEffect(() => {
     const manageSocket = async () => {
-      if (user) {
-        const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
+      if (user?.id) {
+        // ✅ Only init socket once per user session
+        if (socketInitialized.current) return;
+        socketInitialized.current = true;
 
-        if (savedToken && !echo) {
-          // getEcho is synchronous — no await needed
+        const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
+        if (savedToken) {
           const echoInstance = getEcho(savedToken);
           setEcho(echoInstance);
 
-          // Subscribe to this user's notification channel
           subscribeToNotifications(savedToken, user.id, (notification: any) => {
             console.log("🔔 New notification:", notification);
-            // Handle notification (e.g. update badge count, show toast, etc.)
           });
         }
       } else {
         // User logged out — clean up WebSocket
-        if (echo) {
+        if (socketInitialized.current) {
           disconnectEcho();
           setEcho(null);
+          socketInitialized.current = false;
         }
       }
     };
 
     manageSocket();
-  }, [user]); // ← only depend on user, not echo (avoids infinite loop)
-
-  // ─── Refresh user profile ─────────────────────────────────────────────────
-  const refreshUser = async () => {
-    try {
-      const response = await api.get("/me");
-      const freshUser = response.data;
-      setUser(freshUser);
-      await AsyncStorage.setItem(USER_KEY, JSON.stringify(freshUser));
-    } catch (error: any) {
-      if (error.response?.status === 401) logout();
-    }
-  };
+  }, [user?.id]); // ✅ Depend on user.id (primitive) not user (object)
 
   // ─── Login ────────────────────────────────────────────────────────────────
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      console.log("Attempting login to:", api.defaults.baseURL);
-      console.log("Login data:", { email, password: "***" });
-
       const response = await api.post("/login", { email, password });
       const { token: newToken, user: userData } = response.data;
 
@@ -154,7 +160,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         AsyncStorage.setItem(USER_KEY, JSON.stringify(userData)),
       ]);
 
-      // Setting user triggers the socket useEffect above
       setUser(userData);
     } catch (error: any) {
       console.error("Login failed:", error.message);
@@ -177,7 +182,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // ─── Logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
-      disconnectEcho(); // clean up WebSocket before hitting logout endpoint
+      disconnectEcho();
       await api.post("/logout");
     } catch (e) {
       console.log("Logout error:", e);
@@ -190,6 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setToken(null);
       setEcho(null);
+      socketInitialized.current = false;
     }
   }, []);
 
@@ -202,8 +208,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     password_confirmation: string
   ): Promise<void> => {
     try {
-      console.log("Attempting registration:", { name, email });
-
       const response = await api.post("/register", {
         name: name.trim(),
         email: email.trim().toLowerCase(),
@@ -212,16 +216,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password_confirmation,
       });
 
-      console.log("Registration response:", response.data);
-
-      // Auto-login after successful registration
       if (response.data.token && response.data.user) {
         const newToken = response.data.token;
         await AsyncStorage.setItem(TOKEN_KEY, newToken);
         await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
         api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
         setToken(newToken);
-        // Setting user triggers the socket useEffect
         setUser(response.data.user);
       }
     } catch (error: any) {
