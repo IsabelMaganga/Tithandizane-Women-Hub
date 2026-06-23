@@ -16,7 +16,7 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        return view('mentor.auth.login');
+        return redirect()->route('portal.login');
     }
 
     /**

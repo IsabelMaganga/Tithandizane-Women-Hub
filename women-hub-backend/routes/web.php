@@ -16,7 +16,13 @@ Route::get('/test-css', fn() => view('test-css'))->name('test.css');
 
 // Get started route
 Route::get('/get-started', fn() => view('get-started'))->name('get.started');
-Route::get('/login?redirect/', fn() => view('get-started'))->name('login');
+
+// Unified staff portal login (admin + mentor)
+Route::get('/portal/login',  [\App\Http\Controllers\PortalAuthController::class, 'showLogin'])->name('portal.login');
+Route::post('/portal/login', [\App\Http\Controllers\PortalAuthController::class, 'login'])->name('portal.login.post');
+
+// Default unauthenticated redirect target (used by auth middleware)
+Route::get('/login', fn() => redirect()->route('portal.login'))->name('login');
 
 // ============================================
 // USER HARASSMENT REPORT ROUTES (Public/API)

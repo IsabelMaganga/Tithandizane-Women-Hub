@@ -111,7 +111,7 @@
 
                     <ul class="flex  gap-3 mt-5 text-[20px] leading-normal">
                         <li>
-                            <a href="{{ route('mentor.login') }}"
+                            <a href="{{ route('portal.login') }}"
                                 class="inline-block bg-[#962980] active:bg-[#5c1a4f] hover:bg-[#af2a95] hover:ml-2 relative transition-all duration-200 ease-in-out  border-[#eeeeec]/20   px-5 py-3 rounded-3xl border text-white text-sm leading-normal">
                                 Enter Portal
                             </a>
@@ -132,7 +132,7 @@
 
                     <ul class="flex gap-3 mt-5 text-[20px] leading-normal">
     <li>
-        <a href="{{ route('admin.login') }}"
+        <a href="{{ route('portal.login') }}"
            class="inline-block bg-[#962980] hover:ml-2 relative  active:bg-[#5c1a4f] hover:bg-[#af2a95] border-[#eeeeec]/20 transition-all duration-200 ease-in-out px-5 py-3 rounded-3xl border text-white text-sm leading-normal cursor-pointer">
             Manage Platform
         </a>
