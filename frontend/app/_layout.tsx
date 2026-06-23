@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 import { useEffect, useState, useRef } from "react";
@@ -47,7 +46,7 @@ function Navigation() {
     const inAuthGroup       = currentSegment === "(auth)";
     const inProtectedRoute  = currentSegment === "(protected)";
 
-    // ✅ CASE 0: User is authenticated — reset firstLaunch so
+    //User is authenticated — reset firstLaunch so
     // onboarding guard never fires for logged-in users
     if (userId && firstLaunch) {
       setFirstLaunch(false);
@@ -55,7 +54,7 @@ function Navigation() {
       return;
     }
 
-    // ✅ CASE A: ONBOARDING — first time unauthenticated user
+    //ONBOARDING:first time unauthenticated user
     if (firstLaunch && !inOnboardingGroup && !inAuthGroup) {
       isNavigating.current = true;
       setTimeout(() => {
@@ -66,7 +65,7 @@ function Navigation() {
       return;
     }
 
-    // ✅ CASE B: AUTHENTICATED — already logged in, send to dashboard
+    // AUTHENTICATED: already logged in, send to dashboard
     // This handles app relaunch when token is still valid
     if (userId && !inProtectedRoute) {
       isNavigating.current = true;
@@ -78,7 +77,7 @@ function Navigation() {
       return;
     }
 
-    // ✅ CASE C: UNAUTHENTICATED — protect private routes
+    //UNAUTHENTICATED: protect private routes
     if (!userId && inProtectedRoute) {
       isNavigating.current = true;
       setTimeout(() => {
