@@ -46,7 +46,7 @@ export default function ChangePassword() {
 
     try {
       setLoading(true);
-      // 🔥 Replace with your actual API call
+      //Replace with your actual API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
       Alert.alert("Success", "Your password has been updated.", [

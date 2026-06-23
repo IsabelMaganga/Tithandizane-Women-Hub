@@ -6,12 +6,7 @@ import { ActivityIndicator, View } from "react-native";
 export default function ProtectedLayout() {
   const { user, loading } = useAuth();
 
-  // ✅ Removed the useEffect + router.replace entirely
-  // Reason: _layout.tsx (root) already handles unauthenticated redirects.
-  // Having a second guard here caused a race condition:
-  // login() sets user → router.replace("/(protected)/(tabs)") fires →
-  // ProtectedLayout mounts → user object is "new reference" → 
-  // useEffect fires → router.replace("/(auth)/login") fires → loop!
+ 
 
   if (loading) {
     return (

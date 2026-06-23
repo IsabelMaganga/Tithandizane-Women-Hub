@@ -133,6 +133,26 @@ export default function MentorDashboard() {
             </View>
           </View>
 
+          {/* COMMUNITY HUB CARD*/}
+          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-6">
+            <TouchableOpacity 
+              onPress={()=>handleNavigation("/(protected)/community")}
+              className="bg-slate-900 dark:bg-slate-800 p-6 rounded-[28px] flex-row items-center justify-between"
+            >
+              <View className="flex-row items-center">
+                <View className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center">
+                  <Ionicons name="chatbubbles-outline" size={24} color="white" />
+                </View>
+                <View className="ml-4">
+                  <Text className="text-white font-bold text-base">Community Hub</Text>
+                  <Text className="text-slate-400 text-xs italic">space for all</Text>
+                </View>
+              </View>
+              
+            </TouchableOpacity>
+          </Animated.View>
+
+
           {/* GUIDANCE CONTENT CARD */}
           <Animated.View entering={FadeInDown.delay(300)} className="px-6 mt-6">
             <LinearGradient
@@ -208,25 +228,7 @@ export default function MentorDashboard() {
             />
           </View>
 
-          {/* COMMUNITY HUB CARD*/}
-          <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-6">
-            <TouchableOpacity 
-              onPress={()=>handleNavigation("/(protected)/community")}
-              className="bg-slate-900 dark:bg-slate-800 p-6 rounded-[28px] flex-row items-center justify-between"
-            >
-              <View className="flex-row items-center">
-                <View className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center">
-                  <Ionicons name="chatbubbles-outline" size={24} color="white" />
-                </View>
-                <View className="ml-4">
-                  <Text className="text-white font-bold text-base">Community Hub</Text>
-                  <Text className="text-slate-400 text-xs italic">space for all</Text>
-                </View>
-              </View>
-              
-            </TouchableOpacity>
-          </Animated.View>
-
+          
         </ScrollView>
 
         {/*EMERGENCY FAB */}

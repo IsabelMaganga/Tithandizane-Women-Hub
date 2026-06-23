@@ -21,13 +21,10 @@ import {
   createConversation,
   BASE_URL,
 } from "@/services/api";
-import { getUserToken } from "@/hooks/useAuth";
 import { useAuth } from "@/context/AuthContext";
 import { subscribeToChatChannel } from "@/services/echo";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type MessageStatus = "sending" | "sent" | "delivered" | "read";
 
@@ -46,8 +43,6 @@ interface Conversation {
   name: string;
   is_group: boolean;
 }
-
-// ─── Read Receipt ─────────────────────────────────────────────────────────────
 
 const ReadReceipt = ({ status }: { status: MessageStatus }) => {
   if (status === "sending") {
@@ -79,8 +74,6 @@ const ReadReceipt = ({ status }: { status: MessageStatus }) => {
   return null;
 };
 
-// ─── Heart Rating ─────────────────────────────────────────────────────────────
-
 const HeartRating = ({
   rating,
   onChange,
@@ -107,8 +100,6 @@ const HeartRating = ({
     ))}
   </View>
 );
-
-// ─── Review Modal ─────────────────────────────────────────────────────────────
 
 const ReviewModal = ({
   visible,
@@ -168,7 +159,6 @@ const ReviewModal = ({
                 paddingBottom: 40,
               }}
             >
-              {/* Drag handle */}
               <View
                 style={{
                   width: 40,
@@ -179,8 +169,6 @@ const ReviewModal = ({
                   marginBottom: 24,
                 }}
               />
-
-              {/* Header */}
               <View style={{ alignItems: "center", marginBottom: 24 }}>
                 <View
                   style={{
@@ -199,9 +187,7 @@ const ReviewModal = ({
                     {mentorName?.charAt(0)?.toUpperCase() ?? "M"}
                   </Text>
                 </View>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "700", color: "#0F172A", marginBottom: 4 }}
-                >
+                <Text style={{ fontSize: 20, fontWeight: "700", color: "#0F172A", marginBottom: 4 }}>
                   How was your session?
                 </Text>
                 <Text style={{ fontSize: 14, color: "#64748B", textAlign: "center" }}>
@@ -209,10 +195,7 @@ const ReviewModal = ({
                   <Text style={{ fontWeight: "600", color: "#4C1D95" }}>{mentorName}</Text>
                 </Text>
               </View>
-
               <View style={{ height: 1, backgroundColor: "#F1F5F9", marginBottom: 24 }} />
-
-              {/* Rating */}
               <View style={{ marginBottom: 24 }}>
                 <Text
                   style={{
@@ -229,21 +212,11 @@ const ReviewModal = ({
                 </Text>
                 <HeartRating rating={rating} onChange={setRating} />
                 {rating > 0 && (
-                  <Text
-                    style={{
-                      textAlign: "center",
-                      marginTop: 10,
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: "#7C3AED",
-                    }}
-                  >
+                  <Text style={{ textAlign: "center", marginTop: 10, fontSize: 14, fontWeight: "600", color: "#7C3AED" }}>
                     {ratingLabels[rating]}
                   </Text>
                 )}
               </View>
-
-              {/* Comment */}
               <View style={{ marginBottom: 28 }}>
                 <Text
                   style={{
@@ -256,14 +229,7 @@ const ReviewModal = ({
                   }}
                 >
                   Leave a note{" "}
-                  <Text
-                    style={{
-                      color: "#94A3B8",
-                      fontWeight: "400",
-                      textTransform: "none",
-                      letterSpacing: 0,
-                    }}
-                  >
+                  <Text style={{ color: "#94A3B8", fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>
                     (optional)
                   </Text>
                 </Text>
@@ -288,21 +254,16 @@ const ReviewModal = ({
                     lineHeight: 22,
                   }}
                 />
-                <Text
-                  style={{ textAlign: "right", marginTop: 6, fontSize: 11, color: "#94A3B8" }}
-                >
+                <Text style={{ textAlign: "right", marginTop: 6, fontSize: 11, color: "#94A3B8" }}>
                   {comment.length}/500
                 </Text>
               </View>
-
-              {/* Actions */}
               <View style={{ gap: 10 }}>
                 <Pressable
                   onPress={handleSubmit}
                   disabled={submitting || rating === 0}
                   style={({ pressed }) => ({
-                    backgroundColor:
-                      rating === 0 ? "#E2E8F0" : pressed ? "#6D28D9" : "#7C3AED",
+                    backgroundColor: rating === 0 ? "#E2E8F0" : pressed ? "#6D28D9" : "#7C3AED",
                     borderRadius: 16,
                     paddingVertical: 16,
                     alignItems: "center",
@@ -312,19 +273,11 @@ const ReviewModal = ({
                   {submitting ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "700",
-                        color: rating === 0 ? "#94A3B8" : "#FFFFFF",
-                        letterSpacing: 0.2,
-                      }}
-                    >
+                    <Text style={{ fontSize: 16, fontWeight: "700", color: rating === 0 ? "#94A3B8" : "#FFFFFF", letterSpacing: 0.2 }}>
                       Submit Review
                     </Text>
                   )}
                 </Pressable>
-
                 <Pressable
                   onPress={handleClose}
                   style={({ pressed }) => ({
@@ -334,9 +287,7 @@ const ReviewModal = ({
                     opacity: pressed ? 0.5 : 1,
                   })}
                 >
-                  <Text style={{ fontSize: 15, color: "#94A3B8", fontWeight: "500" }}>
-                    Skip for now
-                  </Text>
+                  <Text style={{ fontSize: 15, color: "#94A3B8", fontWeight: "500" }}>Skip for now</Text>
                 </Pressable>
               </View>
             </View>
@@ -346,8 +297,6 @@ const ReviewModal = ({
     </Modal>
   );
 };
-
-// ─── Terminate Confirm Modal ──────────────────────────────────────────────────
 
 const TerminateConfirmModal = ({
   visible,
@@ -362,14 +311,7 @@ const TerminateConfirmModal = ({
 }) => (
   <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
     <TouchableWithoutFeedback onPress={onCancel}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(15, 10, 30, 0.6)",
-          justifyContent: "center",
-          paddingHorizontal: 24,
-        }}
-      >
+      <View style={{ flex: 1, backgroundColor: "rgba(15, 10, 30, 0.6)", justifyContent: "center", paddingHorizontal: 24 }}>
         <TouchableWithoutFeedback>
           <View style={{ backgroundColor: "#FFFFFF", borderRadius: 24, padding: 28 }}>
             <View
@@ -386,30 +328,12 @@ const TerminateConfirmModal = ({
             >
               <Ionicons name="stop-circle" size={28} color="#EF4444" />
             </View>
-
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "700",
-                color: "#0F172A",
-                textAlign: "center",
-                marginBottom: 8,
-              }}
-            >
+            <Text style={{ fontSize: 18, fontWeight: "700", color: "#0F172A", textAlign: "center", marginBottom: 8 }}>
               End this session?
             </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#64748B",
-                textAlign: "center",
-                lineHeight: 20,
-                marginBottom: 24,
-              }}
-            >
+            <Text style={{ fontSize: 14, color: "#64748B", textAlign: "center", lineHeight: 20, marginBottom: 24 }}>
               This will close the session permanently. The mentee will be asked to leave a review.
             </Text>
-
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Pressable
                 onPress={onCancel}
@@ -423,11 +347,8 @@ const TerminateConfirmModal = ({
                   borderColor: "#E2E8F0",
                 })}
               >
-                <Text style={{ fontSize: 15, fontWeight: "600", color: "#475569" }}>
-                  Keep Going
-                </Text>
+                <Text style={{ fontSize: 15, fontWeight: "600", color: "#475569" }}>Keep Going</Text>
               </Pressable>
-
               <Pressable
                 onPress={onConfirm}
                 disabled={terminating}
@@ -442,9 +363,7 @@ const TerminateConfirmModal = ({
                 {terminating ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
-                    End Session
-                  </Text>
+                  <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>End Session</Text>
                 )}
               </Pressable>
             </View>
@@ -455,11 +374,7 @@ const TerminateConfirmModal = ({
   </Modal>
 );
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 const ChatScreen = () => {
-  // ── Route params ──────────────────────────────────────────────────────────
-  // expo-router can return string | string[] — normalise everything up front.
   const params = useLocalSearchParams<{
     id: string;
     isNew?: string;
@@ -468,65 +383,56 @@ const ChatScreen = () => {
     isMentor?: string;
   }>();
 
-  const id            = Array.isArray(params.id)         ? params.id[0]         : params.id;
-  const isNew         = Array.isArray(params.isNew)       ? params.isNew[0]      : params.isNew;
-  const name          = Array.isArray(params.name)        ? params.name[0]       : params.name;
-  const sessionId     = Array.isArray(params.sessionId)   ? params.sessionId[0]  : params.sessionId;
-  const isMentorParam = Array.isArray(params.isMentor)    ? params.isMentor[0]   : params.isMentor;
+  const id            = Array.isArray(params.id)        ? params.id[0]        : params.id;
+  const isNew         = Array.isArray(params.isNew)      ? params.isNew[0]     : params.isNew;
+  const name          = Array.isArray(params.name)       ? params.name[0]      : params.name;
+  const sessionId     = Array.isArray(params.sessionId)  ? params.sessionId[0] : params.sessionId;
+  const isMentorParam = Array.isArray(params.isMentor)   ? params.isMentor[0]  : params.isMentor;
 
-  const { user } = useAuth();
-  const router   = useRouter();
+  const { user, token } = useAuth();
+  const router = useRouter();
 
-  // ── Core state ────────────────────────────────────────────────────────────
-  const [activeId, setActiveId]           = useState<number | null>(
-    isNew === "true" ? null : Number(id)
-  );
-  const [messages, setMessages]           = useState<Message[]>([]);
-  const [conversation, setConversation]   = useState<Conversation | null>(null);
-  const [text, setText]                   = useState("");
-  const [loading, setLoading]             = useState(true);
-  const [sending, setSending]             = useState(false);
-  const [typingUser, setTypingUser]       = useState<string | null>(null);
-
-  // ── Session state ─────────────────────────────────────────────────────────
+  const [activeId, setActiveId]                         = useState<number | null>(isNew === "true" ? null : Number(id));
+  const [messages, setMessages]                         = useState<Message[]>([]);
+  const [conversation, setConversation]                 = useState<Conversation | null>(null);
+  const [text, setText]                                 = useState("");
+  const [loading, setLoading]                           = useState(true);
+  const [sending, setSending]                           = useState(false);
+  const [typingUser, setTypingUser]                     = useState<string | null>(null);
   const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
-  const [terminating, setTerminating]         = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [sessionEnded, setSessionEnded]       = useState(false);
+  const [terminating, setTerminating]                   = useState(false);
+  const [showReviewModal, setShowReviewModal]           = useState(false);
+  const [submittingReview, setSubmittingReview]         = useState(false);
+  const [sessionEnded, setSessionEnded]                 = useState(false);
 
-  // ── Derived session values ────────────────────────────────────────────────
-
-  // Parse sessionId safely — "0", "", "undefined", "null" all become null
+  // ─── Parse sessionId safely ───────────────────────────────────────────────
   const activeSessionId: number | null = (() => {
     if (!sessionId || sessionId === "undefined" || sessionId === "null") return null;
     const n = Number(sessionId);
     return isNaN(n) || n === 0 ? null : n;
   })();
 
-  // Parse isMentor safely — "true", "1", true all become true
-  const isSessionMentor: boolean = (() => {
-    if (!isMentorParam) return false;
-    const s = String(isMentorParam).toLowerCase().trim();
-    return s === "true" || s === "1";
-  })();
+  // ─── FIX: Dual mentor check ───────────────────────────────────────────────
+  // Primary:  user.role from AuthContext (most reliable)
+  // Fallback: isMentor URL param (passed from session screens)
+  // Both are checked so the button shows even if one source is missing/stale
+  const isMentor =
+    user?.role === "mentor" ||
+    isMentorParam === "true";
 
-  // Fallback: also check the user's own role stored in auth context
-  const isMentorByRole = user?.role === "mentor";
+  // ─── FIX: Show End button conditions ─────────────────────────────────────
+  // Requires ALL of:
+  //   1. isMentor   — user is a mentor (role or param)
+  //   2. activeSessionId !== null — a real session ID was passed
+  //   3. !sessionEnded — session is still open
+const showEndButton = isMentor && activeSessionId !== null && !sessionEnded;
 
-  // The End button is visible when ANY of these are true for mentor identity,
-  // AND there's a linked session, AND the session hasn't ended yet.
-  const showEndButton =
-    (isSessionMentor || isMentorByRole) &&
-    activeSessionId !== null &&
-    !sessionEnded;
+  
 
-  // ── Refs ──────────────────────────────────────────────────────────────────
   const unsubscribeRef   = useRef<(() => void) | null>(null);
   const optimisticIdsRef = useRef<Set<number>>(new Set());
   const confirmedIdsRef  = useRef<Set<number>>(new Set());
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   const deduplicateMessages = (arr: Message[]): Message[] =>
     Array.from(new Map(arr.map((m) => [m.id, m])).values());
 
@@ -536,7 +442,7 @@ const ChatScreen = () => {
     return "sent";
   };
 
-  const markMessagesAsRead = async (_convId: number, _token: string) => {
+  const markMessagesAsRead = async (_convId: number) => {
     try {
       setMessages((prev) =>
         prev.map((m) =>
@@ -550,12 +456,10 @@ const ChatScreen = () => {
     }
   };
 
-  // ── Terminate session ─────────────────────────────────────────────────────
   const handleTerminateConfirmed = async () => {
-    if (!activeSessionId) return;
+    if (!activeSessionId || !token) return;
     setTerminating(true);
     try {
-      const token = await getUserToken();
       const res = await fetch(
         `${BASE_URL}/api/mentorship/sessions/${activeSessionId}/terminate`,
         {
@@ -574,7 +478,8 @@ const ChatScreen = () => {
 
       setSessionEnded(true);
       setShowTerminateConfirm(false);
-      setTimeout(() => setShowReviewModal(true), 400);
+      // Mentors don't need to review — skip the review modal for them
+      // The mentee will be prompted on their end via WebSocket event
     } catch (err: any) {
       console.error("Terminate session error:", err);
       Alert.alert("Error", err?.message ?? "Could not end the session. Please try again.");
@@ -583,16 +488,14 @@ const ChatScreen = () => {
     }
   };
 
-  // ── Submit review ─────────────────────────────────────────────────────────
   const handleSubmitReview = async (rating: number, comment: string) => {
-    if (!activeSessionId) {
+    if (!activeSessionId || !token) {
       setShowReviewModal(false);
       router.back();
       return;
     }
     setSubmittingReview(true);
     try {
-      const token = await getUserToken();
       const res = await fetch(
         `${BASE_URL}/api/mentorship/sessions/${activeSessionId}/review`,
         {
@@ -620,14 +523,13 @@ const ChatScreen = () => {
     }
   };
 
-  // ── WebSocket ─────────────────────────────────────────────────────────────
-  const setupWebsocket = (convId: number, token: string) => {
+  const setupWebsocket = (convId: number, wsToken: string) => {
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
 
-    unsubscribeRef.current = subscribeToChatChannel(token, convId, (e: any) => {
+    unsubscribeRef.current = subscribeToChatChannel(wsToken, convId, (e: any) => {
       const incoming: Message = { ...e.message, status: deriveStatus(e.message) };
 
       if (confirmedIdsRef.current.has(incoming.id)) return;
@@ -652,11 +554,7 @@ const ChatScreen = () => {
 
         const finalMsg =
           incoming.sender_id !== user?.id
-            ? {
-                ...incoming,
-                read_at: new Date().toISOString(),
-                status: "read" as MessageStatus,
-              }
+            ? { ...incoming, read_at: new Date().toISOString(), status: "read" as MessageStatus }
             : incoming;
 
         return [...prev, finalMsg];
@@ -664,21 +562,19 @@ const ChatScreen = () => {
     });
   };
 
-  // ── Cleanup ───────────────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
       if (unsubscribeRef.current) unsubscribeRef.current();
     };
   }, []);
 
-  // ── Init chat ─────────────────────────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
 
     const initChat = async () => {
-      try {
-        const token = await getUserToken();
+      if (!token) return;
 
+      try {
         if (isNew === "true" && !activeId) {
           if (isMounted) {
             setConversation({ id: 0, name: name ?? "", is_group: false });
@@ -708,7 +604,7 @@ const ChatScreen = () => {
         setConversation(convo);
 
         setupWebsocket(targetId, token);
-        markMessagesAsRead(targetId, token);
+        markMessagesAsRead(targetId);
       } catch (err) {
         console.error("Init chat error:", err);
       } finally {
@@ -717,15 +613,12 @@ const ChatScreen = () => {
     };
 
     initChat();
-    return () => {
-      isMounted = false;
-    };
-  }, [id, activeId]);
+    return () => { isMounted = false; };
+  }, [id, activeId, token]);
 
-  // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = async () => {
     const messageText = text.trim();
-    if (!messageText || sending || sessionEnded) return;
+    if (!messageText || sending || sessionEnded || !token) return;
     setSending(true);
     setText("");
 
@@ -742,17 +635,16 @@ const ChatScreen = () => {
     setMessages((prev) => [...prev, optimisticMsg]);
 
     try {
-      const token = await getUserToken();
       let currentConvId = activeId;
 
       if (!currentConvId) {
-        const newConvo = await createConversation({ receiver_id: Number(id) }, token);
+        const newConvo = await createConversation({ receiver_id: Number(id) });
         currentConvId = newConvo.id;
         setConversation(newConvo);
         setActiveId(currentConvId);
       }
 
-      const confirmed = await sendMessage(currentConvId!, messageText, token, false);
+      const confirmed = await sendMessage(currentConvId!, messageText, token);
       confirmedIdsRef.current.add(confirmed.id);
 
       setMessages((prev) => {
@@ -780,7 +672,6 @@ const ChatScreen = () => {
     return conversation.is_group ? conversation.name : conversation.name || name || "";
   };
 
-  // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -789,12 +680,11 @@ const ChatScreen = () => {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View className="flex-1 bg-[#F8FAFC]">
       <StatusBar style="dark" />
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
         <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
           <Feather name="chevron-left" size={28} color="#1E293B" />
@@ -819,7 +709,7 @@ const ChatScreen = () => {
           </Text>
         </View>
 
-        {/* END SESSION button — only for mentor, only when session active */}
+        {/* ─── END SESSION button — visible only for mentors with active session ─── */}
         {showEndButton && (
           <Pressable
             onPress={() => setShowTerminateConfirm(true)}
@@ -837,15 +727,13 @@ const ChatScreen = () => {
             })}
           >
             <Ionicons name="stop-circle" size={15} color="#EF4444" />
-            <Text
-              style={{ fontSize: 12, fontWeight: "700", color: "#EF4444", letterSpacing: 0.2 }}
-            >
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#EF4444", letterSpacing: 0.2 }}>
               End
             </Text>
           </Pressable>
         )}
 
-        {/* CLOSED badge — after session ended */}
+        {/* CLOSED badge */}
         {sessionEnded && (
           <View
             style={{
@@ -865,7 +753,7 @@ const ChatScreen = () => {
         )}
       </View>
 
-      {/* ── SESSION ENDED BANNER ── */}
+      {/* SESSION ENDED BANNER */}
       {sessionEnded && (
         <View
           style={{
@@ -887,7 +775,7 @@ const ChatScreen = () => {
         </View>
       )}
 
-      {/* ── MESSAGES ── */}
+      {/* MESSAGES */}
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -895,11 +783,7 @@ const ChatScreen = () => {
         <LegendList
           data={messages}
           estimatedItemSize={70}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 20,
-          }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => {
             const isMe   = item.sender_id === user?.id;
@@ -914,22 +798,13 @@ const ChatScreen = () => {
                       : "bg-white border border-slate-100 rounded-tl-none shadow-sm"
                   }`}
                 >
-                  <Text
-                    className={`${isMe ? "text-white" : "text-slate-800"} text-[15px] leading-5`}
-                  >
+                  <Text className={`${isMe ? "text-white" : "text-slate-800"} text-[15px] leading-5`}>
                     {item.message}
                   </Text>
                 </View>
-
-                <View
-                  className={`flex-row items-center mt-0.5 px-1 ${
-                    isMe ? "justify-end" : "justify-start"
-                  }`}
-                >
+                <View className={`flex-row items-center mt-0.5 px-1 ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (
-                    <Text className="text-[10px] text-slate-400">
-                      {item.sender?.name ?? ""}
-                    </Text>
+                    <Text className="text-[10px] text-slate-400">{item.sender?.name ?? ""}</Text>
                   )}
                   {isMe && status && (
                     <View className="flex-row items-center space-x-0.5">
@@ -958,14 +833,12 @@ const ChatScreen = () => {
           }
         />
 
-        {/* ── INPUT BAR ── */}
+        {/* INPUT BAR */}
         <SafeAreaView edges={["bottom"]} className="bg-white border-t border-slate-100">
           <View className="p-3 flex-row items-end space-x-2">
             <View
               className={`flex-1 rounded-[24px] px-4 py-2 border flex-row items-end ${
-                sessionEnded
-                  ? "bg-slate-100 border-slate-200"
-                  : "bg-slate-50 border-slate-200"
+                sessionEnded ? "bg-slate-100 border-slate-200" : "bg-slate-50 border-slate-200"
               }`}
             >
               <TextInput
@@ -989,9 +862,7 @@ const ChatScreen = () => {
               onPress={handleSend}
               disabled={!text.trim() || sending || sessionEnded}
               className={`w-12 h-12 rounded-full items-center justify-center shadow-lg ${
-                text.trim() && !sessionEnded
-                  ? "bg-purple-600 shadow-purple-300"
-                  : "bg-slate-200 shadow-none"
+                text.trim() && !sessionEnded ? "bg-purple-600 shadow-purple-300" : "bg-slate-200 shadow-none"
               }`}
             >
               {sending ? (
@@ -1004,7 +875,7 @@ const ChatScreen = () => {
         </SafeAreaView>
       </KeyboardAvoidingView>
 
-      {/* ── MODALS ── */}
+      {/* MODALS */}
       <TerminateConfirmModal
         visible={showTerminateConfirm}
         onCancel={() => setShowTerminateConfirm(false)}

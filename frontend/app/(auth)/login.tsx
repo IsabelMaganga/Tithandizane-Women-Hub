@@ -32,14 +32,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ Prevent double press / double login call
+  //Prevent double press / double login call
   const isLoggingIn = useRef(false);
 
   const safeText = (value: any) =>
     typeof value === "string" ? value : "";
 
   const handleLogIn = async () => {
-    // ✅ Block if already in progress
+    //Block if already in progress
     if (isLoggingIn.current) return;
     isLoggingIn.current = true;
 
@@ -54,17 +54,10 @@ export default function Login() {
 
     try {
       await login(email, password);
-
-      console.log("✅ Login done, navigating to dashboard...");
-
-      // ✅ Navigate directly — don't rely on _layout.tsx guard
+      
       router.replace("/(protected)/(tabs)");
 
-      console.log("✅ router.replace called");
-
     } catch (err: any) {
-      console.log("❌ Login error:", err.message);
-
       if (err?.message === "Admin accounts cannot log in here") {
         setError("Admin accounts cannot log in here");
       } else if (err?.response?.data?.message) {

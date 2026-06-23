@@ -3,7 +3,7 @@ import { View, Text, Pressable, Image, RefreshControl } from "react-native";
 import { LegendList } from "@legendapp/list";
 import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { getChatList, ChatListItem } from "@/services/api";
-import { useAuth } from "@/context/AuthContext"; // ✅ only this import
+import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSegments, useFocusEffect } from "expo-router";
 import { subscribeToChatChannel } from "@/services/echo";
 import LottieView from "lottie-react-native";
@@ -13,7 +13,7 @@ export default function ChatListScreen() {
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { user, token } = useAuth(); // ✅ get token directly from AuthContext
+  const { user, token } = useAuth();
   const router = useRouter();
   const segments = useSegments();
 
@@ -30,7 +30,6 @@ export default function ChatListScreen() {
   const subscribeToAllConversations = useCallback((chatList: ChatListItem[]) => {
     cleanupAllSubscriptions();
 
-    // ✅ use token from AuthContext directly — no AsyncStorage call needed
     if (!token) return;
 
     chatList.forEach((chat) => {
@@ -57,7 +56,7 @@ export default function ChatListScreen() {
 
       unsubscribeRefs.current.set(chat.id, unsub);
     });
-  }, [token, user?.id]); // ✅ stable deps — primitives only
+  }, [token, user?.id]);
 
   // ─── Fetch Chats ───────────────────────────────────────────────────────────
   const fetchChats = useCallback(async (silent = false) => {
@@ -66,7 +65,7 @@ export default function ChatListScreen() {
       const chatData = await getChatList();
       const list = Array.isArray(chatData) ? chatData : [];
       setChats(list);
-      subscribeToAllConversations(list); // ✅ no longer async — token from context
+      subscribeToAllConversations(list);
     } catch (error) {
       console.error("Error fetching chats:", error);
     } finally {
@@ -240,14 +239,23 @@ export default function ChatListScreen() {
             return (
               <Pressable
                 onPress={() => {
+                  
                   setChats((prev) =>
                     prev.map((c) =>
                       c.id === item.id ? { ...c, unread_count: 0 } : c
                     )
                   );
+
+                  
                   router.push({
                     pathname: `/chat/${item.id}`,
-                    params: { name: displayName },
+                    params: {
+                      name: displayName,
+                      
+                      sessionId: item.session_id ?? item.active_session_id ?? "",
+                      
+                      isMentor: user?.role === "mentor" ? "true" : "false",
+                    },
                   });
                 }}
                 className="flex-row items-center bg-white p-4 mb-3 rounded-2xl shadow-sm border border-slate-100 active:opacity-80"
