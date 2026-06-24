@@ -13,26 +13,20 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
-    /**
-     * Display settings dashboard with cards
-     */
+    
     public function index()
     {
         return view('admin.settings.index');
     }
 
-    /**
-     * Display general settings page
-     */
+   
     public function general()
     {
         $settings = $this->getSettings();
         return view('admin.settings.general', compact('settings'));
     }
 
-    /**
-     * Update general settings
-     */
+    
     public function updateGeneral(Request $request)
     {
         $validated = $request->validate([

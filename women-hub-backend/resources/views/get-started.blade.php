@@ -77,9 +77,7 @@
                 <a href="{{ route('welcome')}}" class="inline-block px-5 py-3 hover:text-[#ee8edb] cursor-pointer  text-sm leading-normal">
                     Home
                 </a>
-                <a class="inline-block px-5 py-3 hover:text-[#ee8edb] cursor-pointer  text-sm leading-normal">
-                    Dashboard
-                </a>
+               
                 <a class="inline-block px-5 py-3 bg-[#874179] rounded-3xl font-semibold hover:bg-[#44273e] cursor-pointer  text-sm leading-normal">
                     About
                 </a>

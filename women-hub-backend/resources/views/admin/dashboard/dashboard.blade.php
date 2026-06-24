@@ -400,7 +400,7 @@
     }
 
     function loadNotificationBadge() {
-        const url = '{{ route("admin.notifications") }}';
+        const url = '{{ route("admin.notifications.unread-count") }}';
 
         fetch(url, {
             headers: {

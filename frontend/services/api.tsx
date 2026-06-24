@@ -241,7 +241,7 @@ export interface CommunityPost {
 }
 
 // Update this to your computer's WiFi IPv4 (run: ipconfig)
-const COMPUTER_IP = '192.168.1.170';
+const COMPUTER_IP = '192.168.113.205';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -250,14 +250,14 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+      return `http://192.168.38.205:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
-      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+      return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://127.0.0.1:${BACKEND_PORT}/api/v1`;
+    return `http://192.168.38.205:8000/api/v1`;
   } else {
     return 'https://your-production-api.com/api';
   }

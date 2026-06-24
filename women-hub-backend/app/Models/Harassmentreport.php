@@ -24,10 +24,11 @@ class HarassmentReport extends Model
         'victim_email',
         'victim_phone',
         'status',
+        'severity',
         'admin_response',
         'responded_at',
         'assigned_mentor_id',
-        'user_id'  // Add this to fillable
+        'user_id'
     ];
 
     protected $casts = [

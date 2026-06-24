@@ -452,12 +452,15 @@
                     <span class="ml-3">Analytics Reports</span>
                 </a>
                 
-                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group opacity-80" style="color: var(--sidebar-text);">
+                <a href="{{ route('admin.events.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.events.*') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
                     <i class="fas fa-calendar-alt w-5"></i>
                     <span class="ml-3">Events Calendar</span>
                 </a>
-                <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group opacity-80" style="color: var(--sidebar-text);">
-                    <i class="fas fa-bell w-5"></i>
+                <a href="{{ route('admin.notifications.index') }}" class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.notifications.*') ? 'active-nav' : '' }}" style="color: var(--sidebar-text);">
+                    <div class="relative">
+                        <i class="fas fa-bell w-5"></i>
+                        <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"></span>
+                    </div>
                     <span class="ml-3">Notifications</span>
                 </a>
             </nav>
@@ -649,10 +652,32 @@
         .catch(error => console.error('Error loading users count:', error));
     }
     
+    function loadNotificationCount() {
+        fetch('/admin/notifications/unread-count', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notification-badge');
+            if (badge && data.count > 0) {
+                badge.innerText = data.count > 9 ? '9+' : data.count;
+                badge.classList.remove('hidden');
+            } else if (badge) {
+                badge.classList.add('hidden');
+            }
+        })
+        .catch(error => console.error('Error loading notification count:', error));
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         initTheme();
         loadPendingReportsCount();
         loadTotalUsersCount();
+        loadNotificationCount();
         
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {

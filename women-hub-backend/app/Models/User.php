@@ -70,10 +70,10 @@ class User extends Authenticatable
     /**
      * Get all notifications for this user
      */
-    // public function notifications()
-    // {
-    //     return $this->hasMany(Notification::class);
-    // }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
+    }
 
     /**
      * Get unread notifications count

@@ -61,6 +61,193 @@
         .sub-list.show {
             display: block;
         }
+
+        /* Sidebar styles matching admin */
+        .sidebar-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: hidden;
+        }
+
+        .sidebar-nav-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .sidebar-nav-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-nav-scroll::-webkit-scrollbar-track {
+            background: #2c3e50;
+            border-radius: 10px;
+        }
+
+        .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 10px;
+        }
+
+        .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+            background: #2ecc71;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .active-nav {
+            background: #3498db !important;
+            color: #FFFFFF !important;
+        }
+
+        .active-nav i,
+        .active-nav span {
+            color: #FFFFFF !important;
+        }
+
+        /* Settings Submenu Styles - matching admin */
+        .settings-submenu {
+            margin-left: 1.5rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+            border-left: 2px solid rgba(255,255,255,0.1);
+            padding-left: 0.5rem;
+        }
+
+        .settings-submenu .nav-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+        }
+
+        .settings-submenu .nav-item.active-nav {
+            background: #3498db !important;
+            color: #FFFFFF !important;
+        }
+
+        .settings-submenu .nav-item.active-nav i,
+        .settings-submenu .nav-item.active-nav span {
+            color: #FFFFFF !important;
+        }
+
+        .settings-submenu .nav-item:not(.active-nav):hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: #1a1a2e;
+        }
+
+        body.dark-mode .sidebar-wrapper {
+            background: #0f0f1a !important;
+            border-right-color: #2d3748 !important;
+        }
+
+        body.dark-mode .sidebar-wrapper [style*="border-color: #2c3e50;"] {
+            border-color: #2d3748 !important;
+        }
+
+        body.dark-mode .sidebar-wrapper [style*="background: #2c3e50;"] {
+            background: #1e293b !important;
+            border-color: #2d3748 !important;
+        }
+
+        body.dark-mode .top-header {
+            background: #1e293b !important;
+            border-bottom-color: #2d3748 !important;
+        }
+
+        body.dark-mode .top-header h2 {
+            color: #ffffff !important;
+        }
+
+        body.dark-mode .top-header .text-gray-600 {
+            color: #cbd5e0 !important;
+        }
+
+        body.dark-mode .top-header .text-gray-700 {
+            color: #e2e8f0 !important;
+        }
+
+        body.dark-mode .top-header .bg-gray-300 {
+            background: #4a5568 !important;
+        }
+
+        body.dark-mode .top-header .ring-gray-300 {
+            --tw-ring-color: #4a5568 !important;
+        }
+
+        body.dark-mode .bg-gray-100 {
+            background: #1a1a2e !important;
+        }
+
+        body.dark-mode .bg-white {
+            background: #16213e !important;
+        }
+
+        body.dark-mode .text-gray-800 {
+            color: #e2e8f0 !important;
+        }
+
+        body.dark-mode .border-gray-200 {
+            border-color: #2d3748 !important;
+        }
+
+        body.dark-mode .border-gray-100 {
+            border-color: #2d3748 !important;
+        }
+
+        body.dark-mode .bg-gray-50 {
+            background: #1e293b !important;
+        }
+
+        body.dark-mode .text-gray-500 {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .text-gray-400 {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .bg-slate-800 {
+            background: #334155 !important;
+        }
+
+        body.dark-mode #notificationSideBar {
+            background: #16213e !important;
+        }
+
+        body.dark-mode .shadow-sm {
+            --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+        }
+
+        body.dark-mode .shadow-xl {
+            --tw-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        body.dark-mode .hover\:bg-gray-100:hover {
+            background: #2d3748 !important;
+        }
+
+        .theme-toggle {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        /* Logout button hover effect */
+        .logout-btn:hover {
+            background: #dc2626 !important;
+            color: white !important;
+        }
     </style>
 
     @stack('styles')
@@ -77,183 +264,232 @@
         $inactiveClasses = 'text-gray-300 hover:bg-gray-800 hover:text-white';
     @endphp
 
-    <div class="flex h-screen">
-        <!-- Left Sidebar - Dark Navigation -->
-        <div class="w-[250px] bg-gray-900 text-white h-full flex flex-col">
-            <a href=" {{ route('mentor.dashboard')}}" class="p-4 select-none">
-                <h1 class="text-xl font-bold">Tithandizane</h1>
-                <p class="text-sm text-gray-400">Women Hub</p>
-            </a>
-
-            <nav class="relative flex-1 h-full mx-2 mt-0 overflow-auto text-sm" id="sidebar-nav">
-
-                <a href="{{ route('mentor.dashboard') }}"
-                   class="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 py-3 transition-all rounded-3xl {{ request()->routeIs('mentor.dashboard') ? $activeClasses : $inactiveClasses }}">
-                    <span>Dashboard</span>
-                    <i class="w-5 fas fa-home"></i>
-                </a>
-
-                {{-- General tab --}}
-                <div class="mt-3 border-t border-white/30">
-                    <button type="button" class="flex items-center justify-between w-full px-2 py-3 text-left transition-colors {{ $isGeneralOpen ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800' }}" data-toggle="general-sub-list" data-icon="showGeneralIcon">
-                        <span class="flex items-center">
-                            <i class="w-5 fa-solid fa-calendar-days"></i>
-                            <span class="ml-0 capitalize">General</span>
-                        </span>
-                        <i id="showGeneralIcon" class="mr-2 transition-transform fas fa-chevron-down {{ $isGeneralOpen ? 'arrow-rotate' : '' }}"></i>
-                    </button>
-
-                    <div id="general-sub-list" class="sub-list text-[12px] {{ $isGeneralOpen ? 'show' : '' }}">
-                        <a href="{{ route('mentor.appointment') }}" class="flex items-center px-6 py-3 mt-1 transition-colors {{ request()->routeIs('mentor.appointment') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 text-yellow-500 text-md fa-solid fa-calendar"></i>
-                            <span class="ml-3">Appointments</span>
-                        </a>
-                        <a href="{{ route('mentor.calender') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.calender') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-regular fa-calendar"></i>
-                            <span class="ml-3">Calendar</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- chat tab --}}
-                <div class="border-t border-white/30">
-                    <button type="button" class="flex items-center justify-between w-full px-2 py-3 text-left transition-colors {{ $isChatOpen ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800' }}" data-toggle="chat-sub-list" data-icon="showChatIcon">
-                        <span class="flex items-center">
-                            <i class="w-5 fa-regular fa-comment"></i>
-                            <span class="ml-0">Chats</span>
-                        </span>
-                        <i id="showChatIcon" class="mr-2 transition-transform fas fa-chevron-down {{ $isChatOpen ? 'arrow-rotate' : '' }}"></i>
-                    </button>
-
-                    <div id="chat-sub-list" class="sub-list text-[12px] {{ $isChatOpen ? 'show' : '' }}">
-                        <a href="{{ route('mentor.chat') }}" class="flex items-center px-6 py-3 mt-1 transition-colors {{ request()->routeIs('mentor.chat') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-regular fa-comment"></i>
-                            <span class="ml-3">Mentorship Sessions</span>
-                        </a>
-                        <a href="{{ route('mentor.group') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.group') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-solid fa-circle-plus"></i>
-                            <span class="ml-3">Create group</span>
-                        </a>
-                        <a href="{{ route('mentor.groups') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.groups') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-solid fa-users"></i>
-                            <span class="ml-3">Groups</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- report --}}
-                <div class="border-t border-white/30">
-                    <a href="{{ route('mentor.reports') }}" class="flex items-center px-2 py-3 transition-colors {{ request()->routeIs('mentor.reports') ? $activeClasses : $inactiveClasses }}">
-                        <i class="w-5 fa-solid fa-flag"></i>
-                        <span class="ml-0 capitalize">Report system</span>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Left Sidebar - Dark Navigation - Matches admin structure -->
+        <div class="w-64 flex flex-col shadow-xl sidebar-wrapper" style="background: #1a2a3a; border-right: 1px solid #2c3e50;">
+            
+            <!-- Sidebar Header with Logo -->
+            <div class="p-6 border-b flex-shrink-0" style="border-color: #2c3e50;">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('mentor.dashboard') }}" class="flex items-center gap-3">
+                        <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
+                            <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
+                        </div>
                     </a>
                 </div>
+            </div>
 
-                {{-- Harassment reports assigned to mentor --}}
-                <div class="border-t div border-white/30">
-                    <a href="{{ route('mentor.harassment.index')}}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800 nav-item" data-page="harassment">
-                        <i class="w-5 fa-solid fa-shield-halved"></i>
-                        <span class="ml-0 capitalize">Assigned Cases</span>
+            <!-- SCROLLABLE NAVIGATION AREA - Matches admin structure -->
+            <div class="sidebar-nav-scroll">
+                <nav class="mt-6 space-y-1 px-3 pb-4" id="sidebar-nav">
+                    <!-- Dashboard -->
+                    <a href="{{ route('mentor.dashboard') }}" 
+                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.dashboard') ? 'active-nav' : '' }}" 
+                       data-page="dashboard" 
+                       style="color: {{ request()->routeIs('mentor.dashboard') ? '#FFFFFF' : '#E2E8F0' }};">
+                        <i class="fas fa-home w-5"></i>
+                        <span class="ml-3 font-medium">Dashboard</span>
                     </a>
-                </div>
-                <div class="border-t div border-white/30">
-                    <a href="{{ route('mentor.harassment.analytics') }}" class="flex items-center px-2 py-3 text-gray-300 hover:bg-gray-800">
-                        <i class="w-5 fa-solid fa-chart-pie"></i>
-                        <span class="ml-0 capitalize">Analytics</span>
+
+                    <!-- General -->
+                    <div>
+                        <button type="button" 
+                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isGeneralOpen ? 'active-nav' : '' }}" 
+                                data-toggle="general-sub-list" 
+                                data-icon="showGeneralIcon"
+                                style="color: {{ $isGeneralOpen ? '#FFFFFF' : '#E2E8F0' }};">
+                            <span class="flex items-center">
+                                <i class="fa-solid fa-calendar-days w-5"></i>
+                                <span class="ml-3">General</span>
+                            </span>
+                            <i id="showGeneralIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isGeneralOpen ? 'arrow-rotate' : '' }}"></i>
+                        </button>
+
+                        <div id="general-sub-list" class="settings-submenu {{ $isGeneralOpen ? '' : 'hidden' }}">
+                            <a href="{{ route('mentor.appointment') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.appointment') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.appointment') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-calendar w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Appointments</span>
+                            </a>
+                            <a href="{{ route('mentor.calender') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.calender') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.calender') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-regular fa-calendar w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Calendar</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Chats -->
+                    <div>
+                        <button type="button" 
+                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isChatOpen ? 'active-nav' : '' }}" 
+                                data-toggle="chat-sub-list" 
+                                data-icon="showChatIcon"
+                                style="color: {{ $isChatOpen ? '#FFFFFF' : '#E2E8F0' }};">
+                            <span class="flex items-center">
+                                <i class="fa-regular fa-comment w-5"></i>
+                                <span class="ml-3">Chats</span>
+                            </span>
+                            <i id="showChatIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isChatOpen ? 'arrow-rotate' : '' }}"></i>
+                        </button>
+
+                        <div id="chat-sub-list" class="settings-submenu {{ $isChatOpen ? '' : 'hidden' }}">
+                            <a href="{{ route('mentor.chat') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.chat') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.chat') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-regular fa-comment w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Mentorship Sessions</span>
+                            </a>
+                            <a href="{{ route('mentor.group') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.group') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.group') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-circle-plus w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Create group</span>
+                            </a>
+                            <a href="{{ route('mentor.groups') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.groups') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.groups') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-users w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Groups</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Report System -->
+                    <a href="{{ route('mentor.reports') }}" 
+                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.reports') ? 'active-nav' : '' }}" 
+                       data-page="reports" 
+                       style="color: {{ request()->routeIs('mentor.reports') ? '#FFFFFF' : '#E2E8F0' }};">
+                        <i class="fa-solid fa-flag w-5"></i>
+                        <span class="ml-3">Report System</span>
                     </a>
-                </div>
 
-                {{-- Guidance tab --}}
-                <div class="border-t border-white/30">
-                    <button type="button" class="flex items-center justify-between w-full px-2 py-3 text-left transition-colors {{ $isGuidanceOpen ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800' }}" data-toggle="guidance-sub-list" data-icon="showGuidanceIcon">
-                        <span class="flex items-center">
-                            <i class="w-5 fa-solid fa-circle-info"></i>
-                            <span class="ml-0 capitalize">Guidance content</span>
-                        </span>
-                        <i id="showGuidanceIcon" class="mr-2 transition-transform fas fa-chevron-down {{ $isGuidanceOpen ? 'arrow-rotate' : '' }}"></i>
-                    </button>
+                    <!-- Assigned Cases -->
+                    <a href="{{ route('mentor.harassment.index') }}" 
+                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.harassment.index') ? 'active-nav' : '' }}" 
+                       data-page="assigned-cases" 
+                       style="color: {{ request()->routeIs('mentor.harassment.index') ? '#FFFFFF' : '#E2E8F0' }};">
+                        <i class="fa-solid fa-shield-halved w-5"></i>
+                        <span class="ml-3">Assigned Cases</span>
+                    </a>
 
-                    <div id="guidance-sub-list" class="sub-list text-[12px] {{ $isGuidanceOpen ? 'show' : '' }}">
-                        <a href="{{ route('mentor.hygiene') }}" class="flex items-center px-6 py-3 mt-1 transition-colors {{ request()->routeIs('mentor.hygiene') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-solid fa-pump-medical"></i>
-                            <span class="ml-3">Menstrual Hygiene</span>
-                        </a>
-                        <a href="{{ route('mentor.general') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.general') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-solid fa-house-medical"></i>
-                            <span class="ml-3">General Issues</span>
-                        </a>
-                        <a href="{{ route('mentor.emergency') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.emergency') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-solid fa-user-injured"></i>
-                            <span class="ml-3">Emergency</span>
-                        </a>
+                    <!-- Analytics -->
+                    <a href="{{ route('mentor.harassment.analytics') }}" 
+                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.harassment.analytics') ? 'active-nav' : '' }}" 
+                       data-page="analytics" 
+                       style="color: {{ request()->routeIs('mentor.harassment.analytics') ? '#FFFFFF' : '#E2E8F0' }};">
+                        <i class="fa-solid fa-chart-pie w-5"></i>
+                        <span class="ml-3">Analytics</span>
+                    </a>
+
+                    <!-- Guidance Content -->
+                    <div>
+                        <button type="button" 
+                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isGuidanceOpen ? 'active-nav' : '' }}" 
+                                data-toggle="guidance-sub-list" 
+                                data-icon="showGuidanceIcon"
+                                style="color: {{ $isGuidanceOpen ? '#FFFFFF' : '#E2E8F0' }};">
+                            <span class="flex items-center">
+                                <i class="fa-solid fa-circle-info w-5"></i>
+                                <span class="ml-3">Guidance Content</span>
+                            </span>
+                            <i id="showGuidanceIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isGuidanceOpen ? 'arrow-rotate' : '' }}"></i>
+                        </button>
+
+                        <div id="guidance-sub-list" class="settings-submenu {{ $isGuidanceOpen ? '' : 'hidden' }}">
+                            <a href="{{ route('mentor.hygiene') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.hygiene') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.hygiene') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-pump-medical w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Menstrual Hygiene</span>
+                            </a>
+                            <a href="{{ route('mentor.general') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.general') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.general') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-house-medical w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">General Issues</span>
+                            </a>
+                            <a href="{{ route('mentor.emergency') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.emergency') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.emergency') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-solid fa-user-injured w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Emergency</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div>
+                        <button type="button" 
+                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isSettingsOpen ? 'active-nav' : '' }}" 
+                                data-toggle="settings-sub-list" 
+                                data-icon="showSettings"
+                                style="color: {{ $isSettingsOpen ? '#FFFFFF' : '#E2E8F0' }};">
+                            <span class="flex items-center">
+                                <i class="fas fa-cog w-5"></i>
+                                <span class="ml-3">Settings</span>
+                            </span>
+                            <i id="showSettings" class="fas fa-chevron-down text-xs transition-transform {{ $isSettingsOpen ? 'arrow-rotate' : '' }}"></i>
+                        </button>
+
+                        <div id="settings-sub-list" class="settings-submenu {{ $isSettingsOpen ? '' : 'hidden' }}">
+                            <a href="{{ route('mentor.profile') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.profile') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.profile') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-regular fa-circle-user w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Profile</span>
+                            </a>
+                            <a href="{{ route('mentor.notifications') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.notifications') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.notifications') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fa-regular fa-bell w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Notifications</span>
+                            </a>
+                            <a href="{{ route('mentor.settings') }}" 
+                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.settings') ? 'active-nav' : '' }}" 
+                               style="color: {{ request()->routeIs('mentor.settings') ? '#FFFFFF' : '#E2E8F0' }};">
+                                <i class="fas fa-sliders w-4 text-sm"></i>
+                                <span class="ml-3 text-sm">Main Settings</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Mentor user card with email - fixed at bottom (does not scroll) -->
+            <div class="flex-shrink-0 p-4 mx-3 rounded-xl mb-4" style="background: #2c3e50; border: 1px solid #34495e;">
+                <div class="flex items-center">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor User') }}&background=3498db&color=fff&bold=true&size=40" 
+                         class="w-10 h-10 rounded-full border-2 border-white" 
+                         alt="{{ $mentorName ?? 'Mentor User' }}">
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-semibold text-white">{{ $mentorName ?? 'Mentor User' }}</p>
+                        <p class="text-xs text-white/80">{{ $mentorEmail ?? 'mentor@tithandizane.org' }}</p>
                     </div>
                 </div>
-
-                {{-- settings tab --}}
-                <div class="border-t border-white/30">
-                    <button type="button" class="flex items-center justify-between w-full px-2 py-3 text-left transition-colors {{ $isSettingsOpen ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800' }}" data-toggle="settings-sub-list" data-icon="showSettings">
-                        <span class="flex items-center">
-                            <i class="w-5 fas fa-cog"></i>
-                            <span class="ml-0 capitalize">Settings</span>
-                        </span>
-                        <i id="showSettings" class="mr-2 transition-transform fas fa-chevron-down {{ $isSettingsOpen ? 'arrow-rotate' : '' }}"></i>
-                    </button>
-
-                    <div id="settings-sub-list" class="sub-list text-[12px] {{ $isSettingsOpen ? 'show' : '' }}">
-                        <a href="{{ route('mentor.profile') }}" class="flex items-center px-6 py-3 mt-1 transition-colors {{ request()->routeIs('mentor.profile') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-regular fa-circle-user"></i>
-                            <span class="ml-3">Profile</span>
-                        </a>
-                        <a href="{{ route('mentor.notifications') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.notifications') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fa-regular fa-bell"></i>
-                            <span class="ml-3">Notifications</span>
-                        </a>
-                        <a href="{{ route('mentor.settings') }}" class="flex items-center px-6 py-3 transition-colors {{ request()->routeIs('mentor.settings') ? $activeClasses : $inactiveClasses }}">
-                            <i class="w-5 fas fa-sliders"></i>
-                            <span class="ml-3">Main settings</span>
-                        </a>
-                    </div>
-                </div>
-            </nav>
-
-            {{-- notification bar --}}
-            @if(isset($unreadCount) && $unreadCount > 0)
-                <a href="{{ route('mentor.notifications') }}" class="block w-full pt-6 mt-auto text-sm">
-                    <div class="relative flex items-center gap-3 px-6 py-3 text-gray-300 transition-colors bg-[#090d14] hover:bg-black hover:text-white">
-                        <span class="relative">
-                            <i class="text-xl text-yellow-500 fas fa-bell"></i>
-                            <span class="absolute w-2 h-2 bg-yellow-500 rounded-full -right-1 -top-1 animate-pulse"></span>
-                        </span>
-                        <span>Notifications</span>
-                        <span class="ml-auto rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-semibold text-yellow-400">
-                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                        </span>
-                    </div>
-                </a>
-            @endif
-
-            <!-- Logout Button -->
-            <div class="pt-6 mt-auto text-sm">
-                <a href="#" class="flex items-center px-6 py-3 text-gray-300 transition-colors bg-red-600 hover:bg-red-700 hover:text-white" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="w-5 fas fa-sign-out-alt"></i>
-                    <span class="ml-3">Logout</span>
-                </a>
-                <form id="logout-form" action="{{ route('mentor.logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 overflow-y-auto">
-            <!-- Top Header -->
-            <div class="sticky top-0 z-30 flex items-center justify-between px-8 py-4 bg-gradient-to-r from-gray-900 via-[#312e81] to-gray-900 shadow-sm">
-                <h2 class="text-lg font-semibold text-white capitalize">{{ trim($__env->yieldContent('title', 'Dashboard')) }}</h2>
+            <!-- Top Header - White background with Logout and Dark Mode -->
+            <div class="sticky top-0 z-30 flex items-center justify-between px-8 py-4 bg-white shadow-sm border-b border-gray-200 top-header">
+                <h2 class="text-lg font-semibold text-gray-800 capitalize">{{ trim($__env->yieldContent('title', 'Dashboard')) }}</h2>
 
-                <div class="flex items-center space-x-5">
+                <div class="flex items-center space-x-4">
+                    <!-- Dark/Light Mode Toggle Button -->
+                    <button id="themeToggle" class="theme-toggle flex items-center gap-2 px-3 py-2 rounded-lg transition bg-gray-100 hover:bg-gray-200 text-gray-700">
+                        <i id="themeIcon" class="fas fa-moon"></i>
+                        <span id="themeText" class="text-sm font-medium">Dark</span>
+                    </button>
+
                     {{-- notifications --}}
                     <div class="relative px-1">
-                        <i class="text-xl text-yellow-500 cursor-pointer fas fa-bell hover:text-yellow-400" id="bellIcon"></i>
+                        <i class="text-xl text-gray-600 cursor-pointer fas fa-bell hover:text-gray-800" id="bellIcon"></i>
                         @if(isset($unreadCount) && $unreadCount > 0)
                             <span id="notifCount" class="absolute flex items-center justify-center px-1 text-[10px] font-semibold text-white bg-red-500 rounded-full -right-2 -top-2 h-5 min-w-[1.25rem]">
                                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
@@ -261,20 +497,29 @@
                         @endif
                     </div>
 
-                    <div class="w-px h-8 bg-white/10"></div>
+                    <div class="w-px h-8 bg-gray-300"></div>
 
-                    {{-- name section --}}
+                    {{-- name section - Only name, no email --}}
                     <div class="flex items-center space-x-3">
-                        <div class="text-right">
-                            <p class="text-sm font-medium text-gray-100">{{ $mentorName ?? 'Mentor' }}</p>
-                            <p class="text-xs text-gray-400">{{ $mentorEmail ?? 'mentor@example.com' }}</p>
-                        </div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor') }}&background=0D8F81&color=fff&size=128" class="w-10 h-10 rounded-full ring-2 ring-white/10" alt="{{ $mentorName ?? 'Mentor' }}">
+                        <p class="text-sm font-medium text-gray-700">{{ $mentorName ?? 'Mentor' }}</p>
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor') }}&background=0D8F81&color=fff&size=128" 
+                             class="w-10 h-10 rounded-full ring-2 ring-gray-300" 
+                             alt="{{ $mentorName ?? 'Mentor' }}">
                     </div>
+
+                    <!-- Logout Button -->
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 rounded-lg transition bg-red-600 hover:bg-red-700 text-white" 
+                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="text-sm font-medium">Logout</span>
+                    </a>
+                    <form id="logout-form" action="{{ route('mentor.logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
                 </div>
             </div>
 
-            <div class="relative p-1">
+            <div class="relative p-6">
                 @yield('content')
 
                 {{-- Notification side panel --}}
@@ -325,7 +570,59 @@
     </div>
 
     <script>
+        // Dark/Light Mode Toggle with localStorage persistence
+        function initTheme() {
+            const savedTheme = localStorage.getItem('mentor_theme');
+            const body = document.body;
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                updateThemeUI(true);
+            } else {
+                body.classList.remove('dark-mode');
+                updateThemeUI(false);
+            }
+        }
+        
+        function updateThemeUI(isDark) {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (themeIcon && themeText) {
+                if (isDark) {
+                    themeIcon.className = 'fas fa-sun';
+                    themeText.textContent = 'Light';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                    themeText.textContent = 'Dark';
+                }
+            }
+        }
+        
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-mode');
+            
+            if (isDark) {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('mentor_theme', 'light');
+                updateThemeUI(false);
+            } else {
+                body.classList.add('dark-mode');
+                localStorage.setItem('mentor_theme', 'dark');
+                updateThemeUI(true);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Initialize theme
+            initTheme();
+
+            // Theme toggle button
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
 
             // Collapsible nav sections
             document.querySelectorAll('[data-toggle]').forEach(function (button) {
@@ -334,8 +631,12 @@
 
                 button.addEventListener('click', function (e) {
                     e.stopPropagation();
-                    subList?.classList.toggle('show');
-                    icon?.classList.toggle('arrow-rotate');
+                    if (subList) {
+                        subList.classList.toggle('hidden');
+                        if (icon) {
+                            icon.classList.toggle('arrow-rotate');
+                        }
+                    }
                 });
             });
 
@@ -369,38 +670,6 @@
                 }
             });
         });
-
-        // Chat / notification broadcast channel (needs Echo setup)
-        {{--  const userId = {{ $userId ?? (auth()->id() ?? 0) }};  --}}
-
-        // Uncomment once Laravel Echo + broadcasting are configured:
-        /*
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof window.Echo !== 'undefined' && window.Echo) {
-                window.Echo.private(`App.Models.User.${userId}`)
-                    .notification((notification) => {
-                        const countEl = document.getElementById('notifCount');
-                        if (countEl) {
-                            const current = parseInt(countEl.innerText) || 0;
-                            const next = current + 1;
-                            countEl.innerText = next > 9 ? '9+' : next;
-                        }
-
-                        const container = document.getElementById('notificationPopUp');
-                        if (container) {
-                            const div = document.createElement('div');
-                            div.className = 'bg-white shadow p-3 rounded border-l-4 border-blue-500 mb-2';
-                            div.innerHTML = `
-                                <p class="font-bold">${notification.name || 'Notification'}</p>
-                                <p class="text-sm text-gray-500">${notification.message || ''}</p>
-                            `;
-                            container.appendChild(div);
-                            setTimeout(() => div.remove(), 5000);
-                        }
-                    });
-            }
-        });
-        */
     </script>
 
     @stack('scripts')
