@@ -32,14 +32,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  //Prevent double press / double login call
+  // Prevent double press / double login call
   const isLoggingIn = useRef(false);
 
   const safeText = (value: any) =>
     typeof value === "string" ? value : "";
 
   const handleLogIn = async () => {
-    //Block if already in progress
+    // Block if already in progress
     if (isLoggingIn.current) return;
     isLoggingIn.current = true;
 
@@ -54,19 +54,37 @@ export default function Login() {
 
     try {
       await login(email, password);
-      
       router.replace("/(protected)/(tabs)");
 
     } catch (err: any) {
+      
+
       if (err?.message === "Admin accounts cannot log in here") {
+        
         setError("Admin accounts cannot log in here");
+
       } else if (err?.response?.data?.message) {
+        
         setError(err.response.data.message);
-      } else if (err?.message === "Network Error") {
-        setError("You are not connected to internet");
+
+      } else if (err?.response?.data?.errors) {
+        
+        const errors = err.response.data.errors;
+        const firstKey = Object.keys(errors)[0];
+        setError(errors[firstKey][0]);
+
+      } else if (
+        err?.message === "Network Error" ||
+        err?.code === "ERR_NETWORK" ||
+        err?.message?.includes("Unable to connect")
+      ) {
+        setError("You are not connected to the internet");
+
       } else {
+       
         setError(err?.message || "Login failed. Please try again.");
       }
+
     } finally {
       setLoading(false);
       isLoggingIn.current = false;

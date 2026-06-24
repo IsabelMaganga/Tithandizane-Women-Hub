@@ -58,7 +58,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [echo, setEcho]       = useState<any | null>(null);
 
-  // ✅ Track socket setup to prevent duplicate connections
   const socketInitialized = useRef(false);
 
   // ─── Hydrate from storage on mount ──────────────────────────────────────────
@@ -78,12 +77,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(JSON.parse(savedUser));
           }
 
-          // ✅ Refresh in background WITHOUT triggering socket loop
-          // We call this separately after user is set from storage
           try {
             const response = await api.get("/me");
             const freshUser = response.data;
-            // ✅ Only update if data actually changed
             if (JSON.stringify(freshUser) !== savedUser) {
               setUser(freshUser);
               await AsyncStorage.setItem(USER_KEY, JSON.stringify(freshUser));
@@ -105,13 +101,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     hydrate();
-  }, []); // ✅ Empty deps — runs once only
+  }, []);
 
   // ─── Manage WebSocket connection based on user ID only ───────────────────────
   useEffect(() => {
     const manageSocket = async () => {
       if (user?.id) {
-        // ✅ Only init socket once per user session
         if (socketInitialized.current) return;
         socketInitialized.current = true;
 
@@ -125,7 +120,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
         }
       } else {
-        // User logged out — clean up WebSocket
         if (socketInitialized.current) {
           disconnectEcho();
           setEcho(null);
@@ -135,48 +129,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     manageSocket();
-  }, [user?.id]); // ✅ Depend on user.id (primitive) not user (object)
+  }, [user?.id]);
 
   // ─── Login ────────────────────────────────────────────────────────────────
   const login = async (email: string, password: string): Promise<void> => {
-    try {
-      const response = await api.post("/login", { email, password });
-      const { token: newToken, user: userData } = response.data;
+    const response = await api.post("/login", { email, password });
+    const { token: newToken, user: userData } = response.data;
 
-      console.log("Login successful:", {
-        user: userData.name,
-        token: newToken.substring(0, 20) + "...",
-      });
+    console.log("Login successful:", {
+      user: userData.name,
+      token: newToken.substring(0, 20) + "...",
+    });
 
-      if (userData.role === "admin") {
-        throw new Error("Admin accounts cannot log in here");
-      }
-
-      setToken(newToken);
-      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-
-      await Promise.all([
-        AsyncStorage.setItem(TOKEN_KEY, newToken),
-        AsyncStorage.setItem(USER_KEY, JSON.stringify(userData)),
-      ]);
-
-      setUser(userData);
-    } catch (error: any) {
-      console.error("Login failed:", error.message);
-
-      if (error.response) {
-        throw new Error(error.response.data?.message || "Login failed");
-      } else if (
-        error.code === "NETWORK_ERROR" ||
-        error.message.includes("Network Error")
-      ) {
-        throw new Error(
-          "Network error. Please check your connection and ensure the server is accessible."
-        );
-      } else {
-        throw new Error(`Login failed: ${error.message || "Unknown error"}`);
-      }
+    // Guard: block admin accounts from using the mobile app
+    if (userData.role === "admin") {
+      throw new Error("Admin accounts cannot log in here");
     }
+
+    setToken(newToken);
+    api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+    await Promise.all([
+      AsyncStorage.setItem(TOKEN_KEY, newToken),
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(userData)),
+    ]);
+
+    setUser(userData);
   };
 
   // ─── Logout ───────────────────────────────────────────────────────────────
