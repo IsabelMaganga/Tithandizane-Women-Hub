@@ -255,6 +255,7 @@ export default function ChatListScreen() {
                       sessionId: item.session_id ?? item.active_session_id ?? "",
                       
                       isMentor: user?.role === "mentor" ? "true" : "false",
+                      //sessionStatus: session.status 
                     },
                   });
                 }}

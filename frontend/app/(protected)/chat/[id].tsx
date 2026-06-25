@@ -46,6 +46,8 @@ interface Conversation {
   session?: { status?: string } | null;
 }
 
+const ENDED_STATUSES = ["completed", "missed", "declined"];
+
 // ─── Read Receipt ─────────────────────────────────────────────────────────────
 
 const ReadReceipt = ({ status }: { status: MessageStatus }) => {
@@ -429,7 +431,7 @@ const SessionEndedFooter = ({ onBookNew }: { onBookNew: () => void }) => (
 
 // ─── Chat Screen ──────────────────────────────────────────────────────────────
 
-const ENDED_STATUSES = ["completed", "missed", "declined", "cancelled"];
+//const ENDED_STATUSES = ["completed", "missed", "declined", "cancelled"];
 
 const ChatScreen = () => {
   const params = useLocalSearchParams<{
@@ -522,10 +524,15 @@ const ChatScreen = () => {
       return;
     }
 
+    if (!token) {
+      Alert.alert("Error", "Please sign in again and try once more.");
+      return;
+    }
+
     setTerminating(true);
 
     try {
-      const data = await terminateMentorshipSession(activeSessionId, token!);
+      const data = await terminateMentorshipSession(activeSessionId, token);
 
       console.log("Terminate success:", data);
 
@@ -549,10 +556,10 @@ const ChatScreen = () => {
 
   const handleSubmitReview = async (rating: number, comment: string) => {
     if (!activeSessionId || !token) {
-      setShowReviewModal(false);
-      router.back();
+      Alert.alert("Error", "Session or sign-in details are missing.");
       return;
     }
+
     setSubmittingReview(true);
     try {
       await submitSessionReview(activeSessionId, token, {
@@ -562,7 +569,8 @@ const ChatScreen = () => {
       setShowReviewModal(false);
       setTimeout(() => router.back(), 300);
     } catch (err: any) {
-      Alert.alert("Error", err?.message ?? "Could not submit your review. Please try again.");
+      const message = err?.response?.data?.message ?? err?.message ?? "Could not submit your review. Please try again.";
+      Alert.alert("Error", message);
     } finally {
       setSubmittingReview(false);
     }
