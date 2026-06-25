@@ -1,16 +1,11 @@
 import Echo from "laravel-echo";
 
 // ─── Host Configuration ───────────────────────────────────────────────────────
-const LARAVEL_HOST = "192.168.1.170"; // your dev machine's LAN IP
+const LARAVEL_HOST = "192.168.1.132";
 const LARAVEL_PORT = "8000";
 const REVERB_PORT  = 8080;
 
-// ─── Pusher Constructor Resolution ───────────────────────────────────────────
-// pusher-js/react-native is a CommonJS module. Metro/Hermes may expose it as:
-//   require(...).default   → ES module interop
-//   require(...)           → plain CJS export
-//   require(...).Pusher    → named export
-// We try all three so it works regardless of pusher-js version.
+
 const getPusherConstructor = () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const mod = require("pusher-js/react-native");

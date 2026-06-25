@@ -83,8 +83,8 @@ export interface Mentor {
   linkedin_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
-  average_rating?: number | null; // ✅ matches API response key (MentorshipController returns average_rating)
-  rating?: number | null;         // ✅ kept for backward compatibility
+  average_rating?: number | null; 
+  rating?: number | null;         
   total_sessions?: number;
   status?: string;
   created_at?: string;
@@ -240,8 +240,8 @@ export interface CommunityPost {
   created_at: string;
 }
 
-// Update this to your computer's WiFi IPv4 (run: ipconfig)
-const COMPUTER_IP = '192.168.1.170';
+// computer or wifi ip
+const COMPUTER_IP = '192.168.1.132';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform

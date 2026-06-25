@@ -49,7 +49,7 @@ export default function MentorDashboard() {
 
   const chartData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-    datasets: [{ data: [2, 5, 3, 8, 5, 9] }]
+    datasets: [{ data: [7, 5, 3, 8, 5, 9] }]
   };
 
   return (
@@ -199,6 +199,15 @@ export default function MentorDashboard() {
               color="#8b5cf6" 
               onPress={() => handleNavigation("/(protected)/sessionsDashboard")} 
             />
+
+            <GridItem 
+              title="Sessions" 
+              icon="shield-alert" 
+              color="#f43f5e" 
+              onPress={() => handleNavigation("/(protected)/mentorshipSesion")} 
+              isMaterial
+            />
+            
             <GridItem 
               title="Emergency" 
               icon="shield-alert" 
@@ -206,6 +215,7 @@ export default function MentorDashboard() {
               onPress={() => handleNavigation("/(protected)/emergencyScreen")} 
               isMaterial
             />
+            
             <GridItem 
               title="Guidance" 
               icon="book-open-variant" 
