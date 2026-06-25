@@ -1,677 +1,707 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="visibility:hidden">
 <head>
+    <script>
+        (function(){
+            var stored      = localStorage.getItem('theme');
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var dark        = stored ? stored === 'dark' : prefersDark;
+            if (dark) {
+                document.documentElement.setAttribute('data-theme','dark');
+                var s = document.createElement('style');
+                s.id = 'theme-override';
+                s.textContent = ':root{--bg-primary:#0f0e1a;--bg-secondary:#18172b;--text-primary:#f1f0ff;--text-secondary:#9ca3af;--card-bg:#1c1b2e;--border-color:#2d2b45;--sidebar-bg:#1e1b38;--sidebar-hover:rgba(167,139,250,0.10);--sidebar-active:rgba(167,139,250,0.15);--sidebar-text:#9ca3af;--sidebar-text-bold:#f1f0ff;--sidebar-border:#2d2b45;--sidebar-accent:#a78bfa;--light-teal:#064e3b;--light-orange:#451a03;--light-red:#450a0a;--light-purple:#2e1065;--light-blue:#1e3a5f;--light-gray:#1c1b2e;--gray-bg:#0f0e1a;}';
+                document.head.appendChild(s);
+            } else {
+                document.documentElement.setAttribute('data-theme','light');
+                var e = document.getElementById('theme-override');
+                if (e) e.remove();
+            }
+            document.addEventListener('DOMContentLoaded', function(){ document.documentElement.style.visibility = ''; });
+        })();
+    </script>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - Tithandizane Women Hub</title>
-    <link rel="icon" href="{{ asset('images/Ellipse 3.png') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-    {{-- fonts --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{{ asset('images/Ellipse 3.png') }}">
+    <title>@yield('title', 'Mentor Dashboard') - Tithandizane Women Hub</title>
 
-    {{-- Comment out Vite to fix the manifest error --}}
-    {{-- @vite(['resources/js/app.js']) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* Custom scrollbar styles */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* ── CSS Variables ─────────────────────────────────────────── */
+        :root {
+            --sidebar-bg:        #ffffff;
+            --sidebar-hover:     rgba(124,58,237,0.07);
+            --sidebar-active:    rgba(124,58,237,0.12);
+            --sidebar-text:      #6b7280;
+            --sidebar-text-bold: #1e1b38;
+            --sidebar-border:    #e5e2f0;
+            --sidebar-accent:    #7c3aed;
+            --bg-primary:        #f5f4f9;
+            --bg-secondary:      #ffffff;
+            --card-bg:           #ffffff;
+            --border-color:      #e5e2f0;
+            --text-primary:      #1e1b38;
+            --text-secondary:    #6b7280;
+            --teal-green:  #10b981;
+            --light-teal:  #d1fae5;
+            --orange:      #f59e0b;
+            --light-orange:#fef3c7;
+            --red:         #ef4444;
+            --light-red:   #fee2e2;
+            --purple:      #7c3aed;
+            --light-purple:#ede9fe;
+            --blue:        #3b82f6;
+            --light-blue:  #dbeafe;
+            --light-gray:  #f9fafb;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        /* ── Dark mode overrides ───────────────────────────────────── */
+        [data-theme="dark"] .nav-item.active-nav {
+            color: var(--sidebar-accent) !important;
+            box-shadow: inset 3px 0 0 var(--sidebar-accent) !important;
+        }
+        [data-theme="dark"] .nav-item.active-nav i { color: var(--sidebar-accent) !important; }
+        [data-theme="dark"] .theme-toggle { background: var(--purple) !important; color: #fff !important; }
+        [data-theme="dark"] .theme-toggle:hover { background: #6d28d9 !important; }
+        [data-theme="dark"] .sidebar-admin-card { background: rgba(255,255,255,0.06) !important; }
+        [data-theme="dark"] body, [data-theme="dark"] {
+            --bg-primary:#0f0e1a; --bg-secondary:#18172b; --text-primary:#f1f0ff;
+            --text-secondary:#9ca3af; --sidebar-bg:#1e1b38; --sidebar-hover:rgba(167,139,250,0.10);
+            --sidebar-active:rgba(167,139,250,0.15); --sidebar-text:#9ca3af;
+            --sidebar-text-bold:#f1f0ff; --sidebar-border:#2d2b45; --sidebar-accent:#a78bfa;
+            --card-bg:#1c1b2e; --border-color:#2d2b45; --light-teal:#064e3b;
+            --light-orange:#451a03; --light-red:#450a0a; --light-purple:#2e1065;
+            --light-blue:#1e3a5f; --light-gray:#1c1b2e;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
+        /* ── Base ──────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { background: var(--bg-primary); font-family: 'Inter', system-ui, sans-serif; color: var(--text-primary); margin: 0; }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+        /* ── Layout shell ──────────────────────────────────────────── */
+        .app-shell { display: flex; height: 100vh; overflow: hidden; }
 
-        body {
-            font-family: "Poppins", Arial, Helvetica, sans-serif;
-        }
-
-        #notificationSideBar {
-            transition: right 0.25s ease-in-out;
-        }
-
-        .notificationShow { right: 0; }
-        .notificationHide { right: -1200px; }
-
-        .arrow-rotate {
-            transform: rotate(180deg);
-        }
-
-        .sub-list {
-            display: none;
-        }
-
-        .sub-list.show {
-            display: block;
-        }
-
-        /* Sidebar styles matching admin */
-        .sidebar-wrapper {
+        /* ── Sidebar ───────────────────────────────────────────────── */
+        .sidebar {
+            width: 256px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow-y: hidden;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+            z-index: 200;
         }
 
+        /* Mobile: sidebar slides in as overlay */
+        @media (max-width: 1023px) {
+            .sidebar {
+                position: fixed;
+                top: 0; left: 0; bottom: 0;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-backdrop {
+                display: none;
+                position: fixed; inset: 0;
+                background: rgba(0,0,0,0.4);
+                z-index: 199;
+                backdrop-filter: blur(2px);
+            }
+            .sidebar-backdrop.open { display: block; }
+        }
+
+        .sidebar-logo {
+            padding: 20px 16px 16px;
+            border-bottom: 1px solid var(--sidebar-border);
+            flex-shrink: 0;
+        }
         .sidebar-nav-scroll {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 8px 12px 0;
         }
+        .sidebar-nav-scroll::-webkit-scrollbar { width: 3px; }
+        .sidebar-nav-scroll::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 10px; }
 
-        .sidebar-nav-scroll::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .sidebar-nav-scroll::-webkit-scrollbar-track {
-            background: #2c3e50;
-            border-radius: 10px;
-        }
-
-        .sidebar-nav-scroll::-webkit-scrollbar-thumb {
-            background: #3498db;
-            border-radius: 10px;
-        }
-
-        .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
-            background: #2ecc71;
+        .nav-section-label {
+            font-size: 10px; font-weight: 700; letter-spacing: .12em;
+            text-transform: uppercase; color: var(--sidebar-accent);
+            padding: 14px 12px 5px; display: block;
         }
 
         .nav-item {
-            transition: all 0.2s ease;
+            display: flex; align-items: center; width: 100%;
+            padding: 9px 12px; border-radius: 10px;
+            color: var(--sidebar-text); font-size: 14px; font-weight: 500;
+            gap: 11px; text-decoration: none; cursor: pointer;
+            border: none; background: none; text-align: left;
+            margin-bottom: 2px;
+            transition: background .15s ease, color .15s ease;
+        }
+        .nav-item:hover { background: var(--sidebar-hover); color: var(--sidebar-text-bold); }
+        .nav-item.active-nav {
+            background: var(--sidebar-active);
+            color: var(--purple) !important;
+            font-weight: 600;
+            box-shadow: inset 3px 0 0 var(--purple);
+        }
+        .nav-item.active-nav i { color: var(--purple) !important; }
+        .nav-item i { width: 17px; text-align: center; flex-shrink: 0; font-size: 14px; }
+
+        .nav-submenu {
+            margin: 2px 0 4px 18px;
+            padding-left: 10px;
+            border-left: 1px solid var(--sidebar-border);
+        }
+        .nav-submenu .nav-item { padding: 7px 10px; font-size: 13px; }
+
+        .chevron { transition: transform .2s ease; margin-left: auto; font-size: 10px; flex-shrink: 0; }
+        .chevron.open { transform: rotate(180deg); }
+
+        .sidebar-admin-card {
+            flex-shrink: 0; margin: 10px 12px 16px;
+            padding: 12px 14px; border-radius: 14px;
+            background: var(--light-purple);
+            border: 1px solid var(--sidebar-border);
         }
 
-        .active-nav {
-            background: #3498db !important;
-            color: #FFFFFF !important;
-        }
+        /* ── Main area ─────────────────────────────────────────────── */
+        .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-        .active-nav i,
-        .active-nav span {
-            color: #FFFFFF !important;
+        /* ── Topbar ────────────────────────────────────────────────── */
+        .topbar {
+            flex-shrink: 0;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; gap: 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 50;
         }
+        .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .topbar-title { font-size: 18px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .topbar-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 1px; display: none; }
+        @media (min-width: 640px) { .topbar-sub { display: block; } }
 
-        /* Settings Submenu Styles - matching admin */
-        .settings-submenu {
-            margin-left: 1.5rem;
-            margin-top: 0.25rem;
-            margin-bottom: 0.25rem;
-            border-left: 2px solid rgba(255,255,255,0.1);
-            padding-left: 0.5rem;
+        /* Hamburger — only visible on mobile */
+        .hamburger {
+            display: none;
+            width: 38px; height: 38px; border-radius: 10px;
+            align-items: center; justify-content: center;
+            color: var(--text-secondary); background: var(--light-gray);
+            border: none; cursor: pointer; flex-shrink: 0;
+            transition: background .15s;
         }
+        .hamburger:hover { background: var(--border-color); color: var(--text-primary); }
+        @media (max-width: 1023px) { .hamburger { display: flex; } }
 
-        .settings-submenu .nav-item {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
-            border-radius: 0.5rem;
-        }
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-        .settings-submenu .nav-item.active-nav {
-            background: #3498db !important;
-            color: #FFFFFF !important;
+        .topbar-icon-btn {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); background: var(--light-gray);
+            border: none; cursor: pointer; position: relative;
+            transition: background .15s, color .15s; flex-shrink: 0;
         }
-
-        .settings-submenu .nav-item.active-nav i,
-        .settings-submenu .nav-item.active-nav span {
-            color: #FFFFFF !important;
-        }
-
-        .settings-submenu .nav-item:not(.active-nav):hover {
-            background: rgba(255,255,255,0.08);
-        }
-
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background: #1a1a2e;
-        }
-
-        body.dark-mode .sidebar-wrapper {
-            background: #0f0f1a !important;
-            border-right-color: #2d3748 !important;
-        }
-
-        body.dark-mode .sidebar-wrapper [style*="border-color: #2c3e50;"] {
-            border-color: #2d3748 !important;
-        }
-
-        body.dark-mode .sidebar-wrapper [style*="background: #2c3e50;"] {
-            background: #1e293b !important;
-            border-color: #2d3748 !important;
-        }
-
-        body.dark-mode .top-header {
-            background: #1e293b !important;
-            border-bottom-color: #2d3748 !important;
-        }
-
-        body.dark-mode .top-header h2 {
-            color: #ffffff !important;
-        }
-
-        body.dark-mode .top-header .text-gray-600 {
-            color: #cbd5e0 !important;
-        }
-
-        body.dark-mode .top-header .text-gray-700 {
-            color: #e2e8f0 !important;
-        }
-
-        body.dark-mode .top-header .bg-gray-300 {
-            background: #4a5568 !important;
-        }
-
-        body.dark-mode .top-header .ring-gray-300 {
-            --tw-ring-color: #4a5568 !important;
-        }
-
-        body.dark-mode .bg-gray-100 {
-            background: #1a1a2e !important;
-        }
-
-        body.dark-mode .bg-white {
-            background: #16213e !important;
-        }
-
-        body.dark-mode .text-gray-800 {
-            color: #e2e8f0 !important;
-        }
-
-        body.dark-mode .border-gray-200 {
-            border-color: #2d3748 !important;
-        }
-
-        body.dark-mode .border-gray-100 {
-            border-color: #2d3748 !important;
-        }
-
-        body.dark-mode .bg-gray-50 {
-            background: #1e293b !important;
-        }
-
-        body.dark-mode .text-gray-500 {
-            color: #94a3b8 !important;
-        }
-
-        body.dark-mode .text-gray-400 {
-            color: #94a3b8 !important;
-        }
-
-        body.dark-mode .bg-slate-800 {
-            background: #334155 !important;
-        }
-
-        body.dark-mode #notificationSideBar {
-            background: #16213e !important;
-        }
-
-        body.dark-mode .shadow-sm {
-            --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
-        }
-
-        body.dark-mode .shadow-xl {
-            --tw-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        body.dark-mode .hover\:bg-gray-100:hover {
-            background: #2d3748 !important;
-        }
+        .topbar-icon-btn:hover { background: var(--border-color); color: var(--text-primary); }
 
         .theme-toggle {
-            transition: all 0.3s ease;
-            cursor: pointer;
+            display: flex; align-items: center; gap: 7px;
+            padding: 6px 12px; border-radius: 10px;
+            font-size: 13px; font-weight: 500;
+            background: var(--light-gray); color: var(--text-primary);
+            border: none; cursor: pointer; transition: background .18s;
+            white-space: nowrap;
         }
+        .theme-toggle:hover { background: var(--border-color); }
 
-        .theme-toggle:hover {
-            transform: scale(1.05);
-        }
+        /* Hide theme text on small screens */
+        @media (max-width: 479px) { .theme-label { display: none; } }
 
-        /* Logout button hover effect */
-        .logout-btn:hover {
-            background: #dc2626 !important;
-            color: white !important;
+        /* Hide mentor name on xs screens */
+        .mentor-name-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+        @media (max-width: 639px) { .mentor-name-label { display: none; } }
+
+        .topbar-btn-danger {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 12px; border-radius: 10px;
+            font-size: 13px; font-weight: 500;
+            color: var(--red); background: var(--light-red);
+            border: none; cursor: pointer; transition: background .15s; white-space: nowrap;
         }
+        .topbar-btn-danger:hover { background: #fca5a5; }
+        /* Hide logout text on xs */
+        @media (max-width: 479px) { .logout-label { display: none; } }
+
+        /* ── Page content ──────────────────────────────────────────── */
+        .page-content { flex: 1; overflow-y: auto; background: var(--bg-primary); }
+        .page-content::-webkit-scrollbar { width: 6px; }
+        .page-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        .page-inner { padding: 24px; }
+        @media (min-width: 768px) { .page-inner { padding: 32px; } }
+
+        /* ── Notification slide panel ──────────────────────────────── */
+        /* Panel is placed OUTSIDE all overflow containers — appended to body */
+        #notifPanel {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 100%; max-width: 380px;
+            display: flex; flex-direction: column;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            box-shadow: -4px 0 32px rgba(0,0,0,0.12);
+            z-index: 999;
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+        }
+        #notifPanel.open { transform: translateX(0); }
+
+        #notifBackdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 998;
+            backdrop-filter: blur(2px);
+        }
+        #notifBackdrop.open { display: block; }
+
+        /* ── Flash messages ────────────────────────────────────────── */
+        .flash { padding: 14px 16px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .flash-success { background: var(--light-teal);   color: var(--teal-green); border-left: 4px solid var(--teal-green); }
+        .flash-error   { background: var(--light-red);    color: var(--red);        border-left: 4px solid var(--red); }
+
+        /* ── Misc ──────────────────────────────────────────────────── */
+        .card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-success { background: var(--light-teal);   color: var(--teal-green); }
+        .badge-warning { background: var(--light-orange); color: var(--orange); }
+        .badge-danger  { background: var(--light-red);    color: var(--red); }
+        .badge-info    { background: var(--light-blue);   color: var(--blue); }
+        .badge-purple  { background: var(--light-purple); color: var(--purple); }
+        .line-clamp-2  { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 
     @stack('styles')
 </head>
-<body class="bg-gray-100">
+<body>
 
-    @php
-        $isGeneralOpen  = request()->routeIs('mentor.appointment') || request()->routeIs('mentor.calender');
-        $isChatOpen     = request()->routeIs('mentor.chat') || request()->routeIs('mentor.group') || request()->routeIs('mentor.groups');
-        $isGuidanceOpen = request()->routeIs('mentor.hygiene') || request()->routeIs('mentor.general') || request()->routeIs('mentor.emergency');
-        $isSettingsOpen = request()->routeIs('mentor.profile') || request()->routeIs('mentor.notifications') || request()->routeIs('mentor.settings');
+@php
+    $isGeneralOpen  = request()->routeIs('mentor.appointment') || request()->routeIs('mentor.calender');
+    $isChatOpen     = request()->routeIs('mentor.chat') || request()->routeIs('mentor.group') || request()->routeIs('mentor.groups');
+    $isGuidanceOpen = request()->routeIs('mentor.hygiene') || request()->routeIs('mentor.general') || request()->routeIs('mentor.emergency');
+    $isSettingsOpen = request()->routeIs('mentor.profile') || request()->routeIs('mentor.notifications') || request()->routeIs('mentor.settings');
+@endphp
 
-        $activeClasses   = 'bg-white text-gray-800';
-        $inactiveClasses = 'text-gray-300 hover:bg-gray-800 hover:text-white';
-    @endphp
+<!-- ── Sidebar backdrop (mobile) ── -->
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-    <div class="flex h-screen overflow-hidden">
-        <!-- Left Sidebar - Dark Navigation - Matches admin structure -->
-        <div class="w-64 flex flex-col shadow-xl sidebar-wrapper" style="background: #1a2a3a; border-right: 1px solid #2c3e50;">
-            
-            <!-- Sidebar Header with Logo -->
-            <div class="p-6 border-b flex-shrink-0" style="border-color: #2c3e50;">
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('mentor.dashboard') }}" class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo2.png') }}" alt="Tithandizane Logo" class="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white/30">
-                        <div>
-                            <h1 class="text-2xl font-bold tracking-tight text-white">Tithandizane</h1>
-                            <p class="text-xs mt-1 opacity-90 text-white">Women Hub</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+<!-- ── App shell ── -->
+<div class="app-shell">
 
-            <!-- SCROLLABLE NAVIGATION AREA - Matches admin structure -->
-            <div class="sidebar-nav-scroll">
-                <nav class="mt-6 space-y-1 px-3 pb-4" id="sidebar-nav">
-                    <!-- Dashboard -->
-                    <a href="{{ route('mentor.dashboard') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.dashboard') ? 'active-nav' : '' }}" 
-                       data-page="dashboard" 
-                       style="color: {{ request()->routeIs('mentor.dashboard') ? '#FFFFFF' : '#E2E8F0' }};">
-                        <i class="fas fa-home w-5"></i>
-                        <span class="ml-3 font-medium">Dashboard</span>
-                    </a>
+    <!-- ════════════ SIDEBAR ════════════ -->
+    <aside class="sidebar" id="sidebar">
 
-                    <!-- General -->
-                    <div>
-                        <button type="button" 
-                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isGeneralOpen ? 'active-nav' : '' }}" 
-                                data-toggle="general-sub-list" 
-                                data-icon="showGeneralIcon"
-                                style="color: {{ $isGeneralOpen ? '#FFFFFF' : '#E2E8F0' }};">
-                            <span class="flex items-center">
-                                <i class="fa-solid fa-calendar-days w-5"></i>
-                                <span class="ml-3">General</span>
-                            </span>
-                            <i id="showGeneralIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isGeneralOpen ? 'arrow-rotate' : '' }}"></i>
-                        </button>
-
-                        <div id="general-sub-list" class="settings-submenu {{ $isGeneralOpen ? '' : 'hidden' }}">
-                            <a href="{{ route('mentor.appointment') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.appointment') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.appointment') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-calendar w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Appointments</span>
-                            </a>
-                            <a href="{{ route('mentor.calender') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.calender') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.calender') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-regular fa-calendar w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Calendar</span>
-                            </a>
-                        </div>
+        <!-- Logo -->
+        <div class="sidebar-logo">
+            <div class="flex items-center justify-between">
+                <a href="{{ route('mentor.dashboard') }}" class="flex items-center gap-3 min-w-0">
+                    <img src="{{ asset('images/logo2.png') }}" alt="Logo"
+                         class="w-10 h-10 rounded-xl object-cover flex-shrink-0"
+                         style="border: 2px solid var(--sidebar-border);">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold leading-tight truncate" style="color: var(--sidebar-text-bold);">Tithandizane</p>
+                        <p class="text-[11px] truncate" style="color: var(--sidebar-text);">Women Hub · Mentor</p>
                     </div>
-
-                    <!-- Chats -->
-                    <div>
-                        <button type="button" 
-                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isChatOpen ? 'active-nav' : '' }}" 
-                                data-toggle="chat-sub-list" 
-                                data-icon="showChatIcon"
-                                style="color: {{ $isChatOpen ? '#FFFFFF' : '#E2E8F0' }};">
-                            <span class="flex items-center">
-                                <i class="fa-regular fa-comment w-5"></i>
-                                <span class="ml-3">Chats</span>
-                            </span>
-                            <i id="showChatIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isChatOpen ? 'arrow-rotate' : '' }}"></i>
-                        </button>
-
-                        <div id="chat-sub-list" class="settings-submenu {{ $isChatOpen ? '' : 'hidden' }}">
-                            <a href="{{ route('mentor.chat') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.chat') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.chat') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-regular fa-comment w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Mentorship Sessions</span>
-                            </a>
-                            <a href="{{ route('mentor.group') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.group') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.group') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-circle-plus w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Create group</span>
-                            </a>
-                            <a href="{{ route('mentor.groups') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.groups') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.groups') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-users w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Groups</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Report System -->
-                    <a href="{{ route('mentor.reports') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.reports') ? 'active-nav' : '' }}" 
-                       data-page="reports" 
-                       style="color: {{ request()->routeIs('mentor.reports') ? '#FFFFFF' : '#E2E8F0' }};">
-                        <i class="fa-solid fa-flag w-5"></i>
-                        <span class="ml-3">Report System</span>
-                    </a>
-
-                    <!-- Assigned Cases -->
-                    <a href="{{ route('mentor.harassment.index') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.harassment.index') ? 'active-nav' : '' }}" 
-                       data-page="assigned-cases" 
-                       style="color: {{ request()->routeIs('mentor.harassment.index') ? '#FFFFFF' : '#E2E8F0' }};">
-                        <i class="fa-solid fa-shield-halved w-5"></i>
-                        <span class="ml-3">Assigned Cases</span>
-                    </a>
-
-                    <!-- Analytics -->
-                    <a href="{{ route('mentor.harassment.analytics') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.harassment.analytics') ? 'active-nav' : '' }}" 
-                       data-page="analytics" 
-                       style="color: {{ request()->routeIs('mentor.harassment.analytics') ? '#FFFFFF' : '#E2E8F0' }};">
-                        <i class="fa-solid fa-chart-pie w-5"></i>
-                        <span class="ml-3">Analytics</span>
-                    </a>
-
-                    <!-- Guidance Content -->
-                    <div>
-                        <button type="button" 
-                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isGuidanceOpen ? 'active-nav' : '' }}" 
-                                data-toggle="guidance-sub-list" 
-                                data-icon="showGuidanceIcon"
-                                style="color: {{ $isGuidanceOpen ? '#FFFFFF' : '#E2E8F0' }};">
-                            <span class="flex items-center">
-                                <i class="fa-solid fa-circle-info w-5"></i>
-                                <span class="ml-3">Guidance Content</span>
-                            </span>
-                            <i id="showGuidanceIcon" class="fas fa-chevron-down text-xs transition-transform {{ $isGuidanceOpen ? 'arrow-rotate' : '' }}"></i>
-                        </button>
-
-                        <div id="guidance-sub-list" class="settings-submenu {{ $isGuidanceOpen ? '' : 'hidden' }}">
-                            <a href="{{ route('mentor.hygiene') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.hygiene') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.hygiene') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-pump-medical w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Menstrual Hygiene</span>
-                            </a>
-                            <a href="{{ route('mentor.general') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.general') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.general') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-house-medical w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">General Issues</span>
-                            </a>
-                            <a href="{{ route('mentor.emergency') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.emergency') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.emergency') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-solid fa-user-injured w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Emergency</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Settings -->
-                    <div>
-                        <button type="button" 
-                                class="nav-item flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group {{ $isSettingsOpen ? 'active-nav' : '' }}" 
-                                data-toggle="settings-sub-list" 
-                                data-icon="showSettings"
-                                style="color: {{ $isSettingsOpen ? '#FFFFFF' : '#E2E8F0' }};">
-                            <span class="flex items-center">
-                                <i class="fas fa-cog w-5"></i>
-                                <span class="ml-3">Settings</span>
-                            </span>
-                            <i id="showSettings" class="fas fa-chevron-down text-xs transition-transform {{ $isSettingsOpen ? 'arrow-rotate' : '' }}"></i>
-                        </button>
-
-                        <div id="settings-sub-list" class="settings-submenu {{ $isSettingsOpen ? '' : 'hidden' }}">
-                            <a href="{{ route('mentor.profile') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.profile') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.profile') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-regular fa-circle-user w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Profile</span>
-                            </a>
-                            <a href="{{ route('mentor.notifications') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.notifications') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.notifications') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fa-regular fa-bell w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Notifications</span>
-                            </a>
-                            <a href="{{ route('mentor.settings') }}" 
-                               class="nav-item flex items-center px-4 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('mentor.settings') ? 'active-nav' : '' }}" 
-                               style="color: {{ request()->routeIs('mentor.settings') ? '#FFFFFF' : '#E2E8F0' }};">
-                                <i class="fas fa-sliders w-4 text-sm"></i>
-                                <span class="ml-3 text-sm">Main Settings</span>
-                            </a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-
-            <!-- Mentor user card with email - fixed at bottom (does not scroll) -->
-            <div class="flex-shrink-0 p-4 mx-3 rounded-xl mb-4" style="background: #2c3e50; border: 1px solid #34495e;">
-                <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor User') }}&background=3498db&color=fff&bold=true&size=40" 
-                         class="w-10 h-10 rounded-full border-2 border-white" 
-                         alt="{{ $mentorName ?? 'Mentor User' }}">
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm font-semibold text-white">{{ $mentorName ?? 'Mentor User' }}</p>
-                        <p class="text-xs text-white/80">{{ $mentorEmail ?? 'mentor@tithandizane.org' }}</p>
-                    </div>
-                </div>
+                </a>
+                <!-- Close button — mobile only -->
+                <button id="sidebarClose"
+                        class="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ml-2"
+                        style="background: var(--light-red); color: var(--red);"
+                        aria-label="Close menu">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto">
-            <!-- Top Header - White background with Logout and Dark Mode -->
-            <div class="sticky top-0 z-30 flex items-center justify-between px-8 py-4 bg-white shadow-sm border-b border-gray-200 top-header">
-                <h2 class="text-lg font-semibold text-gray-800 capitalize">{{ trim($__env->yieldContent('title', 'Dashboard')) }}</h2>
+        <!-- Nav -->
+        <div class="sidebar-nav-scroll">
+            <nav>
+                <span class="nav-section-label">Main</span>
 
-                <div class="flex items-center space-x-4">
-                    <!-- Dark/Light Mode Toggle Button -->
-                    <button id="themeToggle" class="theme-toggle flex items-center gap-2 px-3 py-2 rounded-lg transition bg-gray-100 hover:bg-gray-200 text-gray-700">
-                        <i id="themeIcon" class="fas fa-moon"></i>
-                        <span id="themeText" class="text-sm font-medium">Dark</span>
-                    </button>
+                <a href="{{ route('mentor.dashboard') }}"
+                   class="nav-item {{ request()->routeIs('mentor.dashboard') ? 'active-nav' : '' }}">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </a>
 
-                    {{-- notifications --}}
-                    <div class="relative px-1">
-                        <i class="text-xl text-gray-600 cursor-pointer fas fa-bell hover:text-gray-800" id="bellIcon"></i>
-                        @if(isset($unreadCount) && $unreadCount > 0)
-                            <span id="notifCount" class="absolute flex items-center justify-center px-1 text-[10px] font-semibold text-white bg-red-500 rounded-full -right-2 -top-2 h-5 min-w-[1.25rem]">
-                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <div class="w-px h-8 bg-gray-300"></div>
-
-                    {{-- name section - Only name, no email --}}
-                    <div class="flex items-center space-x-3">
-                        <p class="text-sm font-medium text-gray-700">{{ $mentorName ?? 'Mentor' }}</p>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor') }}&background=0D8F81&color=fff&size=128" 
-                             class="w-10 h-10 rounded-full ring-2 ring-gray-300" 
-                             alt="{{ $mentorName ?? 'Mentor' }}">
-                    </div>
-
-                    <!-- Logout Button -->
-                    <a href="#" class="flex items-center gap-2 px-4 py-2 rounded-lg transition bg-red-600 hover:bg-red-700 text-white" 
-                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span class="text-sm font-medium">Logout</span>
+                <!-- General -->
+                <button type="button" class="nav-item {{ $isGeneralOpen ? 'active-nav' : '' }}" data-submenu="general-sub">
+                    <i class="fas fa-calendar-days"></i><span>General</span>
+                    <i class="fas fa-chevron-down chevron {{ $isGeneralOpen ? 'open' : '' }}"></i>
+                </button>
+                <div id="general-sub" class="nav-submenu {{ $isGeneralOpen ? '' : 'hidden' }}">
+                    <a href="{{ route('mentor.appointment') }}" class="nav-item {{ request()->routeIs('mentor.appointment') ? 'active-nav' : '' }}">
+                        <i class="fas fa-calendar"></i><span>Appointments</span>
                     </a>
-                    <form id="logout-form" action="{{ route('mentor.logout') }}" method="POST" class="hidden">
-                        @csrf
-                    </form>
+                    <a href="{{ route('mentor.calender') }}" class="nav-item {{ request()->routeIs('mentor.calender') ? 'active-nav' : '' }}">
+                        <i class="far fa-calendar"></i><span>Calendar</span>
+                    </a>
+                </div>
+
+                <!-- Chats -->
+                <button type="button" class="nav-item {{ $isChatOpen ? 'active-nav' : '' }}" data-submenu="chat-sub">
+                    <i class="far fa-comment"></i><span>Chats</span>
+                    <i class="fas fa-chevron-down chevron {{ $isChatOpen ? 'open' : '' }}"></i>
+                </button>
+                <div id="chat-sub" class="nav-submenu {{ $isChatOpen ? '' : 'hidden' }}">
+                    <a href="{{ route('mentor.chat') }}" class="nav-item {{ request()->routeIs('mentor.chat') ? 'active-nav' : '' }}">
+                        <i class="far fa-comment"></i><span>Mentorship Sessions</span>
+                    </a>
+                    <a href="{{ route('mentor.group') }}" class="nav-item {{ request()->routeIs('mentor.group') ? 'active-nav' : '' }}">
+                        <i class="fas fa-circle-plus"></i><span>Create Group</span>
+                    </a>
+                    <a href="{{ route('mentor.groups') }}" class="nav-item {{ request()->routeIs('mentor.groups') ? 'active-nav' : '' }}">
+                        <i class="fas fa-users"></i><span>Groups</span>
+                    </a>
+                </div>
+
+                <a href="{{ route('mentor.reports') }}" class="nav-item {{ request()->routeIs('mentor.reports') ? 'active-nav' : '' }}">
+                    <i class="fas fa-flag"></i><span>Report System</span>
+                </a>
+
+                <a href="{{ route('mentor.harassment.index') }}" class="nav-item {{ request()->routeIs('mentor.harassment.index') ? 'active-nav' : '' }}">
+                    <i class="fas fa-shield-halved"></i><span>Assigned Cases</span>
+                </a>
+
+                <a href="{{ route('mentor.harassment.analytics') }}" class="nav-item {{ request()->routeIs('mentor.harassment.analytics') ? 'active-nav' : '' }}">
+                    <i class="fas fa-chart-pie"></i><span>Analytics</span>
+                </a>
+
+                <span class="nav-section-label">Content & Settings</span>
+
+                <!-- Guidance Content -->
+                <button type="button" class="nav-item {{ $isGuidanceOpen ? 'active-nav' : '' }}" data-submenu="guidance-sub">
+                    <i class="fas fa-circle-info"></i><span>Guidance Content</span>
+                    <i class="fas fa-chevron-down chevron {{ $isGuidanceOpen ? 'open' : '' }}"></i>
+                </button>
+                <div id="guidance-sub" class="nav-submenu {{ $isGuidanceOpen ? '' : 'hidden' }}">
+                    <a href="{{ route('mentor.hygiene') }}" class="nav-item {{ request()->routeIs('mentor.hygiene') ? 'active-nav' : '' }}">
+                        <i class="fas fa-pump-medical"></i><span>Menstrual Hygiene</span>
+                    </a>
+                    <a href="{{ route('mentor.general') }}" class="nav-item {{ request()->routeIs('mentor.general') ? 'active-nav' : '' }}">
+                        <i class="fas fa-house-medical"></i><span>General Issues</span>
+                    </a>
+                    <a href="{{ route('mentor.emergency') }}" class="nav-item {{ request()->routeIs('mentor.emergency') ? 'active-nav' : '' }}">
+                        <i class="fas fa-user-injured"></i><span>Emergency</span>
+                    </a>
+                </div>
+
+                <!-- Settings -->
+                <button type="button" class="nav-item {{ $isSettingsOpen ? 'active-nav' : '' }}" data-submenu="settings-sub">
+                    <i class="fas fa-cog"></i><span>Settings</span>
+                    <i class="fas fa-chevron-down chevron {{ $isSettingsOpen ? 'open' : '' }}"></i>
+                </button>
+                <div id="settings-sub" class="nav-submenu {{ $isSettingsOpen ? '' : 'hidden' }}">
+                    <a href="{{ route('mentor.profile') }}" class="nav-item {{ request()->routeIs('mentor.profile') ? 'active-nav' : '' }}">
+                        <i class="far fa-circle-user"></i><span>Profile</span>
+                    </a>
+                    <a href="{{ route('mentor.notifications') }}" class="nav-item {{ request()->routeIs('mentor.notifications') ? 'active-nav' : '' }}">
+                        <i class="far fa-bell"></i><span>Notifications</span>
+                    </a>
+                    <a href="{{ route('mentor.settings') }}" class="nav-item {{ request()->routeIs('mentor.settings') ? 'active-nav' : '' }}">
+                        <i class="fas fa-sliders"></i><span>Main Settings</span>
+                    </a>
+                </div>
+
+                <div style="height:16px;"></div>
+            </nav>
+        </div>
+
+        <!-- Mentor card -->
+        <div class="sidebar-admin-card">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor User') }}&background=7c3aed&color=fff&bold=true&size=40"
+                     class="w-9 h-9 rounded-full flex-shrink-0"
+                     style="border: 2px solid var(--sidebar-border);"
+                     alt="{{ $mentorName ?? 'Mentor' }}">
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold truncate" style="color: var(--text-primary);">{{ $mentorName ?? 'Mentor User' }}</p>
+                    <p class="text-[11px] truncate" style="color: var(--text-secondary);">{{ $mentorEmail ?? 'mentor@tithandizane.org' }}</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ════════════ MAIN AREA ════════════ -->
+    <div class="main-area">
+
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <!-- Hamburger (mobile only) -->
+                <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="min-w-0">
+                    <p class="topbar-title">@yield('page-title', 'Welcome back, Mentor')</p>
+                    <p class="topbar-sub">@yield('page-subtitle', 'Empowering women through mentorship &amp; safety')</p>
                 </div>
             </div>
 
-            <div class="relative p-6">
+            <div class="topbar-right">
+                <!-- Theme toggle -->
+                <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+                    <i id="themeIcon" class="fas fa-moon text-sm"></i>
+                    <span id="themeText" class="theme-label">Dark Mode</span>
+                </button>
+
+                <!-- Notification bell -->
+                <button id="bellBtn" class="topbar-icon-btn" aria-label="Notifications">
+                    <i class="fas fa-bell" style="font-size:15px;"></i>
+                    @if(isset($unreadCount) && $unreadCount > 0)
+                        <span style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:999px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 3px;">
+                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                        </span>
+                    @endif
+                </button>
+
+                <!-- Divider -->
+                <div style="width:1px;height:24px;background:var(--border-color);flex-shrink:0;"></div>
+
+                <!-- Mentor avatar + name -->
+                <div class="flex items-center gap-2">
+                    <span class="mentor-name-label">{{ $mentorName ?? 'Mentor' }}</span>
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($mentorName ?? 'Mentor') }}&background=7c3aed&color=fff&size=128"
+                         class="w-8 h-8 rounded-full flex-shrink-0"
+                         style="border:2px solid var(--sidebar-border);"
+                         alt="{{ $mentorName ?? 'Mentor' }}">
+                </div>
+
+                <!-- Logout -->
+                <button class="topbar-btn-danger"
+                        onclick="document.getElementById('logout-form').submit();"
+                        aria-label="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="logout-label">Logout</span>
+                </button>
+                <form id="logout-form" action="{{ route('mentor.logout') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
+            </div>
+        </header>
+
+        <!-- Page content -->
+        <main class="page-content">
+            <div class="page-inner">
+
+                @if(session('success'))
+                    <div class="flash flash-success">
+                        <i class="fas fa-check-circle" style="font-size:18px;flex-shrink:0;"></i>
+                        <span style="font-size:14px;font-weight:500;flex:1;">{{ session('success') }}</span>
+                        <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;opacity:.6;" aria-label="Dismiss">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="flash flash-error">
+                        <i class="fas fa-exclamation-triangle" style="font-size:18px;flex-shrink:0;"></i>
+                        <span style="font-size:14px;font-weight:500;flex:1;">{{ session('error') }}</span>
+                        <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;opacity:.6;" aria-label="Dismiss">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="flash flash-error" style="display:block;">
+                        <ul style="list-style:disc;padding-left:18px;margin:0;">
+                            @foreach($errors->all() as $error)
+                                <li style="font-size:13px;">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @yield('content')
-
-                {{-- Notification side panel --}}
-                <div id="notificationSideBar" class="fixed bottom-0 z-40 flex flex-col w-full h-[89%] max-w-[26rem] bg-white shadow-xl notificationHide">
-                    <div class="flex items-center justify-between w-full p-4 border-b border-gray-100">
-                        <p class="font-semibold text-gray-800">Notifications</p>
-                        <button id="closeNotif" type="button" aria-label="Close notifications">
-                            <i class="text-xl text-red-600 fa-regular fa-circle-xmark"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex-1 w-full p-3 overflow-y-auto">
-                        <div class="flex flex-col w-full gap-2 text-sm">
-                            @if(isset($unreadNotifications) && $unreadNotifications->isEmpty())
-                                <p class="mt-4 text-center text-gray-500">No notifications</p>
-                            @elseif(isset($unreadNotifications))
-                                @foreach ($unreadNotifications as $notification)
-                                    <div class="w-full p-3 text-sm rounded-lg bg-gray-50">
-                                        <div class="flex items-center justify-between w-full mb-2">
-                                            <h1 class="font-semibold text-gray-800">{{ $notification->data['title'] ?? 'Notification' }}</h1>
-                                            <form action="{{ route('mentor.notification.read', $notification->id) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="rounded-full bg-slate-800 px-3 py-1 text-[10px] text-gray-200 transition-colors hover:text-white">Mark as read</button>
-                                            </form>
-                                        </div>
-                                        <p class="text-gray-500 break-words">{{ $notification->data['message'] ?? '' }}</p>
-                                        <p class="mt-1 text-xs text-gray-400">{{ $notification->created_at->diffForHumans() }}</p>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between w-full p-3 border-t border-gray-100">
-                        @if(isset($unreadNotifications) && $unreadNotifications->isNotEmpty())
-                            <form action="{{ route('mentor.notification.read-all') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="rounded-full bg-slate-800 px-3 py-2 text-[10px] text-gray-200 transition-colors hover:text-white">Mark all as read</button>
-                            </form>
-                        @endif
-                        <p class="text-sm text-gray-400">info@Tithandizane.com</p>
-                    </div>
-                </div>
-
-                <div id="notificationPopUp" class="fixed z-50 space-y-2 text-xs bg-white select-none bottom-3 right-10 w-60"></div>
             </div>
-        </div>
+        </main>
+    </div>
+</div>
+
+<!-- ════════════ NOTIFICATION PANEL (appended to body, outside all overflow) ════════════ -->
+<div id="notifBackdrop"></div>
+
+<div id="notifPanel" role="dialog" aria-label="Notifications" aria-modal="true">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border-color);flex-shrink:0;">
+        <p style="font-size:14px;font-weight:700;color:var(--text-primary);">Notifications</p>
+        <button id="notifClose"
+                style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--light-red);color:var(--red);border:none;cursor:pointer;"
+                aria-label="Close notifications">
+            <i class="fas fa-times" style="font-size:13px;"></i>
+        </button>
     </div>
 
-    <script>
-        // Dark/Light Mode Toggle with localStorage persistence
-        function initTheme() {
-            const savedTheme = localStorage.getItem('mentor_theme');
-            const body = document.body;
-            
-            if (savedTheme === 'dark') {
-                body.classList.add('dark-mode');
-                updateThemeUI(true);
-            } else {
-                body.classList.remove('dark-mode');
-                updateThemeUI(false);
-            }
-        }
-        
-        function updateThemeUI(isDark) {
-            const themeIcon = document.getElementById('themeIcon');
-            const themeText = document.getElementById('themeText');
-            
-            if (themeIcon && themeText) {
-                if (isDark) {
-                    themeIcon.className = 'fas fa-sun';
-                    themeText.textContent = 'Light';
-                } else {
-                    themeIcon.className = 'fas fa-moon';
-                    themeText.textContent = 'Dark';
-                }
-            }
-        }
-        
-        function toggleTheme() {
-            const body = document.body;
-            const isDark = body.classList.contains('dark-mode');
-            
-            if (isDark) {
-                body.classList.remove('dark-mode');
-                localStorage.setItem('mentor_theme', 'light');
-                updateThemeUI(false);
-            } else {
-                body.classList.add('dark-mode');
-                localStorage.setItem('mentor_theme', 'dark');
-                updateThemeUI(true);
-            }
-        }
+    <!-- List -->
+    <div style="flex:1;overflow-y:auto;padding:12px;">
+        @if(isset($unreadNotifications) && $unreadNotifications->isEmpty())
+            <div style="text-align:center;padding:48px 0;">
+                <i class="fas fa-bell-slash" style="font-size:32px;color:var(--text-secondary);opacity:.35;"></i>
+                <p style="font-size:13px;color:var(--text-secondary);margin-top:10px;">No notifications</p>
+            </div>
+        @elseif(isset($unreadNotifications))
+            @foreach($unreadNotifications as $notification)
+                <div style="padding:12px;border-radius:12px;background:var(--light-purple);border:1px solid var(--border-color);margin-bottom:8px;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+                        <p style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                        <form action="{{ route('mentor.notification.read', $notification->id) }}" method="POST" style="flex-shrink:0;">
+                            @csrf
+                            <button type="submit" style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;background:var(--purple);color:#fff;border:none;cursor:pointer;">
+                                Mark read
+                            </button>
+                        </form>
+                    </div>
+                    <p style="font-size:12px;color:var(--text-secondary);">{{ $notification->data['message'] ?? '' }}</p>
+                    <p style="font-size:11px;color:var(--text-secondary);opacity:.65;margin-top:6px;">{{ $notification->created_at->diffForHumans() }}</p>
+                </div>
+            @endforeach
+        @endif
+    </div>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Initialize theme
-            initTheme();
+    <!-- Footer -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border-color);flex-shrink:0;">
+        @if(isset($unreadNotifications) && $unreadNotifications->isNotEmpty())
+            <form action="{{ route('mentor.notification.read-all') }}" method="POST">
+                @csrf
+                <button type="submit" style="font-size:12px;font-weight:500;padding:7px 14px;border-radius:8px;background:var(--purple);color:#fff;border:none;cursor:pointer;">
+                    Mark all as read
+                </button>
+            </form>
+        @endif
+        <p style="font-size:11px;color:var(--text-secondary);margin-left:auto;">info@Tithandizane.com</p>
+    </div>
+</div>
 
-            // Theme toggle button
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', toggleTheme);
-            }
+<script>
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function updateThemeUI(isDark) {
+    var icon = document.getElementById('themeIcon');
+    var text = document.getElementById('themeText');
+    if (icon) icon.className = isDark ? 'fas fa-sun text-sm' : 'fas fa-moon text-sm';
+    if (text) text.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+}
 
-            // Collapsible nav sections
-            document.querySelectorAll('[data-toggle]').forEach(function (button) {
-                const subList = document.getElementById(button.dataset.toggle);
-                const icon = document.getElementById(button.dataset.icon);
+function applyTheme(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    var el = document.getElementById('theme-override');
+    if (dark) {
+        if (!el) { el = document.createElement('style'); el.id = 'theme-override'; document.head.appendChild(el); }
+        el.textContent = ':root{--bg-primary:#0f0e1a;--bg-secondary:#18172b;--text-primary:#f1f0ff;--text-secondary:#9ca3af;--card-bg:#1c1b2e;--border-color:#2d2b45;--sidebar-bg:#1e1b38;--sidebar-hover:rgba(167,139,250,0.10);--sidebar-active:rgba(167,139,250,0.15);--sidebar-text:#9ca3af;--sidebar-text-bold:#f1f0ff;--sidebar-border:#2d2b45;--sidebar-accent:#a78bfa;--light-teal:#064e3b;--light-orange:#451a03;--light-red:#450a0a;--light-purple:#2e1065;--light-blue:#1e3a5f;--light-gray:#1c1b2e;}';
+    } else {
+        if (el) el.textContent = '';
+    }
+    updateThemeUI(dark);
+}
 
-                button.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    if (subList) {
-                        subList.classList.toggle('hidden');
-                        if (icon) {
-                            icon.classList.toggle('arrow-rotate');
-                        }
-                    }
-                });
-            });
+function toggleTheme() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    document.body.style.transition = 'background .25s ease';
+    applyTheme(!isDark);
+    setTimeout(function(){ document.body.style.transition = ''; }, 300);
+}
 
-            // Notifications sidebar toggle
-            const notificationSideBar = document.getElementById('notificationSideBar');
-            const closeNotif = document.getElementById('closeNotif');
-            const bellIcon = document.getElementById('bellIcon');
-
-            if (bellIcon && notificationSideBar) {
-                bellIcon.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    notificationSideBar.classList.remove('notificationHide');
-                    notificationSideBar.classList.add('notificationShow');
-                });
-            }
-
-            if (closeNotif && notificationSideBar) {
-                closeNotif.addEventListener('click', function () {
-                    notificationSideBar.classList.remove('notificationShow');
-                    notificationSideBar.classList.add('notificationHide');
-                });
-            }
-
-            // Click outside to close notification sidebar
-            document.addEventListener('click', function (event) {
-                if (notificationSideBar && notificationSideBar.classList.contains('notificationShow')) {
-                    if (!notificationSideBar.contains(event.target) && !bellIcon.contains(event.target)) {
-                        notificationSideBar.classList.remove('notificationShow');
-                        notificationSideBar.classList.add('notificationHide');
-                    }
-                }
-            });
+function initTheme() {
+    updateThemeUI(document.documentElement.getAttribute('data-theme') === 'dark');
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e){
+            if (!localStorage.getItem('theme')) applyTheme(e.matches);
         });
-    </script>
+    }
+}
 
-    @stack('scripts')
+// ── Sidebar (hamburger / mobile) ──────────────────────────────────────────────
+function initSidebar() {
+    var sidebar  = document.getElementById('sidebar');
+    var backdrop = document.getElementById('sidebarBackdrop');
+    var openBtn  = document.getElementById('hamburgerBtn');
+    var closeBtn = document.getElementById('sidebarClose');
+
+    function openSidebar()  { sidebar.classList.add('open'); backdrop.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('open'); document.body.style.overflow = ''; }
+
+    if (openBtn)  openBtn.addEventListener('click',  openSidebar);
+    if (closeBtn) closeBtn.addEventListener('click',  closeSidebar);
+    if (backdrop) backdrop.addEventListener('click',  closeSidebar);
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSidebar(); });
+}
+
+// ── Accordion submenus ────────────────────────────────────────────────────────
+function initAccordions() {
+    document.querySelectorAll('[data-submenu]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var target  = document.getElementById(btn.dataset.submenu);
+            var chevron = btn.querySelector('.chevron');
+            if (!target) return;
+            var hidden = target.classList.toggle('hidden');
+            if (chevron) chevron.classList.toggle('open', !hidden);
+        });
+    });
+}
+
+// ── Notification panel ────────────────────────────────────────────────────────
+function initNotifications() {
+    var panel    = document.getElementById('notifPanel');
+    var backdrop = document.getElementById('notifBackdrop');
+    var bellBtn  = document.getElementById('bellBtn');
+    var closeBtn = document.getElementById('notifClose');
+    var isOpen   = false;
+
+    function openPanel() {
+        if (!panel) return;
+        panel.classList.add('open');
+        backdrop.classList.add('open');
+        isOpen = true;
+    }
+    function closePanel() {
+        if (!panel) return;
+        panel.classList.remove('open');
+        backdrop.classList.remove('open');
+        isOpen = false;
+    }
+    function toggle() { isOpen ? closePanel() : openPanel(); }
+
+    if (bellBtn)  bellBtn.addEventListener('click',  function(e){ e.stopPropagation(); toggle(); });
+    if (closeBtn) closeBtn.addEventListener('click',  function(e){ e.stopPropagation(); closePanel(); });
+    if (backdrop) backdrop.addEventListener('click',  closePanel);
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && isOpen) closePanel(); });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    initTheme();
+    initSidebar();
+    initAccordions();
+    initNotifications();
+    var tt = document.getElementById('themeToggle');
+    if (tt) tt.addEventListener('click', toggleTheme);
+});
+</script>
+
+@stack('scripts')
 </body>
 </html>

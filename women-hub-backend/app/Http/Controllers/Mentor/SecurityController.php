@@ -14,6 +14,7 @@ use App\Models\GeneralGuide;
 use App\Models\HygieneArticle;
 use App\Models\MentorshipSession;
 
+
 class SecurityController extends Controller
 {
     /**
@@ -37,6 +38,30 @@ class SecurityController extends Controller
             'unreadNotifications' => $mentor->unreadNotifications()->paginate(5),
         ];
     }
+
+
+  
+
+public function cancelSession(MentorshipSession $session)
+{
+    // Guard: only the assigned mentor can cancel
+    abort_if($session->mentor_id !== auth()->id(), 403);
+    abort_if(!in_array($session->status, ['pending', 'accepted']), 422);
+
+    $session->update(['status' => 'declined']);
+
+    return back()->with('success', 'Session cancelled successfully.');
+}
+
+public function acceptSession(MentorshipSession $session)
+{
+    abort_if($session->mentor_id !== auth()->id(), 403);
+    abort_if($session->status !== 'pending', 422);
+
+    $session->update(['status' => 'accepted']);
+
+    return back()->with('success', 'Session accepted.');
+}
 
     /* =========================
         DASHBOARD PAGES
