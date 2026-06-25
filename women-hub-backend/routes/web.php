@@ -251,6 +251,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(functi
     Route::get('/analytics/export-excel', [App\Http\Controllers\Admin\AnalyticsController::class, 'exportExcel'])->name('analytics.export-excel');
 });
 
+// Events Calendar Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
+    Route::get('/events', [App\Http\Controllers\Admin\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/data', [App\Http\Controllers\Admin\EventController::class, 'getEvents'])->name('events.data');
+    Route::get('/events/create', [App\Http\Controllers\Admin\EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [App\Http\Controllers\Admin\EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}/edit', [App\Http\Controllers\Admin\EventController::class, 'edit'])->name('events.edit');
+    Route::put('/events/{event}', [App\Http\Controllers\Admin\EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [App\Http\Controllers\Admin\EventController::class, 'destroy'])->name('events.destroy');
+});
+
+// Admin Notifications Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\Admin\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{notification}/mark-read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{notification}', [App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
 // Fallback route for 404 errors
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);

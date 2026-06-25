@@ -115,8 +115,24 @@ class AnalyticsController extends Controller
             $statusData = $statusStats->pluck('count')->toArray();
             
             // Severity Breakdown
-            // Note: severity column not in schema; chart shows zeros until column is added
-            $severityData = ['high' => 0, 'medium' => 0, 'low' => 0];
+            $severityStats = HarassmentReport::select(
+                    DB::raw("COALESCE(severity, 'medium') as severity"),
+                    DB::raw('count(*) as count')
+                )
+                ->groupBy(DB::raw("COALESCE(severity, 'medium')"))
+                ->get();
+
+            $severityData = [
+                'high' => 0,
+                'medium' => 0,
+                'low' => 0
+            ];
+
+            foreach ($severityStats as $stat) {
+                if (isset($severityData[$stat->severity])) {
+                    $severityData[$stat->severity] = $stat->count;
+                }
+            }
             
             // Mentor Performance (Top 5 mentors by cases handled)
             $mentorPerformance = User::withCount(['assignedReports as cases_count'])
@@ -169,7 +185,12 @@ class AnalyticsController extends Controller
             
             // Recommendation based on data
             $pendingCount = HarassmentReport::where('status', 'pending')->count();
-            $highSeverityCount = 0; // severity column not in schema
+            $highSeverityCount = HarassmentReport::where(function($query) {
+                    $query->where('severity', 'high')
+                          ->orWhereNull('severity');
+                })
+                ->where('status', '!=', 'resolved')
+                ->count();
             
             $recommendation = "";
             if ($pendingCount > 10) {

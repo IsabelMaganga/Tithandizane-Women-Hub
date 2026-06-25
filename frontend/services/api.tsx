@@ -250,14 +250,14 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+      return `http://192.168.1.132:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
-      return `http://${COMPUTER_IP}:${BACKEND_PORT}/api/v1`;
+      return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://127.0.0.1:${BACKEND_PORT}/api/v1`;
+    return `http://192.168.38.205:8000/api/v1`;
   } else {
     return 'https://your-production-api.com/api';
   }

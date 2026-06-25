@@ -16,4 +16,14 @@ class Admin extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = ['password' => 'hashed'];
+
+    public function notifications()
+    {
+        return $this->hasMany(AdminNotification::class)->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->unread();
+    }
 }

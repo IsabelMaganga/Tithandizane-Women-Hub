@@ -47,7 +47,7 @@ class ChatController extends Controller
 
         $conversation->load([
             'participants' => function ($query) {
-                $query->select('id', 'name', 'email', 'role');
+                $query->select('users.id', 'name', 'email', 'role');
             },
             'messages' => function ($query) {
                 $query->with('sender:id,name,role')->orderBy('created_at', 'asc');
