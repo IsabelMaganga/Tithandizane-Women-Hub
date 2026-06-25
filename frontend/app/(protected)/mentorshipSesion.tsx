@@ -17,12 +17,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import Ionicons from '@expo/vector-icons/Ionicons'
 
 
+
 import {
   getMentorSessions,
   updateSessionStatus,
   startMentorshipConversation,
   MentorshipSession,
 } from '../../services/api'
+import { router, useRouter } from 'expo-router'
 
 const { width: SCREEN_W } = Dimensions.get('window')
 
@@ -520,7 +522,7 @@ export default class MentorshipSessionScreen extends Component<{}, ScreenState> 
 
   switchTab = (tab: TabKey) => {
     const idx = TABS.findIndex(t => t.key === tab)
-    const toX = 4 + idx * TAB_W  // 4px left padding of pill container
+    const toX = 4 + idx * TAB_W  
     Animated.spring(this.state.indicatorAnim, {
       toValue: toX,
       useNativeDriver: false,
@@ -539,9 +541,18 @@ export default class MentorshipSessionScreen extends Component<{}, ScreenState> 
     try {
       const res = await startMentorshipConversation(session.id, token)
       if (res.conversation) {
-        // navigation.navigate('Chat', { conversationId: res.conversation.id })
-        Alert.alert('Session Started', `Conversation #${res.conversation.id} is ready.`)
-        this.loadSessions(true)
+        router.push({
+            pathname: "/chat/[id]",
+            params: {
+                id: String(res.conversation.id),
+                sessionId: String(session.id),
+                name: session.mentee?.name,
+                isMentor: "true",
+            },
+        });
+
+        this.loadSessions(true);
+        
       } else {
         Alert.alert('Notice', res.message ?? 'Could not start session.')
       }

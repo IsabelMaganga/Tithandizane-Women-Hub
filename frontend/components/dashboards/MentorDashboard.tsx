@@ -115,7 +115,7 @@ export default function MentorDashboard() {
           </Animated.View>
 
           {/* ANALYTICS CHART SECTION */}
-          <View className="px-6 mt-8">
+          {/* <View className="px-6 mt-8">
             <Text className="text-slate-900 dark:text-white font-bold text-lg mb-4">Hub Activity</Text>
             <View className="bg-white dark:bg-slate-900 rounded-[28px] py-4 items-center border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
               <LineChart
@@ -131,7 +131,7 @@ export default function MentorDashboard() {
                 withVerticalLabels={true}
               />
             </View>
-          </View>
+          </View> */}
 
           {/* COMMUNITY HUB CARD*/}
           <Animated.View entering={FadeInRight.delay(400)} className="px-6 mt-6">
@@ -202,12 +202,12 @@ export default function MentorDashboard() {
 
             <GridItem 
               title="Sessions" 
-              icon="shield-alert" 
-              color="#f43f5e" 
+              icon="training" 
+              color="#f43f5" 
               onPress={() => handleNavigation("/(protected)/mentorshipSesion")} 
               isMaterial
             />
-            
+
             <GridItem 
               title="Emergency" 
               icon="shield-alert" 

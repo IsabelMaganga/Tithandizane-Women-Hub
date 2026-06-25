@@ -29,27 +29,10 @@ const NotificationsScreen = () => {
   const fetchNotifications = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const response = await getNotifications();
-
-      // ── Handle all common response shapes ──────────────────────────────────
-      // Shape A: { notifications: [...] }
-      // Shape B: { data: [...] }
-      // Shape C: [...] (direct array)
-      let data: AppNotification[] = [];
-
-      if (Array.isArray(response)) {
-        data = response;
-      } else if (Array.isArray(response?.notifications)) {
-        data = response.notifications;
-      } else if (Array.isArray(response?.data)) {
-        data = response.data;
-      } else {
-        // Log what actually came back so you can adjust the shape above
-        console.warn('⚠️ Unexpected notifications response shape:', JSON.stringify(response));
-        data = [];
-      }
-
-      setNotifications(data);
+      // getNotifications() in api.ts already unwraps everything and
+      // always returns { notifications: AppNotification[], unread_count: number }
+      const { notifications: items } = await getNotifications();
+      setNotifications(items);
     } catch (err) {
       console.error('❌ fetchNotifications error:', err);
       Toast.show({
@@ -59,7 +42,6 @@ const NotificationsScreen = () => {
         position: 'top',
       });
     } finally {
-      // ── Always clear loading — this was the silent bug ───────────────────
       setLoading(false);
       setRefreshing(false);
     }
@@ -121,7 +103,12 @@ const NotificationsScreen = () => {
       >
         {item.title}
       </Text>
-      <Text className="text-slate-600 text-sm mt-1">{item.message}</Text>
+
+      {/* 'message' is standard; fall back to 'body' for any old records */}
+      <Text className="text-slate-600 text-sm mt-1">
+        {item.message ?? (item as any).body ?? ''}
+      </Text>
+
       <Text className="text-slate-400 text-xs mt-1">
         {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
       </Text>

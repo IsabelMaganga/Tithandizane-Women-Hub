@@ -126,8 +126,9 @@ Route::prefix('v1')->group(function () {
 
         // ── Notifications ────────────────────────────────────────────────────
         Route::get('/notifications', [NotificationController::class, 'getNotifications']);
-        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        
+        Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
         // ── Guidance content ─────────────────────────────────────────────────
         Route::get('/content', [GuidanceContentController::class, 'publicIndex']);

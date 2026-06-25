@@ -241,7 +241,7 @@ export interface CommunityPost {
 }
 
 // computer or wifi ip
-const COMPUTER_IP = '192.168.1.132';
+const COMPUTER_IP = '192.168.43.103';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -250,16 +250,16 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://192.168.1.132:8000/api/v1`;
+      return `http://192.168.43.103:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
       return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://192.168.38.205:8000/api/v1`;
+    return `http://192.168.1.132:8000/api/v1`;
   } else {
-    return 'https://your-production-api.com/api';
+    return 'http://192.168.1.132:8000/api/v1';
   }
 };
 
@@ -876,6 +876,10 @@ export const getReportByReference = async (referenceNumber: string): Promise<Rep
 // NOTIFICATIONS API
 // ============================================
 
+// ============================================
+// REPLACE THESE 3 FUNCTIONS IN YOUR api.ts
+// ============================================
+
 export const getNotifications = async (): Promise<{
   notifications: AppNotification[];
   unread_count: number;
@@ -885,11 +889,29 @@ export const getNotifications = async (): Promise<{
     const response = await api.get('/notifications', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
+
     const payload = response.data;
-    const items = payload?.data?.data ?? payload?.data ?? [];
+
+    
+    let items: AppNotification[] = [];
+
+    if (Array.isArray(payload?.notifications)) {
+      items = payload.notifications;                  // ← what the fixed controller sends
+    } else if (Array.isArray(payload?.data?.data)) {
+      items = payload.data.data;                      // Laravel paginated (old shape)
+    } else if (Array.isArray(payload?.data)) {
+      items = payload.data;                           
+    } else if (Array.isArray(payload)) {
+      items = payload;                             
+    } else {
+      console.warn('⚠️ Could not resolve notifications array from:', Object.keys(payload ?? {}));
+    }
+
+    
+
     return {
-      notifications: Array.isArray(items) ? items : [],
-      unread_count: payload?.unread_count ?? 0,
+      notifications: items,
+      unread_count: payload?.unread_count ?? items.filter((n) => !n.is_read).length,
     };
   } catch (error: any) {
     console.error('❌ Error fetching notifications:', error.message);
@@ -900,7 +922,8 @@ export const getNotifications = async (): Promise<{
 export const markNotificationRead = async (id: number): Promise<void> => {
   try {
     const token = await AsyncStorage.getItem('token');
-    await api.post(`/notifications/${id}/read`, {}, {
+    // PATCH /notifications/{id}/read
+    await api.patch(`/notifications/${id}/read`, {}, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch (error: any) {
@@ -912,7 +935,8 @@ export const markNotificationRead = async (id: number): Promise<void> => {
 export const markAllNotificationsRead = async (): Promise<void> => {
   try {
     const token = await AsyncStorage.getItem('token');
-    await api.post('/notifications/mark-all-read', {}, {
+    // PATCH /notifications/read-all
+    await api.patch('/notifications/read-all', {}, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch (error: any) {

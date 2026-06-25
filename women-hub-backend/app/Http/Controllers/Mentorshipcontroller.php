@@ -16,49 +16,83 @@ class MentorshipController extends Controller
     public function __construct(private MentorAvailabilityService $availability) {}
 
     // ──────────────────────────────────────────────────────────────────────────
-// Mentor terminates / ends the active conversation
-// ──────────────────────────────────────────────────────────────────────────
+    // Terminate / end the active session (mentor only)
+    // ──────────────────────────────────────────────────────────────────────────
 
-public function terminateSession(Request $request, MentorshipSession $session)
-{
-    $user = $request->user();
+    public function terminateSession(Request $request, MentorshipSession $session)
+    {
+        $user = $request->user();
 
-    // Only the mentor (or an admin) can terminate
-    if ($session->mentor_id !== $user->id && !$user->isAdmin()) {
-        return response()->json(['message' => 'Only the mentor can end this session.'], 403);
-    }
+        if ($session->mentor_id !== $user->id && !$user->isAdmin()) {
+            return response()->json(['message' => 'Only the mentor can end this session.'], 403);
+        }
 
-    if ($session->status !== 'accepted') {
+        if ($session->status !== 'accepted') {
+            return response()->json([
+                'message' => 'Only an active (accepted) session can be terminated.',
+            ], 422);
+        }
+
+        if (!$session->conversation_started_at) {
+            return response()->json([
+                'message' => 'The conversation was never started.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'mentor_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $session->update([
+            'status'       => 'completed',
+            'ended_at'     => now(),
+            'mentor_notes' => $validated['mentor_notes'] ?? $session->mentor_notes,
+        ]);
+
+        $session->load('mentee');
+        $session->mentee?->notify(new \App\Notifications\SessionCompletedNotification($session));
+
         return response()->json([
-            'message' => 'Only an active (accepted) session can be terminated.',
-        ], 422);
+            'message' => 'Session marked as completed. The mentee can now leave a review.',
+            'session' => $session->fresh(),
+        ]);
     }
 
-    if (!$session->conversation_started_at) {
+    // ──────────────────────────────────────────────────────────────────────────
+    // Manually mark a session missed (admin / internal use)
+    // The scheduler (MarkMissedSessions command) handles this automatically.
+    // This endpoint lets admins trigger it on demand for a specific session.
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function markMissed(Request $request, MentorshipSession $session)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && $session->mentor_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if (!in_array($session->status, ['accepted'])) {
+            return response()->json([
+                'message' => 'Only accepted sessions can be marked as missed.',
+            ], 422);
+        }
+
+        $session->update([
+            'status'    => 'missed',
+            'missed_at' => now(),
+        ]);
+
+        $session->load('mentor', 'mentee');
+
+        $session->mentee?->notify(new SessionMissedNotification($session, 'mentee'));
+        $session->mentor?->notify(new SessionMissedNotification($session, 'mentor'));
+
         return response()->json([
-            'message' => 'The conversation was never started.',
-        ], 422);
+            'message' => 'Session marked as missed. Both parties have been notified.',
+            'session' => $session->fresh(),
+        ]);
     }
-
-    $validated = $request->validate([
-        'mentor_notes' => 'nullable|string|max:2000',
-    ]);
-
-    $session->update([
-        'status'           => 'completed',
-        'ended_at'         => now(),
-        'mentor_notes'     => $validated['mentor_notes'] ?? $session->mentor_notes,
-    ]);
-
-    // Notify the mentee that the session has ended and they can leave a review
-    $session->load('mentee');
-    $session->mentee?->notify(new \App\Notifications\SessionCompletedNotification($session));
-
-    return response()->json([
-        'message' => 'Session marked as completed. The mentee can now leave a review.',
-        'session' => $session->fresh(),
-    ]);
-}
 
     // ──────────────────────────────────────────────────────────────────────────
     // List active mentors
@@ -73,16 +107,16 @@ public function terminateSession(Request $request, MentorshipSession $session)
             ->get();
 
         $transformed = $mentors->map(fn($mentor) => [
-            'id'                 => $mentor->id,
-            'name'               => $mentor->name,
-            'bio'                => $mentor->bio,
-            'expertise_area'     => $mentor->area_label ?? $mentor->expertise_area,
-            'available_days'     => $mentor->available_days,
+            'id'                   => $mentor->id,
+            'name'                 => $mentor->name,
+            'bio'                  => $mentor->bio,
+            'expertise_area'       => $mentor->area_label ?? $mentor->expertise_area,
+            'available_days'       => $mentor->available_days,
             'available_time_start' => $mentor->available_time_from,
             'available_time_end'   => $mentor->available_time_to,
-            'photo'              => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
-            'is_available'       => $mentor->status === 'active',
-            'average_rating'     => round(
+            'photo'                => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
+            'is_available'         => $mentor->status === 'active',
+            'average_rating'       => round(
                 MentorReview::where('mentor_id', $mentor->id)->avg('rating') ?? 0, 1
             ),
         ]);
@@ -91,16 +125,16 @@ public function terminateSession(Request $request, MentorshipSession $session)
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Request a session (with availability + conflict checks)
+    // Request a session
     // ──────────────────────────────────────────────────────────────────────────
 
     public function request(Request $request)
     {
         $validated = $request->validate([
-            'mentor_id'         => 'required|exists:users,id',
-            'topic'             => 'required|string|max:255',
-            'message'           => 'nullable|string|max:1000',
-            'requested_date'    => 'required|date|after_or_equal:today',
+            'mentor_id'           => 'required|exists:users,id',
+            'topic'               => 'required|string|max:255',
+            'message'             => 'nullable|string|max:1000',
+            'requested_date'      => 'required|date|after_or_equal:today',
             'requested_time_from' => 'required|date_format:H:i',
             'requested_time_to'   => 'required|date_format:H:i|after:requested_time_from',
         ]);
@@ -110,7 +144,6 @@ public function terminateSession(Request $request, MentorshipSession $session)
             ->where('status', 'active')
             ->firstOrFail();
 
-        // Availability + conflict check
         $error = $this->availability->check(
             $mentor,
             $validated['requested_date'],
@@ -143,7 +176,7 @@ public function terminateSession(Request $request, MentorshipSession $session)
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Sessions list (outgoing / incoming)
+    // Sessions list
     // ──────────────────────────────────────────────────────────────────────────
 
     public function mySessions(Request $request)
@@ -178,7 +211,7 @@ public function terminateSession(Request $request, MentorshipSession $session)
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Accept / decline / complete a session
+    // Accept / decline / complete
     // ──────────────────────────────────────────────────────────────────────────
 
     public function updateStatus(Request $request, MentorshipSession $session)
@@ -193,11 +226,7 @@ public function terminateSession(Request $request, MentorshipSession $session)
             'scheduled_at' => 'nullable|date',
         ]);
 
-        // When mentor ACCEPTS: keep status as 'accepted' (pending conversation).
-        // The conversation is NOT auto-created here; it starts when the scheduled
-        // time arrives and someone opens the chat.
         if ($validated['status'] === 'accepted') {
-            // Derive scheduled_at from the requested date + time if not provided explicitly
             $scheduledAt = $validated['scheduled_at']
                 ?? ($session->requested_date && $session->requested_time_from
                     ? $session->requested_date . ' ' . $session->requested_time_from
@@ -209,7 +238,6 @@ public function terminateSession(Request $request, MentorshipSession $session)
                 'scheduled_at' => $scheduledAt,
             ]);
 
-            // Notify the mentee that their session was accepted
             $session->load('mentee');
             $session->mentee->notify(new \App\Notifications\SessionAcceptedNotification($session));
 
@@ -219,7 +247,6 @@ public function terminateSession(Request $request, MentorshipSession $session)
             ]);
         }
 
-        // Declined or completed
         $session->update([
             'status'       => $validated['status'],
             'mentor_notes' => $validated['mentor_notes'] ?? $session->mentor_notes,
@@ -232,54 +259,69 @@ public function terminateSession(Request $request, MentorshipSession $session)
         ]);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Open / start the conversation for an accepted session
-    // ──────────────────────────────────────────────────────────────────────────
+    // ── REPLACE startConversation() in MentorshipController.php ──────────────────
+// ── REPLACE startConversation() in MentorshipController.php ──────────────────
+//
+// Key change: look up conversation by session_id, not by participant pair.
+// This means each session always gets its own fresh conversation thread,
+// even if the same mentor and mentee have chatted before.
 
-    public function startConversation(Request $request, MentorshipSession $session)
-    {
-        $user = $request->user();
+public function startConversation(Request $request, MentorshipSession $session)
+{
+    $user = $request->user();
 
-        if ($session->mentee_id !== $user->id && $session->mentor_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
-        }
+    if ($session->mentee_id !== $user->id && $session->mentor_id !== $user->id) {
+        return response()->json(['message' => 'Unauthorized.'], 403);
+    }
 
-        if ($session->status !== 'accepted') {
-            return response()->json(['message' => 'Session is not accepted yet.'], 422);
-        }
+    if ($session->status !== 'accepted') {
+        return response()->json(['message' => 'Session is not accepted yet.'], 422);
+    }
 
-        // Only allow starting on or after the scheduled time
-        if ($session->scheduled_at && now()->lt($session->scheduled_at)) {
+    // ── Timezone-safe time check ──────────────────────────────────────────────
+    if ($session->scheduled_at) {
+        $scheduledCat = \Carbon\Carbon::parse(
+            $session->getRawOriginal('scheduled_at'),
+            'Africa/Blantyre'
+        );
+        $nowCat = now('Africa/Blantyre');
+
+        if ($nowCat->lt($scheduledCat)) {
             return response()->json([
                 'message' => 'The session has not started yet. It is scheduled for '
-                           . $session->scheduled_at->format('F j, Y \a\t g:i A') . '.',
+                           . $scheduledCat->format('F j, Y \a\t g:i A') . '.',
             ], 422);
         }
+    }
 
-        // Find or create the conversation
-        $existing = Conversation::where('is_group', false)
-            ->whereHas('participants', fn($q) => $q->where('user_id', $session->mentor_id))
-            ->whereHas('participants', fn($q) => $q->where('user_id', $session->mentee_id))
-            ->first();
+    // ── Find or create conversation SCOPED TO THIS SESSION ───────────────────
+    // Old code looked up by participant pair → always reused old conversation.
+    // New code looks up by session_id → each session gets its own thread.
+    $conversation = Conversation::where('session_id', $session->id)->first();
 
-        if (!$existing) {
-            $existing = Conversation::create(['is_group' => false]);
-            $existing->participants()->attach([$session->mentor_id, $session->mentee_id]);
-        }
-
-        // Mark conversation as started
-        if (!$session->conversation_started_at) {
-            $session->update(['conversation_started_at' => now()]);
-        }
-
-        return response()->json([
-            'message'      => 'Conversation ready.',
-            'conversation' => $existing->load('participants'),
+    if (!$conversation) {
+        $conversation = Conversation::create([
+            'is_group'   => false,
+            'session_id' => $session->id,          // ← tie to this specific session
+            'name'       => $session->topic,        // ← label it with the session topic
+        ]);
+        $conversation->participants()->attach([
+            $session->mentor_id,
+            $session->mentee_id,
         ]);
     }
 
+    if (!$session->conversation_started_at) {
+        $session->update(['conversation_started_at' => now()]);
+    }
+
+    return response()->json([
+        'message'      => 'Conversation ready.',
+        'conversation' => $conversation->load('participants'),
+    ]);
+}
     // ──────────────────────────────────────────────────────────────────────────
-    // Submit a review after a completed session
+    // Submit a review
     // ──────────────────────────────────────────────────────────────────────────
 
     public function submitReview(Request $request, MentorshipSession $session)

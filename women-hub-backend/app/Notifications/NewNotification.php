@@ -4,81 +4,82 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+/**
+ * Handles in-app notifications stored in the `notifications` table.
+ *
+ * Routes must be protected by the `auth:sanctum` middleware so that
+ * $request->user() is always resolved correctly — no custom resolveUser()
+ * needed.
+ *
+ * Route examples (api.php):
+ *
+ *   Route::middleware('auth:sanctum')->group(function () {
+ *       Route::get('/notifications',          [NotificationController::class, 'index']);
+ *       Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+ *       Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+ *       Route::delete('/notifications/{id}',  [NotificationController::class, 'destroy']);
+ *   });
+ */
 class NotificationController extends Controller
 {
-    public function getNotifications(Request $request)
-    {
-        $user = $this->resolveUser();
+    // ── GET /api/notifications ────────────────────────────────────────────────
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
+    public function index(Request $request)
+    {
+        $user = $request->user();   // always available behind auth:sanctum
 
         $notifications = $user->notifications()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $unreadCount = $user->unreadNotifications()->count();
-
         return response()->json([
             'success'      => true,
             'data'         => $notifications,
-            'unread_count' => $unreadCount
+            'unread_count' => $user->unreadNotifications()->count(),
         ]);
     }
 
-    public function markAsRead($id)
+    // ── POST /api/notifications/{id}/read ─────────────────────────────────────
+
+    public function markAsRead(Request $request, string $id)
     {
-        $user = $this->resolveUser();
+        $notification = $request->user()
+            ->notifications()
+            ->findOrFail($id);    // 404 if it belongs to someone else
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-
-        $notification = $user->notifications()->findOrFail($id);
         $notification->markAsRead();
 
         return response()->json([
             'success' => true,
-            'message' => 'Notification marked as read'
+            'message' => 'Notification marked as read.',
         ]);
     }
 
-    public function markAllAsRead()
+    // ── POST /api/notifications/read-all ──────────────────────────────────────
+
+    public function markAllAsRead(Request $request)
     {
-        $user = $this->resolveUser();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-
-        $user->unreadNotifications->markAsRead();
+        $request->user()->unreadNotifications->markAsRead();
 
         return response()->json([
             'success' => true,
-            'message' => 'All notifications marked as read'
+            'message' => 'All notifications marked as read.',
         ]);
     }
 
-    private function resolveUser()
+    // ── DELETE /api/notifications/{id} ────────────────────────────────────────
+
+    public function destroy(Request $request, string $id)
     {
-        if (auth()->guard('admin')->check()) {
-            return auth()->guard('admin')->user();
-        }
+        $notification = $request->user()
+            ->notifications()
+            ->findOrFail($id);
 
-        if (auth()->guard('mentor')->check()) {
-            return auth()->guard('mentor')->user();
-        }
+        $notification->delete();
 
-        return auth()->user();
+        return response()->json([
+            'success' => true,
+            'message' => 'Notification deleted.',
+        ]);
     }
 }

@@ -3,88 +3,81 @@
 namespace App\Notifications;
 
 use App\Models\MentorshipSession;
-use App\Console\Commands\CheckMissedSessions;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
-class SessionMissedNotification extends Notification
+class SessionMissedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
      * @param MentorshipSession $session
-     * @param string            $audience  'mentee' | 'mentor' | 'mentor_deactivated'
+     * @param string            $recipientRole  'mentor' | 'mentee'
      */
     public function __construct(
-        private MentorshipSession $session,
-        private string $audience = 'mentee'
+        public readonly MentorshipSession $session,
+        public readonly string $recipientRole = 'mentee'
     ) {}
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        // database = stored in notifications table (pulled by NotificationController)
+        // mail     = email delivery
+        return ['database', 'mail'];
     }
+
+    // ── Database payload (what the mobile app reads) ──────────────────────────
+
+    public function toDatabase(object $notifiable): array
+    {
+        $isMentor    = $this->recipientRole === 'mentor';
+        $otherPerson = $isMentor
+            ? ($this->session->mentee?->name ?? 'your mentee')
+            : ($this->session->mentor?->name ?? 'your mentor');
+
+        return [
+            'type'       => 'session_missed',
+            'session_id' => $this->session->id,
+            'topic'      => $this->session->topic,
+            'title'      => $isMentor
+                ? 'Session Missed'
+                : 'Your Session Was Not Attended',
+            'body'       => $isMentor
+                ? "You missed your scheduled session on \"{$this->session->topic}\" with {$otherPerson}."
+                : "Your mentor {$otherPerson} did not attend the session on \"{$this->session->topic}\".",
+            'action_url' => "/sessions/{$this->session->id}",
+        ];
+    }
+
+    // ── Email ─────────────────────────────────────────────────────────────────
 
     public function toMail(object $notifiable): MailMessage
     {
-        $session      = $this->session;
-        $scheduledStr = $session->scheduled_at?->format('F j, Y \a\t g:i A') ?? 'an unknown time';
+        $isMentor    = $this->recipientRole === 'mentor';
+        $otherPerson = $isMentor
+            ? ($this->session->mentee?->name ?? 'your mentee')
+            : ($this->session->mentor?->name ?? 'your mentor');
 
-        return match ($this->audience) {
+        $scheduledDate = optional($this->session->scheduled_at)->format('F j, Y \a\t g:i A')
+            ?? ($this->session->requested_date . ' ' . $this->session->requested_time_from);
 
-            'mentee' => (new MailMessage)
-                ->subject('Your Mentorship Session Was Missed')
-                ->greeting("Hello {$notifiable->name},")
-                ->line(
-                    "Unfortunately your mentorship session scheduled for {$scheduledStr} "
-                    . "with {$session->mentor?->name} was not started in time and has been marked as missed."
-                )
-                ->line("You can request a new session at any time.")
-                ->action('Browse Mentors', url('/mentors')),
-
-            'mentor_deactivated' => (new MailMessage)
-                ->subject('Your Mentor Account Has Been Deactivated')
-                ->greeting("Hello {$notifiable->name},")
-                ->line(
-                    "Your mentor account has been deactivated because you have missed "
-                    . CheckMissedSessions::MISS_LIMIT . " or more scheduled sessions."
-                )
-                ->line("Please contact an administrator to have your account reinstated.")
-                ->action('Contact Support', url('/support')),
-
-            // 'mentor' — regular missed-session warning
-            default => (new MailMessage)
-                ->subject('Missed Mentorship Session')
-                ->greeting("Hello {$notifiable->name},")
-                ->line(
-                    "A session scheduled for {$scheduledStr} with "
-                    . "{$session->mentee?->name} was not started and has been marked as missed."
-                )
-                ->line(
-                    "You have now missed {$notifiable->missed_sessions_count} session(s) in total. "
-                    . "Reaching " . CheckMissedSessions::MISS_LIMIT
-                    . " missed sessions will deactivate your account."
-                )
-                ->action('View Your Sessions', url('/mentor/sessions')),
-        };
-    }
-
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'title'      => match ($this->audience) {
-                'mentor_deactivated' => 'Account Deactivated',
-                default              => 'Session Missed',
-            },
-            'type'       => 'session_missed',
-            'audience'   => $this->audience,
-            'session_id' => $this->session->id,
-            'message'    => match ($this->audience) {
-                'mentee'             => "Your session with {$this->session->mentor?->name} was missed.",
-                'mentor_deactivated' => "Your account has been deactivated due to too many missed sessions.",
-                default              => "Session with {$this->session->mentee?->name} was missed.",
-            },
-        ];
+        return (new MailMessage)
+            ->subject($isMentor ? 'You Missed a Session' : 'Your Mentor Missed Your Session')
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line(
+                $isMentor
+                    ? "You missed your scheduled mentorship session on \"{$this->session->topic}\" with {$otherPerson}."
+                    : "Unfortunately, your mentor {$otherPerson} did not attend your scheduled session on \"{$this->session->topic}\"."
+            )
+            ->line("Scheduled time: {$scheduledDate}")
+            ->line(
+                $isMentor
+                    ? 'Please reach out to your mentee to reschedule.'
+                    : 'You may request a new session at your convenience.'
+            )
+            ->action('View Session', url("/sessions/{$this->session->id}"))
+            ->line('Thank you for using Tithandizane Women Hub.');
     }
 }

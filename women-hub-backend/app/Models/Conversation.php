@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Conversation extends Model
 {
-    protected $fillable = ['name', 'is_group'];
+    protected $fillable = ['name', 'is_group','session_id',];
 
     public function participants()
     {
