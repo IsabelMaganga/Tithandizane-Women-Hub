@@ -106,6 +106,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     // Additional mentor routes
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
 
+    
     // ============================================
     // USER MANAGEMENT ROUTES
     // ============================================
