@@ -19,7 +19,8 @@ import {
   sendMessage,
   getConversation,
   createConversation,
-  BASE_URL,
+  terminateMentorshipSession,
+  submitSessionReview,
 } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { subscribeToChatChannel } from "@/services/echo";
@@ -40,8 +41,9 @@ interface Message {
 
 interface Conversation {
   id: number;
-  name: string;
-  is_group: boolean;
+  name?: string | null;
+  is_group?: boolean;
+  session?: { status?: string } | null;
 }
 
 // ─── Read Receipt ─────────────────────────────────────────────────────────────
@@ -226,106 +228,114 @@ const ReviewModal = ({
 
 // ─── Terminate Confirm Modal ──────────────────────────────────────────────────
 
-// ─── REPLACE TerminateConfirmModal in ChatScreen.tsx ─────────────────────────
-
 const TerminateConfirmModal = ({
   visible, onCancel, onConfirm, terminating,
 }: {
   visible: boolean; onCancel: () => void; onConfirm: () => void; terminating: boolean;
 }) => (
-  <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
-    <TouchableWithoutFeedback onPress={onCancel}>
-      <View style={{
+  <Modal
+    visible={visible}
+    transparent={true}
+    animationType="fade"
+    statusBarTranslucent={true}
+  >
+    <View
+      style={{
         flex: 1,
-        backgroundColor: "rgba(15, 10, 30, 0.6)",
+        backgroundColor: "rgba(0,0,0,0.5)",
+        alignItems: "center",
         justifyContent: "center",
         paddingHorizontal: 24,
-      }}>
-        <TouchableWithoutFeedback>
-          <View style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 24,
-            padding: 28,
-          }}>
-            {/* Icon */}
-            <View style={{
-              width: 56, height: 56, borderRadius: 28,
-              backgroundColor: "#FEF2F2",
-              alignItems: "center", justifyContent: "center",
-              alignSelf: "center", marginBottom: 16,
-            }}>
-              <Ionicons name="stop-circle" size={28} color="#EF4444" />
-            </View>
+      }}
+    >
+      <View
+        style={{
+          width: "100%",
+          backgroundColor: "#FFFFFF",
+          borderRadius: 20,
+          padding: 24,
+        }}
+      >
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: "#FEF2F2",
+            alignItems: "center",
+            justifyContent: "center",
+            alignSelf: "center",
+            marginBottom: 16,
+          }}
+        >
+          <Ionicons name="stop-circle" size={28} color="#EF4444" />
+        </View>
 
-            {/* Title */}
-            <Text style={{
-              fontSize: 18, fontWeight: "700", color: "#0F172A",
-              textAlign: "center", marginBottom: 8,
-            }}>
-              End this session?
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "700",
+            color: "#0F172A",
+            textAlign: "center",
+            marginBottom: 8,
+          }}
+        >
+          End this session?
+        </Text>
+
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#64748B",
+            textAlign: "center",
+            lineHeight: 20,
+            marginBottom: 24,
+          }}
+        >
+          This will close the session permanently. The mentee will be asked to leave a review.
+        </Text>
+
+        <Pressable
+          onPress={() => {
+            console.log("End Session pressed");
+            onConfirm();
+          }}
+          disabled={terminating}
+          style={{
+            borderRadius: 14,
+            paddingVertical: 16,
+            alignItems: "center",
+            backgroundColor: "#EF4444",
+            marginBottom: 10,
+          }}
+        >
+          {terminating ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
+              End Session
             </Text>
+          )}
+        </Pressable>
 
-            {/* Body */}
-            <Text style={{
-              fontSize: 14, color: "#64748B", textAlign: "center",
-              lineHeight: 20, marginBottom: 28,
-            }}>
-              This will close the session permanently. The mentee will be asked to leave a review.
-            </Text>
-
-            {/* Buttons — stacked vertically so neither gets clipped */}
-            <View style={{ gap: 10 }}>
-              {/* End Session — RED */}
-              <Pressable
-                onPress={onConfirm}
-                disabled={terminating}
-                style={({ pressed }) => ({
-                  borderRadius: 14,
-                  paddingVertical: 15,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: pressed ? "#DC2626" : "#EF4444",
-                  shadowColor: "#EF4444",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
-                })}
-              >
-                {terminating ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
-                    End Session
-                  </Text>
-                )}
-              </Pressable>
-
-              {/* Keep Going — GREEN */}
-              <Pressable
-                onPress={onCancel}
-                style={({ pressed }) => ({
-                  borderRadius: 14,
-                  paddingVertical: 15,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: pressed ? "#16A34A" : "#22C55E",
-                  shadowColor: "#22C55E",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
-                })}
-              >
-                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
-                  Keep Going
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
+        <Pressable
+          onPress={() => {
+            console.log("Keep Going pressed");
+            onCancel();
+          }}
+          style={{
+            borderRadius: 14,
+            paddingVertical: 16,
+            alignItems: "center",
+            backgroundColor: "#22C55E",
+          }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
+            Keep Going
+          </Text>
+        </Pressable>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   </Modal>
 );
 
@@ -362,16 +372,81 @@ const MessageBubble = ({ item, isMe }: { item: Message; isMe: boolean }) => {
   );
 };
 
+// ─── Session Ended Footer ─────────────────────────────────────────────────────
+
+const SessionEndedFooter = ({ onBookNew }: { onBookNew: () => void }) => (
+  <View
+    style={{
+      backgroundColor: "#FFFFFF",
+      borderTopWidth: 1,
+      borderTopColor: "#F1F5F9",
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 40,
+      alignItems: "center",
+    }}
+  >
+    <View
+      style={{
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: "#F1F5F9",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 12,
+      }}
+    >
+      <Ionicons name="lock-closed" size={22} color="#94A3B8" />
+    </View>
+
+    <Text style={{ fontSize: 15, fontWeight: "700", color: "#475569", marginBottom: 4 }}>
+      Session Ended
+    </Text>
+    <Text style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", marginBottom: 24 }}>
+      This conversation is now closed. Start a new session to continue.
+    </Text>
+
+    <Pressable
+      onPress={onBookNew}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        backgroundColor: pressed ? "#7C3AED" : "#9333EA",
+        borderRadius: 14,
+        paddingVertical: 14,
+        paddingHorizontal: 28,
+      })}
+    >
+      <Ionicons name="calendar-outline" size={17} color="#FFFFFF" />
+      <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
+        Book New Session
+      </Text>
+    </Pressable>
+  </View>
+);
+
 // ─── Chat Screen ──────────────────────────────────────────────────────────────
 
-const ChatScreen = () => {
-  const params = useLocalSearchParams<{ id: string; isNew?: string; name?: string; sessionId?: string; isMentor?: string }>();
+const ENDED_STATUSES = ["completed", "missed", "declined", "cancelled"];
 
-  const id            = Array.isArray(params.id)        ? params.id[0]        : params.id;
-  const isNew         = Array.isArray(params.isNew)      ? params.isNew[0]     : params.isNew;
-  const name          = Array.isArray(params.name)       ? params.name[0]      : params.name;
-  const sessionId     = Array.isArray(params.sessionId)  ? params.sessionId[0] : params.sessionId;
-  const isMentorParam = Array.isArray(params.isMentor)   ? params.isMentor[0]  : params.isMentor;
+const ChatScreen = () => {
+  const params = useLocalSearchParams<{
+    id: string;
+    isNew?: string;
+    name?: string;
+    sessionId?: string;
+    isMentor?: string;
+    sessionStatus?: string; // ← NEW: pass current session status when navigating here
+  }>();
+
+  const id               = Array.isArray(params.id)            ? params.id[0]            : params.id;
+  const isNew            = Array.isArray(params.isNew)          ? params.isNew[0]         : params.isNew;
+  const name             = Array.isArray(params.name)           ? params.name[0]          : params.name;
+  const sessionId        = Array.isArray(params.sessionId)      ? params.sessionId[0]     : params.sessionId;
+  const isMentorParam    = Array.isArray(params.isMentor)       ? params.isMentor[0]      : params.isMentor;
+  const sessionStatusParam = Array.isArray(params.sessionStatus) ? params.sessionStatus[0] : params.sessionStatus; // ← NEW
 
   const { user, token } = useAuth();
   const router = useRouter();
@@ -387,9 +462,12 @@ const ChatScreen = () => {
   const [terminating, setTerminating]                   = useState(false);
   const [showReviewModal, setShowReviewModal]           = useState(false);
   const [submittingReview, setSubmittingReview]         = useState(false);
-  const [sessionEnded, setSessionEnded]                 = useState(false);
 
-  // ── The ONLY ref we need — plain ScrollView ───────────────────────────────
+  // ── Initialize sessionEnded from the nav param so it's correct on first render ──
+  const [sessionEnded, setSessionEnded] = useState(
+    () => ENDED_STATUSES.includes(sessionStatusParam ?? "")
+  );
+
   const scrollRef = useRef<ScrollView>(null);
 
   const scrollToBottom = (animated = true) => {
@@ -402,7 +480,7 @@ const ChatScreen = () => {
     return isNaN(n) || n === 0 ? null : n;
   })();
 
-  const isMentor     = user?.role === "mentor" || isMentorParam === "true";
+  const isMentor      = user?.role === "mentor" || isMentorParam === "true";
   const showEndButton = isMentor && activeSessionId !== null && !sessionEnded;
 
   const unsubscribeRef   = useRef<(() => void) | null>(null);
@@ -422,53 +500,65 @@ const ChatScreen = () => {
   const markMessagesAsRead = async (_convId: number) => {
     try {
       setMessages((prev) =>
-        prev.map((m) => m.sender_id !== user?.id && !m.read_at ? { ...m, read_at: new Date().toISOString(), status: "read" } : m)
+        prev.map((m) =>
+          m.sender_id !== user?.id && !m.read_at
+            ? { ...m, read_at: new Date().toISOString(), status: "read" }
+            : m
+        )
       );
     } catch { /* silently fail */ }
   };
 
-  // ── Auto-scroll whenever the message count grows ──────────────────────────
   useEffect(() => {
     if (messages.length === 0) return;
-    // No animation on first load — just jump straight to the bottom
     scrollToBottom(!isFirstLoad.current);
     isFirstLoad.current = false;
   }, [messages.length]);
 
+  // ── Terminate session ────────────────────────────────────────────────────
   const handleTerminateConfirmed = async () => {
-    if (!activeSessionId || !token) return;
+    if (!activeSessionId) {
+      Alert.alert("Error", "Missing session ID.");
+      return;
+    }
+
     setTerminating(true);
+
     try {
-      const res = await fetch(`${BASE_URL}/api/mentorship/sessions/${activeSessionId}/terminate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.message ?? "Failed to terminate session");
-      }
+      const data = await terminateMentorshipSession(activeSessionId, token!);
+
+      console.log("Terminate success:", data);
+
       setSessionEnded(true);
       setShowTerminateConfirm(false);
-    } catch (err: any) {
-      Alert.alert("Error", err?.message ?? "Could not end the session. Please try again.");
+
+      if (!isMentor) {
+        setTimeout(() => setShowReviewModal(true), 400);
+      }
+    } catch (error: any) {
+      console.log("Terminate error:", error.response?.data ?? error);
+
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ?? error.message ?? "Failed to terminate session."
+      );
     } finally {
       setTerminating(false);
     }
   };
 
   const handleSubmitReview = async (rating: number, comment: string) => {
-    if (!activeSessionId || !token) { setShowReviewModal(false); router.back(); return; }
+    if (!activeSessionId || !token) {
+      setShowReviewModal(false);
+      router.back();
+      return;
+    }
     setSubmittingReview(true);
     try {
-      const res = await fetch(`${BASE_URL}/api/mentorship/sessions/${activeSessionId}/review`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ rating, comment }),
+      await submitSessionReview(activeSessionId, token, {
+        rating,
+        comment: comment.trim() || undefined,
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.message ?? "Failed to submit review");
-      }
       setShowReviewModal(false);
       setTimeout(() => router.back(), 300);
     } catch (err: any) {
@@ -479,7 +569,10 @@ const ChatScreen = () => {
   };
 
   const setupWebsocket = (convId: number, wsToken: string) => {
-    if (unsubscribeRef.current) { unsubscribeRef.current(); unsubscribeRef.current = null; }
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
     unsubscribeRef.current = subscribeToChatChannel(wsToken, convId, (e: any) => {
       const incoming: Message = { ...e.message, status: deriveStatus(e.message) };
       if (confirmedIdsRef.current.has(incoming.id)) return;
@@ -487,7 +580,10 @@ const ChatScreen = () => {
 
       setMessages((prev) => {
         const optimisticIndex = prev.findIndex(
-          (m) => optimisticIdsRef.current.has(m.id) && m.sender_id === incoming.sender_id && m.message === incoming.message
+          (m) =>
+            optimisticIdsRef.current.has(m.id) &&
+            m.sender_id === incoming.sender_id &&
+            m.message === incoming.message
         );
         if (optimisticIndex !== -1) {
           optimisticIdsRef.current.delete(prev[optimisticIndex].id);
@@ -496,16 +592,19 @@ const ChatScreen = () => {
           return updated;
         }
         if (prev.some((m) => m.id === incoming.id)) return prev;
-        const finalMsg = incoming.sender_id !== user?.id
-          ? { ...incoming, read_at: new Date().toISOString(), status: "read" as MessageStatus }
-          : incoming;
+        const finalMsg =
+          incoming.sender_id !== user?.id
+            ? { ...incoming, read_at: new Date().toISOString(), status: "read" as MessageStatus }
+            : incoming;
         return [...prev, finalMsg];
       });
     });
   };
 
   useEffect(() => {
-    return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
+    return () => {
+      if (unsubscribeRef.current) unsubscribeRef.current();
+    };
   }, []);
 
   useEffect(() => {
@@ -514,13 +613,28 @@ const ChatScreen = () => {
       if (!token) return;
       try {
         if (isNew === "true" && !activeId) {
-          if (isMounted) { setConversation({ id: 0, name: name ?? "", is_group: false }); setLoading(false); }
+          if (isMounted) {
+            setConversation({ id: 0, name: name ?? "", is_group: false });
+            setLoading(false);
+          }
           return;
         }
         const targetId = activeId || Number(id);
-        const [msgs, convo] = await Promise.all([getMessages(targetId, token), getConversation(targetId, token)]);
+        const [msgs, convo] = await Promise.all([
+          getMessages(targetId, token),
+          getConversation(targetId, token),
+        ]);
         if (!isMounted) return;
-        const withStatus: Message[] = msgs.map((m: Message) => ({ ...m, status: m.sender_id === user?.id ? deriveStatus(m) : undefined }));
+
+        // ── Sync sessionEnded from API response (safety net for deep links / refreshes) ──
+        if (convo?.session?.status && ENDED_STATUSES.includes(convo.session.status)) {
+          setSessionEnded(true);
+        }
+
+        const withStatus: Message[] = msgs.map((m: Message) => ({
+          ...m,
+          status: m.sender_id === user?.id ? deriveStatus(m) : undefined,
+        }));
         const deduped = deduplicateMessages(withStatus);
         deduped.forEach((m) => confirmedIdsRef.current.add(m.id));
         setMessages(deduped);
@@ -545,7 +659,12 @@ const ChatScreen = () => {
 
     const optimisticId = -Date.now();
     optimisticIdsRef.current.add(optimisticId);
-    const optimisticMsg: Message = { id: optimisticId, sender_id: user?.id ?? 0, message: messageText, status: "sending" };
+    const optimisticMsg: Message = {
+      id: optimisticId,
+      sender_id: user?.id ?? 0,
+      message: messageText,
+      status: "sending",
+    };
     setMessages((prev) => [...prev, optimisticMsg]);
 
     try {
@@ -559,7 +678,9 @@ const ChatScreen = () => {
       const confirmed = await sendMessage(currentConvId!, messageText, token);
       confirmedIdsRef.current.add(confirmed.id);
       setMessages((prev) => {
-        const updated = prev.map((m) => m.id === optimisticId ? { ...confirmed, status: "sent" as MessageStatus } : m);
+        const updated = prev.map((m) =>
+          m.id === optimisticId ? { ...confirmed, status: "sent" as MessageStatus } : m
+        );
         return deduplicateMessages(updated);
       });
       optimisticIdsRef.current.delete(optimisticId);
@@ -575,7 +696,8 @@ const ChatScreen = () => {
 
   const getTitle = (): string => {
     if (!conversation) return name ?? "";
-    return conversation.is_group ? conversation.name : conversation.name || name || "";
+    const conversationName = conversation.name ?? name ?? "";
+    return conversation.is_group ? conversationName : conversationName;
   };
 
   if (loading) {
@@ -590,58 +712,80 @@ const ChatScreen = () => {
     <View className="flex-1 bg-[#F8FAFC]">
       <StatusBar style="dark" />
 
-      {/* HEADER */}
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <View className="pt-14 pb-3 px-4 bg-white border-b border-slate-100 flex-row items-center shadow-sm">
         <Pressable onPress={() => router.back()} className="pr-3 active:opacity-50">
           <Feather name="chevron-left" size={28} color="#1E293B" />
         </Pressable>
+
         <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center">
-          <Text className="text-purple-600 font-bold">{getTitle()?.charAt(0)?.toUpperCase()}</Text>
-        </View>
-        <View className="ml-3 flex-1">
-          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>{getTitle()}</Text>
-          <Text className="text-slate-400 text-[11px] font-medium">
-            {sessionEnded ? "Session ended" : typingUser ? `${typingUser} is typing...` : "Online"}
+          <Text className="text-purple-600 font-bold">
+            {getTitle()?.charAt(0)?.toUpperCase()}
           </Text>
         </View>
+
+        <View className="ml-3 flex-1">
+          <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>
+            {getTitle()}
+          </Text>
+          <Text className="text-slate-400 text-[11px] font-medium">
+            {sessionEnded
+              ? "Session ended"
+              : typingUser
+              ? `${typingUser} is typing...`
+              : "Online"}
+          </Text>
+        </View>
+
+        {/* End button — visible to mentor only while session is active */}
         {showEndButton && (
           <Pressable
             onPress={() => setShowTerminateConfirm(true)}
-            style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: pressed ? "#FEE2E2" : "#FEF2F2", paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1, borderColor: "#FECACA", marginLeft: 8 })}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              backgroundColor: pressed ? "#FEE2E2" : "#FEF2F2",
+              paddingHorizontal: 12,
+              paddingVertical: 7,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: "#FECACA",
+              marginLeft: 8,
+            })}
           >
             <Ionicons name="stop-circle" size={15} color="#EF4444" />
-            <Text style={{ fontSize: 12, fontWeight: "700", color: "#EF4444", letterSpacing: 0.2 }}>End</Text>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#EF4444", letterSpacing: 0.2 }}>
+              End
+            </Text>
           </Pressable>
         )}
+
+        {/* Closed badge */}
         {sessionEnded && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#F1F5F9", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, marginLeft: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              backgroundColor: "#F1F5F9",
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 20,
+              marginLeft: 8,
+            }}
+          >
             <Ionicons name="lock-closed" size={12} color="#94A3B8" />
             <Text style={{ fontSize: 11, fontWeight: "600", color: "#94A3B8" }}>Closed</Text>
           </View>
         )}
       </View>
 
-      {/* SESSION ENDED BANNER */}
-      {sessionEnded && (
-        <View style={{ backgroundColor: "#F8FAFC", borderBottomWidth: 1, borderBottomColor: "#E2E8F0", paddingVertical: 10, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Ionicons name="information-circle" size={15} color="#94A3B8" />
-          <Text style={{ fontSize: 12, color: "#94A3B8", fontWeight: "500" }}>
-            This session has ended. No new messages can be sent.
-          </Text>
-        </View>
-      )}
-
-      {/* MESSAGES + INPUT */}
+      {/* ── MESSAGES + INPUT ───────────────────────────────────────────────── */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/*
-          ScrollView is the correct tool here.
-          - Messages render top→bottom in chronological order (oldest at top, newest at bottom)
-          - onContentSizeChange fires after every layout pass and scrolls to end
-          - This is exactly how WhatsApp, iMessage, Telegram work under the hood
-        */}
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
@@ -659,54 +803,75 @@ const ChatScreen = () => {
             </View>
           ) : (
             messages.map((item) => (
-              <MessageBubble key={String(item.id)} item={item} isMe={item.sender_id === user?.id} />
+              <MessageBubble
+                key={String(item.id)}
+                item={item}
+                isMe={item.sender_id === user?.id}
+              />
             ))
           )}
         </ScrollView>
 
-        {/* INPUT BAR */}
-        <SafeAreaView edges={["bottom"]} style={{ backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#F1F5F9" }}>
-          <View style={{ padding: 12, flexDirection: "row", alignItems: "flex-end", gap: 8 }}>
-            <View style={{ flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, flexDirection: "row", alignItems: "flex-end", backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" }}>
-              <TextInput
-                style={{ flex: 1, fontSize: 15, maxHeight: 128, paddingVertical: 4, color: sessionEnded ? "#CBD5E1" : "#1E293B" }}
-                placeholder={sessionEnded ? "Session has ended" : "Type a message..."}
-                value={text}
-                onChangeText={setText}
-                multiline
-                placeholderTextColor="#94A3B8"
-                editable={!sessionEnded}
-              />
-              {!sessionEnded && (
+        {/* ── INPUT BAR or SESSION ENDED FOOTER ─────────────────────────── */}
+        {sessionEnded ? (
+          <SessionEndedFooter onBookNew={() => router.back()} />
+        ) : (
+          <SafeAreaView
+            edges={["bottom"]}
+            style={{ backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#F1F5F9" }}
+          >
+            <View style={{ padding: 12, flexDirection: "row", alignItems: "flex-end", gap: 8 }}>
+              <View
+                style={{
+                  flex: 1,
+                  borderRadius: 24,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderWidth: 1,
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  backgroundColor: "#F8FAFC",
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <TextInput
+                  style={{ flex: 1, fontSize: 15, maxHeight: 128, paddingVertical: 4, color: "#1E293B" }}
+                  placeholder="Type a message..."
+                  value={text}
+                  onChangeText={setText}
+                  multiline
+                  placeholderTextColor="#94A3B8"
+                />
                 <Pressable style={{ paddingBottom: 4, paddingLeft: 8 }}>
                   <Feather name="smile" size={20} color="#94A3B8" />
                 </Pressable>
-              )}
+              </View>
+
+              <Pressable
+                onPress={handleSend}
+                disabled={!text.trim() || sending}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: text.trim() ? "#9333EA" : "#E2E8F0",
+                  elevation: text.trim() ? 4 : 0,
+                }}
+              >
+                {sending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="send" size={20} color="white" style={{ marginLeft: 3 }} />
+                )}
+              </Pressable>
             </View>
-            <Pressable
-              onPress={handleSend}
-              disabled={!text.trim() || sending || sessionEnded}
-              style={{
-                width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center",
-                backgroundColor: text.trim() && !sessionEnded ? "#9333EA" : "#E2E8F0",
-                shadowColor: "#9333EA",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: text.trim() && !sessionEnded ? 0.3 : 0,
-                shadowRadius: 4,
-                elevation: text.trim() && !sessionEnded ? 4 : 0,
-              }}
-            >
-              {sending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="send" size={20} color="white" style={{ marginLeft: 3 }} />
-              )}
-            </Pressable>
-          </View>
-        </SafeAreaView>
+          </SafeAreaView>
+        )}
       </KeyboardAvoidingView>
 
-      {/* MODALS */}
+      {/* ── MODALS ─────────────────────────────────────────────────────────── */}
       <TerminateConfirmModal
         visible={showTerminateConfirm}
         onCancel={() => setShowTerminateConfirm(false)}
@@ -716,7 +881,10 @@ const ChatScreen = () => {
       <ReviewModal
         visible={showReviewModal}
         mentorName={getTitle()}
-        onClose={() => { setShowReviewModal(false); setTimeout(() => router.back(), 300); }}
+        onClose={() => {
+          setShowReviewModal(false);
+          setTimeout(() => router.back(), 300);
+        }}
         onSubmit={handleSubmitReview}
         submitting={submittingReview}
       />

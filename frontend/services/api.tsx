@@ -93,12 +93,14 @@ export interface Mentor {
 
 export interface Conversation {
   id: number;
-  mentor_id: number;
-  user_id: number;
+  mentor_id?: number;
+  user_id?: number;
+  name?: string | null;
+  is_group?: boolean;
   mentor?: Mentor;
   user?: User;
   last_message?: string;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Message {
@@ -471,10 +473,6 @@ export const getEmergencyContacts = async (): Promise<EmergencyContact[]> => {
 // MENTOR API FUNCTIONS
 // ============================================
 
-/**
- * Get only ACTIVE mentors for the frontend (React Native)
- * This is the main function used by MentorshipScreen
- */
 export const getActiveMentors = async (search?: string, expertise?: string): Promise<Mentor[]> => {
   try {
     // Use the dedicated endpoint for active mentors
@@ -876,9 +874,6 @@ export const getReportByReference = async (referenceNumber: string): Promise<Rep
 // NOTIFICATIONS API
 // ============================================
 
-// ============================================
-// REPLACE THESE 3 FUNCTIONS IN YOUR api.ts
-// ============================================
 
 export const getNotifications = async (): Promise<{
   notifications: AppNotification[];
@@ -1213,6 +1208,22 @@ export const submitSessionReview = async (
     console.error('❌ submitSessionReview error:', error.response?.data || error.message);
     throw error.response?.data || error;
   }
+};
+
+export const terminateMentorshipSession = async (
+  sessionId: number | string,
+  token: string,
+  mentorNotes?: string
+) => {
+  const response = await api.post(
+    `/mentorship/sessions/${sessionId}/terminate`,
+    {
+      mentor_notes: mentorNotes,
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  return response.data;
 };
 
 export const getMentorReviews = async (

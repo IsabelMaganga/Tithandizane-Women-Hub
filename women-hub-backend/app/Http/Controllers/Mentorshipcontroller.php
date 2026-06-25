@@ -259,12 +259,6 @@ class MentorshipController extends Controller
         ]);
     }
 
-    // ── REPLACE startConversation() in MentorshipController.php ──────────────────
-// ── REPLACE startConversation() in MentorshipController.php ──────────────────
-//
-// Key change: look up conversation by session_id, not by participant pair.
-// This means each session always gets its own fresh conversation thread,
-// even if the same mentor and mentee have chatted before.
 
 public function startConversation(Request $request, MentorshipSession $session)
 {
@@ -294,16 +288,14 @@ public function startConversation(Request $request, MentorshipSession $session)
         }
     }
 
-    // ── Find or create conversation SCOPED TO THIS SESSION ───────────────────
-    // Old code looked up by participant pair → always reused old conversation.
-    // New code looks up by session_id → each session gets its own thread.
+    
     $conversation = Conversation::where('session_id', $session->id)->first();
 
     if (!$conversation) {
         $conversation = Conversation::create([
             'is_group'   => false,
-            'session_id' => $session->id,          // ← tie to this specific session
-            'name'       => $session->topic,        // ← label it with the session topic
+            'session_id' => $session->id, 
+            'name'       => $session->topic,
         ]);
         $conversation->participants()->attach([
             $session->mentor_id,
