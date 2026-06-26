@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
-use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, GuidanceContentController, NotificationController, ReportController, SecurityController as MentorSecurityController};
+use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, GuidanceContentController, NotificationController, ReportController, SecurityController as MentorSecurityController,AvailabilityController};
 use App\Http\Controllers\Admin\ReportManagementController;
 use App\Http\Controllers\HarassmentReportController as UserHarassmentReportController;
 
@@ -182,6 +182,13 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
 
     // Dashboard
     Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+
+
+    //getting and changing available days
+    Route::get('/availability', [AvailabilityController::class, 'index'])
+            ->name('availability');
+    Route::post('/availability', [AvailabilityController::class, 'update'])
+            ->name('availability.update');
 
     // ── Notifications ─────────────────────────────────────────────────────────
 

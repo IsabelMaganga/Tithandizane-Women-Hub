@@ -299,7 +299,10 @@
     $isGeneralOpen  = request()->routeIs('mentor.appointment') || request()->routeIs('mentor.calender');
     $isChatOpen     = request()->routeIs('mentor.chat') || request()->routeIs('mentor.group') || request()->routeIs('mentor.groups');
     $isGuidanceOpen = request()->routeIs('mentor.hygiene') || request()->routeIs('mentor.general') || request()->routeIs('mentor.emergency');
-    $isSettingsOpen = request()->routeIs('mentor.profile') || request()->routeIs('mentor.notifications') || request()->routeIs('mentor.settings');
+    $isSettingsOpen = request()->routeIs('mentor.profile') || request()->routeIs('mentor.notifications') || request()->routeIs('mentor.settings') || request()->routeIs('mentor.availability*');
+    $selectedDays = is_array(old('available_days')) ? old('available_days') : (is_array($available_days ?? null) ? $available_days : []);
+    $startTime = old('available_time_from', $available_time_start ?? '09:00');
+    $endTime = old('available_time_to', $available_time_end ?? '17:00');
 @endphp
 
 <!-- ── Sidebar backdrop (mobile) ── -->
@@ -413,10 +416,6 @@
                 <div id="settings-sub" class="nav-submenu {{ $isSettingsOpen ? '' : 'hidden' }}">
                     <a href="{{ route('mentor.profile') }}" class="nav-item {{ request()->routeIs('mentor.profile') ? 'active-nav' : '' }}">
                         <i class="far fa-circle-user"></i><span>Profile</span>
-                    </a>
-                    <a href="{{ route('mentor.availability') }}" class="nav-item {{ request()->routeIs('mentor.availability') ? 'active-nav' : '' }}">
-                        <i class="far fa-calendar-check"></i>
-                        <span>Availability</span>
                     </a>
                     <a href="{{ route('mentor.notifications') }}" class="nav-item {{ request()->routeIs('mentor.notifications') ? 'active-nav' : '' }}">
                         <i class="far fa-bell"></i><span>Notifications</span>
@@ -537,7 +536,48 @@
                     </div>
                 @endif
 
-                @yield('content')
+                <div class="space-y-6">
+                    <div class="card" style="padding:24px;">
+                        <div class="flex flex-col gap-2 mb-6">
+                            <h1 class="text-2xl font-semibold" style="color:var(--text-primary);">Availability</h1>
+                            <p style="color:var(--text-secondary);font-size:14px;">Choose the days and hours you are available for mentorship sessions.</p>
+                        </div>
+
+                        <form action="{{ route('mentor.availability.update') }}" method="POST" class="space-y-6">
+                            @csrf
+
+                            <div>
+                                <label class="block text-sm font-medium mb-3" style="color:var(--text-primary);">Available Days</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    @php $days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']; @endphp
+                                    @foreach($days as $day)
+                                        <label class="flex items-center gap-2 rounded-xl border px-3 py-2" style="border-color:var(--border-color);background:var(--light-gray);">
+                                            <input type="checkbox" name="available_days[]" value="{{ $day }}" {{ in_array($day, $selectedDays, true) ? 'checked' : '' }}>
+                                            <span class="text-sm" style="color:var(--text-primary);">{{ $day }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2" style="color:var(--text-primary);">Start Time</label>
+                                    <input type="time" name="available_time_from" value="{{ $startTime }}" class="w-full rounded-xl border px-3 py-2" style="border-color:var(--border-color);background:var(--bg-secondary);color:var(--text-primary);">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2" style="color:var(--text-primary);">End Time</label>
+                                    <input type="time" name="available_time_to" value="{{ $endTime }}" class="w-full rounded-xl border px-3 py-2" style="border-color:var(--border-color);background:var(--bg-secondary);color:var(--text-primary);">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="rounded-xl px-4 py-2 font-semibold" style="background:var(--purple);color:#fff;">
+                                    Save Availability
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

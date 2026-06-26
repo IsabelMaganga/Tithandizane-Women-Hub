@@ -1,7 +1,7 @@
 import Echo from "laravel-echo";
 
 // ─── Host Configuration ───────────────────────────────────────────────────────
-const LARAVEL_HOST = "192.168.1.132";
+const LARAVEL_HOST = "192.168.43.103";
 const LARAVEL_PORT = "8000";
 const REVERB_PORT  = 8080;
 

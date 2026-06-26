@@ -108,11 +108,13 @@ Route::prefix('v1')->group(function () {
 
         // ── Mentor content (mentor.api middleware) ────────────────────────────
         Route::prefix('mentor')->middleware('mentor.api')->group(function () {
-            Route::get   ('/content',           [GuidanceContentController::class, 'mentorIndex']);
-            Route::post  ('/content',           [GuidanceContentController::class, 'store']);
-            Route::put   ('/content/{id}',      [GuidanceContentController::class, 'update']);
-            Route::patch ('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
-            Route::delete('/content/{id}',      [GuidanceContentController::class, 'destroy']);
+            Route::get('/content', [GuidanceContentController::class, 'mentorIndex']);
+            Route::post('/content', [GuidanceContentController::class, 'store']);
+            Route::put('/content/{id}', [GuidanceContentController::class, 'update']);
+            Route::patch('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
+            Route::delete('/content/{id}', [GuidanceContentController::class, 'destroy']);
+            Route::get('/harassment-reports', [HarassmentReportController::class, 'mentorHarassmentReports']);
+            Route::get('/harassment-reports/{id}', [HarassmentReportController::class, 'mentorHarassmentReport']);
         });
 
         // ── Admin ─────────────────────────────────────────────────────────────
