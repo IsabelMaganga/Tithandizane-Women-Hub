@@ -15,31 +15,39 @@
         <button onclick="showTab('incoming')" id="incomingBtn" class="tab-btn px-5 py-2.5 rounded-xl bg-purple-600 text-white font-medium shadow-sm">Incoming ({{ $incomingSessions->count() }})</button>
         <button onclick="showTab('missed')" id="missedBtn" class="tab-btn px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">Missed ({{ $missedSessions->count() }})</button>
         <button onclick="showTab('unattended')" id="unattendedBtn" class="tab-btn px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">Unattended ({{ $unattendedSessions->count() }})</button>
+        <button onclick="showTab('completed')" id="completedBtn" class="tab-btn px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">Completed ({{ $completedSessions->count() }})</button>
     </div>
 
     {{-- Content Sections --}}
-    <div id="incoming" class="tab-content">
+    <div id="incoming" class="tab-content grid gap-4 md:grid-cols-2">
         @forelse($incomingSessions as $session)
-            {{-- USE @include INSTEAD OF <x-appointment-card /> --}}
             @include('mentor.appointments._card', ['session' => $session, 'color' => 'green'])
         @empty
-            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">No incoming sessions.</div>
+            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 md:col-span-2">No incoming sessions.</div>
         @endforelse
     </div>
 
-    <div id="missed" class="tab-content hidden">
+    <div id="missed" class="tab-content hidden grid gap-4 md:grid-cols-2">
         @forelse($missedSessions as $session)
             @include('mentor.appointments._card', ['session' => $session, 'color' => 'red'])
         @empty
-            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">No missed sessions.</div>
+            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 md:col-span-2">No missed sessions.</div>
         @endforelse
     </div>
 
-    <div id="unattended" class="tab-content hidden">
+    <div id="unattended" class="tab-content hidden grid gap-4 md:grid-cols-2">
         @forelse($unattendedSessions as $session)
             @include('mentor.appointments._card', ['session' => $session, 'color' => 'yellow'])
         @empty
-            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">No unattended sessions.</div>
+            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 md:col-span-2">No unattended sessions.</div>
+        @endforelse
+    </div>
+
+    <div id="completed" class="tab-content hidden grid gap-4 md:grid-cols-2">
+        @forelse($completedSessions as $session)
+            @include('mentor.appointments._card', ['session' => $session, 'color' => 'blue'])
+        @empty
+            <div class="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 md:col-span-2">No completed sessions.</div>
         @endforelse
     </div>
 </div>

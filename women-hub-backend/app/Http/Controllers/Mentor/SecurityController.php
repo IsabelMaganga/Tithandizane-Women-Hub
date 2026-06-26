@@ -96,6 +96,12 @@ public function showAppointments()
             ->with('mentee')
             ->latest()
             ->get(),
+
+        'completedSessions' => MentorshipSession::where('mentor_id', $mentor->id)
+            ->where('status', 'completed')
+            ->with('mentee')
+            ->latest()
+            ->get(),
     ] + $this->baseData());
 }
 

@@ -37,13 +37,15 @@
     <div class="empty">
         <i class="fas fa-comments text-5xl text-gray-300"></i>
         <p class="mt-4 text-lg font-semibold text-gray-500">No private chats yet</p>
-        <p class="mt-1 text-sm">Open a chat from an identified harassment report to start a private conversation.</p>
+        <p class="mt-1 text-sm">Open a chat to start a private conversation.</p>
     </div>
     @else
     @foreach($conversations as $conversation)
         @php
             $other = $conversation->participants->first(fn($participant) => $participant->id !== $mentor->id);
             $lastMessage = $conversation->messages->first();
+            $session = $conversation->session_id ? \App\Models\MentorshipSession::find($conversation->session_id) : null;
+            $isCompleted = $session?->status === 'completed';
         @endphp
         <a href="{{ route('mentor.chat.show', $conversation) }}" class="chat-row">
             <div class="avatar">
@@ -51,7 +53,12 @@
             </div>
             <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-3">
-                    <p class="truncate text-sm font-semibold text-gray-900">{{ $other?->name ?? 'User' }}</p>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <p class="truncate text-sm font-semibold text-gray-900">{{ $other?->name ?? 'User' }}</p>
+                        @if($isCompleted)
+                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold text-green-700">Completed</span>
+                        @endif
+                    </div>
                     @if($lastMessage)
                     <span class="whitespace-nowrap text-xs text-gray-400">{{ $lastMessage->created_at->diffForHumans() }}</span>
                     @endif

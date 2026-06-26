@@ -226,7 +226,9 @@ Route::middleware('auth:mentor')->prefix('mentor')->name('mentor.')->group(funct
     // ── Chat ──────────────────────────────────────────────────────────────────
 
     Route::get('/chat',                           [ChatController::class, 'index'])->name('chat');
+    Route::get('/chat/session/{session}',         [ChatController::class, 'openSessionConversation'])->name('chat.session');
     Route::get('/chat/{conversation}',            [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{conversation}/end-session', [ChatController::class, 'endSession'])->name('chat.end-session');
     Route::post('/chat/{conversation}/messages',  [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::get('/harassment-reports/{report}/chat', [ChatController::class, 'openHarassmentReportChat'])->name('harassment.chat');
     Route::get('/groups', [MentorSecurityController::class, 'showChatGroups'])->name('groups');

@@ -22,11 +22,21 @@
 @endpush
 
 @section('content')
+@php $isCompletedSession = $session?->status === 'completed'; @endphp
 <div class="p-6 max-w-5xl mx-auto">
-    <div class="mb-4">
-        <a href="{{ route('mentor.harassment.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700 hover:text-purple-900">
-            <i class="fas fa-arrow-left"></i> Back to assigned cases
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <a href="{{ route('mentor.chat') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700 hover:text-purple-900">
+            <i class="fas fa-arrow-left"></i> Back
         </a>
+
+        @if($session && $session->status === 'accepted')
+            <form action="{{ route('mentor.chat.end-session', $conversation) }}" method="POST" onsubmit="return confirm('End this mentorship session now?')">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100">
+                    <i class="fas fa-stop-circle"></i> End Session
+                </button>
+            </form>
+        @endif
     </div>
 
     @if(session('success'))
@@ -46,9 +56,9 @@
                     <p class="text-xs text-gray-500">{{ $other?->email ?? 'Private report conversation' }}</p>
                 </div>
             </div>
-            <a href="{{ route('mentor.harassment.index') }}" class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+            <!-- <a href="{{ route('mentor.harassment.index') }}" class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
                 Cases
-            </a>
+            </a> -->
         </div>
 
         <div class="chat-messages" id="chatMessages">
@@ -71,13 +81,21 @@
             @endforelse
         </div>
 
-        <form class="chat-form" method="POST" action="{{ route('mentor.chat.send', $conversation) }}">
-            @csrf
-            <textarea name="message" id="messageInput" placeholder="Type a private message..." required></textarea>
-            <button type="submit" class="send-btn" id="sendBtn">
-                <i class="fas fa-paper-plane"></i> Send
-            </button>
-        </form>
+        @if($isCompletedSession)
+            <div class="chat-form justify-center">
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+                    This conversation was completed. Messaging is closed.
+                </div>
+            </div>
+        @else
+            <form class="chat-form" method="POST" action="{{ route('mentor.chat.send', $conversation) }}">
+                @csrf
+                <textarea name="message" id="messageInput" placeholder="Type a private message..." required></textarea>
+                <button type="submit" class="send-btn" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </form>
+        @endif
     </div>
 </div>
 @endsection
@@ -85,14 +103,47 @@
 @push('scripts')
 <script>
     const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function scrollToBottom() {
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
-    document.getElementById('messageInput')?.addEventListener('keydown', function (event) {
+
+    function appendMessage(message) {
+        if (!chatMessages) return;
+
+        const row = document.createElement('div');
+        row.className = 'message-row mentor';
+        row.innerHTML = `
+            <div>
+                <div class="bubble">${message.message}</div>
+                <div class="meta">You · Just now</div>
+            </div>
+        `;
+        chatMessages.appendChild(row);
+        scrollToBottom();
+    }
+
+    scrollToBottom();
+
+    messageInput?.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            document.getElementById('sendBtn')?.click();
+            sendBtn?.click();
         }
     });
+
+    if (window.Echo) {
+        const channelName = 'chat.{{ $conversation->id }}';
+        window.Echo.private(channelName)
+            .listen('App\\Events\\MessageSent', (event) => {
+                if (event.message?.message) {
+                    appendMessage(event.message);
+                }
+            });
+    }
 </script>
 @endpush

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\HarassmentReport;
 use App\Models\Message;
+use App\Models\MentorshipSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,11 +55,49 @@ class ChatController extends Controller
         return view('mentor.chat.index', compact('conversations', 'mentor'));
     }
 
+    public function openSessionConversation(MentorshipSession $session)
+    {
+        $mentor = $this->mentor();
+
+        if (!$mentor) {
+            abort(403);
+        }
+
+        if ($session->mentor_id !== $mentor->id) {
+            abort(403);
+        }
+
+        $conversation = Conversation::where('session_id', $session->id)->first();
+
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'name' => $session->topic ?? 'Mentorship Session',
+                'is_group' => false,
+                'session_id' => $session->id,
+            ]);
+
+            $conversation->participants()->attach([$session->mentor_id, $session->mentee_id]);
+        }
+
+        if ($session->conversation_id !== $conversation->id) {
+            $session->forceFill(['conversation_id' => $conversation->id])->save();
+        }
+
+        if (!$session->conversation_started_at) {
+            $session->update(['conversation_started_at' => now()]);
+        }
+
+        return redirect()->route('mentor.chat.show', $conversation);
+    }
+
     public function show(Conversation $conversation)
     {
         $mentor = $this->mentor();
 
         $this->ensureMentorCanAccessConversation($conversation, $mentor);
+
+        $session = $this->resolveMentorshipSession($conversation);
+        $isCompletedSession = $session?->status === 'completed';
 
         $conversation->load([
             'participants' => function ($query) {
@@ -81,6 +120,9 @@ class ChatController extends Controller
                     }
                 ])->orderBy('created_at');
             },
+            'mentorshipSession' => function ($query) {
+                $query->with('mentee');
+            },
         ]);
 
         $other = $conversation->participants
@@ -89,7 +131,9 @@ class ChatController extends Controller
         return view('mentor.chat.show', compact(
             'conversation',
             'mentor',
-            'other'
+            'other',
+            'session',
+            'isCompletedSession'
         ));
     }
 
@@ -108,11 +152,46 @@ class ChatController extends Controller
         return redirect()->route('mentor.chat.show', $conversation);
     }
 
+    public function endSession(Request $request, Conversation $conversation)
+    {
+        $mentor = $this->mentor();
+
+        $this->ensureMentorCanAccessConversation($conversation, $mentor);
+
+        $session = $this->resolveMentorshipSession($conversation);
+
+        if (!$session) {
+            return back()->with('error', 'This chat is not linked to a mentorship session.');
+        }
+
+        if ($session->mentor_id !== $mentor->id) {
+            abort(403);
+        }
+
+        if (!in_array($session->status, ['accepted'])) {
+            return back()->with('error', 'Only an active accepted session can be ended.');
+        }
+
+        $session->forceFill([
+            'status' => 'completed',
+            'ended_at' => now(),
+            'mentor_notes' => $request->input('mentor_notes', $session->mentor_notes),
+        ])->save();
+
+        return redirect()->route('mentor.chat')->with('success', 'Session ended successfully.');
+    }
+
     public function sendMessage(Request $request, Conversation $conversation)
     {
         $mentor = $this->mentor();
 
         $this->ensureMentorCanAccessConversation($conversation, $mentor);
+
+        $session = $this->resolveMentorshipSession($conversation);
+
+        if ($session && $session->status === 'completed') {
+            return back()->with('error', 'This session has already ended.');
+        }
 
         $request->validate([
             'message' => 'required|string|max:5000',
@@ -130,6 +209,14 @@ class ChatController extends Controller
         broadcast(new MessageSent($message))->toOthers();
 
         return back()->with('success', 'Message sent.');
+    }
+
+    private function resolveMentorshipSession(Conversation $conversation): ?MentorshipSession
+    {
+        return MentorshipSession::where(function ($query) use ($conversation) {
+            $query->where('conversation_id', $conversation->id)
+                ->orWhere('id', $conversation->session_id);
+        })->first();
     }
 
     private function conversationForReport(HarassmentReport $report, $mentor): Conversation
