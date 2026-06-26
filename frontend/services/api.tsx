@@ -13,6 +13,16 @@ export interface User {
   updated_at?: string;
 }
 
+
+export type AvailabilityDayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+ 
+export interface MentorTimeSlot {
+  start: string; // "09:00"
+  end: string;   // "17:00"
+}
+
+export type MentorAvailability = Partial<Record<AvailabilityDayKey, MentorTimeSlot>>;
+
 export interface RegisterData {
   name: string;
   email: string;
@@ -259,9 +269,9 @@ const getBaseURL = (): string => {
       return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://192.168.1.132:8000/api/v1`;
+    return `http://192.168.43.103:8000/api/v1`;
   } else {
-    return 'http://192.168.1.132:8000/api/v1';
+    return 'http://192.168.43.103:8000/api/v1';
   }
 };
 
@@ -681,6 +691,64 @@ export const getMentor = async (): Promise<Mentor[]> => {
   return getActiveMentors();
 };
 
+
+//getting mentor availability
+export const getMentorAvailability = async (): Promise<MentorAvailability> => {
+  try {
+    const response = await api.get('/mentor/availability');
+    const payload = response.data;
+
+    // Backend returns { available_days: ["Monday",...], available_time_start, available_time_end }
+    // Convert to the { Mon: { start, end }, ... } shape the UI expects
+    const dayMap: Record<string, DayKey> = {
+      Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
+      Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun',
+    };
+
+    const days: string[] = payload?.available_days ?? [];
+    const start: string = payload?.available_time_start ?? '09:00';
+    const end: string   = payload?.available_time_end   ?? '17:00';
+
+    const result: MentorAvailability = {};
+    for (const fullDay of days) {
+      const key = dayMap[fullDay];
+      if (key) result[key] = { start, end };
+    }
+    return result;
+  } catch (error: any) {
+    console.error('❌ getMentorAvailability error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateMentorAvailability = async (
+  availability: MentorAvailability
+): Promise<MentorAvailability> => {
+  try {
+    const keyToFull: Record<DayKey, string> = {
+      Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday',
+      Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday',
+    };
+
+    // Pick one consistent start/end (take first active day's slot)
+    const activeSlots = Object.values(availability);
+    const timeFrom = activeSlots[0]?.start ?? '09:00';
+    const timeTo   = activeSlots[0]?.end   ?? '17:00';
+
+    const payload = {
+      available_days:      (Object.keys(availability) as DayKey[]).map(k => keyToFull[k]),
+      available_time_from: timeFrom,
+      available_time_to:   timeTo,
+    };
+
+    console.log('📤 updateMentorAvailability payload:', payload);
+    const response = await api.put('/mentor/availability', payload);
+    return availability; // return original shape for UI state
+  } catch (error: any) {
+    console.error('❌ updateMentorAvailability error:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
 // ============================================
 // CHAT & MESSAGING FUNCTIONS
 // ============================================

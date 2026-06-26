@@ -16,6 +16,62 @@ class MentorshipController extends Controller
     public function __construct(private MentorAvailabilityService $availability) {}
 
     // ──────────────────────────────────────────────────────────────────────────
+    // Mentor sets / updates their own availability
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function updateAvailability(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->isMentor()) {
+            return response()->json(['message' => 'Only mentors can update availability.'], 403);
+        }
+
+        $validated = $request->validate([
+            'available_days'      => 'required|array|min:1',
+            'available_days.*'    => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'available_time_from' => 'required|date_format:H:i',
+            'available_time_to'   => 'required|date_format:H:i|after:available_time_from',
+        ]);
+
+        $user->update([
+            'available_days'      => $validated['available_days'],
+            'available_time_start' => $validated['available_time_from'],
+            'available_time_end'   => $validated['available_time_to'],
+        ]);
+
+        $fresh = $user->fresh();
+
+        return response()->json([
+            'message'      => 'Availability updated successfully.',
+            'availability' => [
+                'available_days'      => $fresh->available_days,
+                'available_time_start' => $fresh->available_time_from,
+                'available_time_end'   => $fresh->available_time_to,
+            ],
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Mentor fetches their own availability
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function myAvailability(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->isMentor()) {
+            return response()->json(['message' => 'Only mentors can view availability settings.'], 403);
+        }
+
+        return response()->json([
+            'available_days'      => $user->available_days      ?? [],
+            'available_time_start' => $user->available_time_from ?? '09:00',
+            'available_time_end'   => $user->available_time_to   ?? '17:00',
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
     // Terminate / end the active session (mentor only)
     // ──────────────────────────────────────────────────────────────────────────
 
@@ -57,12 +113,6 @@ class MentorshipController extends Controller
             'session' => $session->fresh(),
         ]);
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Manually mark a session missed (admin / internal use)
-    // The scheduler (MarkMissedSessions command) handles this automatically.
-    // This endpoint lets admins trigger it on demand for a specific session.
-    // ──────────────────────────────────────────────────────────────────────────
 
     public function markMissed(Request $request, MentorshipSession $session)
     {
@@ -112,8 +162,8 @@ class MentorshipController extends Controller
             'bio'                  => $mentor->bio,
             'expertise_area'       => $mentor->area_label ?? $mentor->expertise_area,
             'available_days'       => $mentor->available_days,
-            'available_time_start' => $mentor->available_time_from,
-            'available_time_end'   => $mentor->available_time_to,
+            'available_time_start' => $mentor->available_time_from,  // keep frontend key for backward-compat
+            'available_time_end'   => $mentor->available_time_to,    // keep frontend key for backward-compat
             'photo'                => $mentor->photo ? asset('storage/' . $mentor->photo) : null,
             'is_available'         => $mentor->status === 'active',
             'average_rating'       => round(
@@ -259,59 +309,57 @@ class MentorshipController extends Controller
         ]);
     }
 
+    public function startConversation(Request $request, MentorshipSession $session)
+    {
+        $user = $request->user();
 
-public function startConversation(Request $request, MentorshipSession $session)
-{
-    $user = $request->user();
-
-    if ($session->mentee_id !== $user->id && $session->mentor_id !== $user->id) {
-        return response()->json(['message' => 'Unauthorized.'], 403);
-    }
-
-    if ($session->status !== 'accepted') {
-        return response()->json(['message' => 'Session is not accepted yet.'], 422);
-    }
-
-    // ── Timezone-safe time check ──────────────────────────────────────────────
-    if ($session->scheduled_at) {
-        $scheduledCat = \Carbon\Carbon::parse(
-            $session->getRawOriginal('scheduled_at'),
-            'Africa/Blantyre'
-        );
-        $nowCat = now('Africa/Blantyre');
-
-        if ($nowCat->lt($scheduledCat)) {
-            return response()->json([
-                'message' => 'The session has not started yet. It is scheduled for '
-                           . $scheduledCat->format('F j, Y \a\t g:i A') . '.',
-            ], 422);
+        if ($session->mentee_id !== $user->id && $session->mentor_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
-    }
 
-    
-    $conversation = Conversation::where('session_id', $session->id)->first();
+        if ($session->status !== 'accepted') {
+            return response()->json(['message' => 'Session is not accepted yet.'], 422);
+        }
 
-    if (!$conversation) {
-        $conversation = Conversation::create([
-            'is_group'   => false,
-            'session_id' => $session->id, 
-            'name'       => $session->topic,
+        if ($session->scheduled_at) {
+            $scheduledCat = \Carbon\Carbon::parse(
+                $session->getRawOriginal('scheduled_at'),
+                'Africa/Blantyre'
+            );
+            $nowCat = now('Africa/Blantyre');
+
+            if ($nowCat->lt($scheduledCat)) {
+                return response()->json([
+                    'message' => 'The session has not started yet. It is scheduled for '
+                               . $scheduledCat->format('F j, Y \a\t g:i A') . '.',
+                ], 422);
+            }
+        }
+
+        $conversation = Conversation::where('session_id', $session->id)->first();
+
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'is_group'   => false,
+                'session_id' => $session->id,
+                'name'       => $session->topic,
+            ]);
+            $conversation->participants()->attach([
+                $session->mentor_id,
+                $session->mentee_id,
+            ]);
+        }
+
+        if (!$session->conversation_started_at) {
+            $session->update(['conversation_started_at' => now()]);
+        }
+
+        return response()->json([
+            'message'      => 'Conversation ready.',
+            'conversation' => $conversation->load('participants'),
         ]);
-        $conversation->participants()->attach([
-            $session->mentor_id,
-            $session->mentee_id,
-        ]);
     }
 
-    if (!$session->conversation_started_at) {
-        $session->update(['conversation_started_at' => now()]);
-    }
-
-    return response()->json([
-        'message'      => 'Conversation ready.',
-        'conversation' => $conversation->load('participants'),
-    ]);
-}
     // ──────────────────────────────────────────────────────────────────────────
     // Submit a review
     // ──────────────────────────────────────────────────────────────────────────

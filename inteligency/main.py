@@ -4,58 +4,91 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# Load models securely
 expertise_model = joblib.load("expertise_model.pkl")
-risk_model = joblib.load("risk_model.pkl")
+risk_model      = joblib.load("risk_model.pkl")
 
-# Hardcoded rules for safety fallback bypass logic
+
 HIGH_RISK_PHRASES = [
+    # direct statements
     "want to die",
     "kill myself",
+    "killing myself",
     "suicide",
-    "end my life"
+    "suicidal",
+    "end my life",
+    "take my life",
+    "commit suicide",
+    "end it all",
+    "end everything",
+    "no reason to live",
+    "don't want to live",
+    "dont want to live",
+    "not worth living",
+    # indirect / comparative phrasing  ← covers "better to die like others did"
+    "better to die",
+    "better off dead",
+    "better off dying",
+    "wish i was dead",
+    "wish i were dead",
+    "rather be dead",
+    "rather die",
+    "like to die",
+    "want it to end",
+    "want everything to end",
+    "thinking of ending",
+    "plan to end",
+    "hurt myself",
+    "harm myself",
+    "self harm",
+    "self-harm",
 ]
 
-# 1. Define the expected request body structure
+
 class AnalyzeRequest(BaseModel):
     text: str
 
-# 2. Optimized routing logic
+
 @app.post("/analyze")
 def analyze(data: AnalyzeRequest):
-    text = data.text 
+    text = data.text.strip()
+    text_lower = text.lower()
 
-    # Safety First: Match static crisis keywords immediately
+    #check first if phrase exist
     for phrase in HIGH_RISK_PHRASES:
-        if phrase in text.lower():
+        if phrase in text_lower:
             return {
-                "expertise": "Mental Health",
+                "expertise":  "Mental Health",
                 "risk_level": "Critical",
                 "confidence": 1.0
             }
 
-    # Extract probabilities first to get confidence safely
-    expertise_probabilities = expertise_model.predict_proba([text])[0]
-    confidence = float(max(expertise_probabilities))
+    # 2. Predict expertise + confidence
+    expertise_probs = expertise_model.predict_proba([text])[0]
+    confidence      = float(max(expertise_probs))
+    expertise       = expertise_model.predict([text])[0]
 
-    # Fix: Probabilities range from 0.0 to 1.0. 
-    # Here we filter out predictions under 50% confidence.
-    if confidence < 0.5:
-        return {
-            "message": "Couldn't accurately determine expertise. Please rephrase or specify your needs more clearly."
-        }
     
+    word_count        = len(text.split())
+    min_confidence    = 0.30 if word_count < 6 else 0.45
 
-    # Compute actual predictions since we passed the confidence threshold
-    expertise = expertise_model.predict([text])[0]
+    if confidence < min_confidence:
+        return {
+            "success": False,
+            "message": "Could not accurately determine the category. Please describe your situation in more detail."
+        }
+
+    # 4. Not an Incident guard
+    if expertise == "Not an Incident":
+        return {
+            "success": False,
+            "message": "No incident detected. Please describe a challenge or concern you are facing."
+        }
+
+    # 5. Predict risk only for real incidents
     risk = risk_model.predict([text])[0]
 
     return {
-        "expertise": str(expertise),
+        "expertise":  str(expertise),
         "risk_level": str(risk),
         "confidence": confidence
     }
-
-@app.get("/test")
-def test():
-    return {"status": "working"}

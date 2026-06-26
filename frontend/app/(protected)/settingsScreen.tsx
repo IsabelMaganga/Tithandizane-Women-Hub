@@ -122,6 +122,12 @@ const Setting = () => {
           Preferences
         </Text>
         <View className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {user?.role ==="mentor" && (<SettingItem
+            label="My Availability"
+            icon={<Ionicons name="calendar" size={18} color="#7C3AED" />}
+            iconBg="bg-violet-50"
+            onPress={() => router.push("/(protected)/MentorAvailabilityScreen")}
+          />)}
           <SettingItem
             label="Language"
             value={currentLanguageLabel}
