@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class HarassmentReportController extends Controller
@@ -227,6 +228,70 @@ class HarassmentReportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to submit report. Please try again.',
+            ], 500);
+        }
+    }
+
+    public function mentorHarassmentReports(Request $request)
+    {
+        try {
+            $user = $this->resolveApiUser($request);
+
+            if (!$user || $user->role !== 'mentor') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden. Mentor access required.',
+                ], 403);
+            }
+
+            $reports = HarassmentReport::with(['assignedMentor', 'user'])
+                ->where('assigned_mentor_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $reports,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to load mentor harassment reports: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load mentor reports. Please try again.',
+            ], 500);
+        }
+    }
+
+    public function mentorHarassmentReport(Request $request, $id)
+    {
+        try {
+            $user = $this->resolveApiUser($request);
+
+            if (!$user || $user->role !== 'mentor') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden. Mentor access required.',
+                ], 403);
+            }
+
+            $report = HarassmentReport::with(['assignedMentor', 'user'])
+                ->where('assigned_mentor_id', $user->id)
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $report,
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Report not found or not assigned to you.',
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Failed to load mentor harassment report: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load report details. Please try again.',
             ], 500);
         }
     }

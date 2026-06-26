@@ -234,7 +234,7 @@ export default function MentorDashboard() {
               title="Reports" 
               icon="flag" 
               color="#f59e0b" 
-              onPress={() => handleNavigation("/(protected)/reportHarrasmentScreen")} 
+              onPress={() => handleNavigation("/(protected)/mentorReportsScreen")} 
             />
           </View>
 

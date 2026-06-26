@@ -158,4 +158,26 @@ class HarassmentReportController extends Controller
             'data'    => $reports
         ]);
     }
+
+    public function mentorHarassmentReports()
+    {
+        $mentor = Auth::user();
+
+        if (!$mentor || $mentor->role !== 'mentor') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access to mentor reports.'
+            ], 403);
+        }
+
+        $reports = HarassmentReport::with('assignedMentor')
+            ->where('assigned_mentor_id', $mentor->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $reports
+        ]);
+    }
 }

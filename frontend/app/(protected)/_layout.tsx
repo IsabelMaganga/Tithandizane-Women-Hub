@@ -29,6 +29,8 @@ export default function ProtectedLayout() {
       <Stack.Screen name="reportHarrasmentScreen"    options={{ headerShown: false }} />
       <Stack.Screen name="menstrualHealthScreen"     options={{ headerShown: false }} />
       <Stack.Screen name="chat/[id]"                 options={{ headerShown: false }} />
+      <Stack.Screen name="mentorReportsScreen"       options={{ headerShown: false }} />
+      <Stack.Screen name="ReportDetailsScreen"       options={{ headerShown: false }} />
       <Stack.Screen name="settingsScreen"            options={{ headerShown: false }} />
       <Stack.Screen name="usersScreen"               options={{ headerShown: false }} />
       <Stack.Screen name="group-info/[id]"           options={{ headerShown: true  }} />

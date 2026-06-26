@@ -145,6 +145,8 @@ Route::prefix('v1')->group(function () {
             Route::put('/content/{id}', [GuidanceContentController::class, 'update']);
             Route::patch('/content/{id}/unpublish', [GuidanceContentController::class, 'toggleUnpublish']);
             Route::delete('/content/{id}', [GuidanceContentController::class, 'destroy']);
+            Route::get('/harassment-reports', [HarassmentReportController::class, 'mentorHarassmentReports']);
+            Route::get('/harassment-reports/{id}', [HarassmentReportController::class, 'mentorHarassmentReport']);
         });
 
         // ── Admin ────────────────────────────────────────────────────────────

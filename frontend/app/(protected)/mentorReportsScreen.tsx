@@ -1,15 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, Pressable, ScrollView,
-  ActivityIndicator, RefreshControl, StatusBar, Alert,
+  ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useThemeToggle } from '../../hooks/useTheme';
-import { getMyReports, createConversation, HarassmentReport } from '../../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getMentorReports, HarassmentReport } from '../../services/api';
 
 const STATUS_META: Record<string, { label: string; color: string; icon: string }> = {
   pending:   { label: 'Pending',         color: '#f59e0b', icon: 'clock-outline' },
@@ -19,19 +18,25 @@ const STATUS_META: Record<string, { label: string; color: string; icon: string }
   dismissed: { label: 'Dismissed',       color: '#6b7280', icon: 'close-circle' },
 };
 
-function ReportCard({ report, onChat, isDark, T }: {
+function ReportCard({ report, isDark, T, onViewDetails }: {
   report: HarassmentReport;
-  onChat: (report: HarassmentReport) => void;
   isDark: boolean;
   T: Record<string, string>;
+  onViewDetails?: (report: HarassmentReport) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const meta = STATUS_META[report.status] ?? STATUS_META.pending;
-  const canChat = !report.is_anonymous && report.assigned_mentor;
+
+  const handleCardPress = () => {
+    if (onViewDetails) {
+      return onViewDetails(report);
+    }
+    setExpanded(e => !e);
+  };
 
   return (
     <View style={{ backgroundColor: T.card, borderRadius: 18, borderWidth: 1, borderColor: T.border, marginBottom: 14, overflow: 'hidden' }}>
-      <Pressable onPress={() => setExpanded(e => !e)} style={{ padding: 16 }}>
+      <Pressable onPress={handleCardPress} style={{ padding: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Text style={{ color: T.text, fontWeight: '800', fontSize: 15 }} numberOfLines={2}>
@@ -94,13 +99,18 @@ function ReportCard({ report, onChat, isDark, T }: {
             </View>
           )}
 
-          {canChat && (
+          {onViewDetails && (
             <Pressable
-              onPress={() => onChat(report)}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#7c3aed', borderRadius: 12, paddingVertical: 12 }}
+              onPress={() => onViewDetails(report)}
+              style={{
+                marginTop: 10,
+                backgroundColor: '#7c3aed',
+                paddingVertical: 12,
+                borderRadius: 14,
+                alignItems: 'center',
+              }}
             >
-              <MaterialCommunityIcons name="chat" size={18} color="#fff" />
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Chat with Mentor</Text>
+              <Text style={{ color: '#fff', fontWeight: '700' }}>Open report</Text>
             </Pressable>
           )}
         </View>
@@ -109,9 +119,8 @@ function ReportCard({ report, onChat, isDark, T }: {
   );
 }
 
-export default function MyReportsScreen() {
+export default function MentorReportsScreen() {
   const router = useRouter();
-  const { submitted, ref } = useLocalSearchParams<{ submitted?: string; ref?: string }>();
   const { colorScheme } = useThemeToggle();
   const isDark = colorScheme === 'dark';
   const [reports, setReports] = useState<HarassmentReport[]>([]);
@@ -128,10 +137,10 @@ export default function MyReportsScreen() {
 
   async function fetchReports() {
     try {
-      const data = await getMyReports();
+      const data = await getMentorReports();
       setReports(data);
-    } catch (e: any) {
-      Alert.alert('Error', 'Failed to load reports. Please try again.');
+    } catch {
+      Alert.alert('Error', 'Failed to load mentor reports. Please try again.');
     }
   }
 
@@ -142,18 +151,6 @@ export default function MyReportsScreen() {
     }, [])
   );
 
-  async function handleChat(report: HarassmentReport) {
-    if (!report.assigned_mentor) return;
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) { Alert.alert('Not logged in'); return; }
-      const convo = await createConversation({ target_user_id: report.assigned_mentor.id });
-      router.push({ pathname: '/(protected)/chat/[id]', params: { id: convo.id.toString(), name: report.assigned_mentor.name } });
-    } catch {
-      Alert.alert('Error', 'Could not open chat. Please try again.');
-    }
-  }
-
   async function onRefresh() {
     setRefreshing(true);
     await fetchReports();
@@ -162,8 +159,6 @@ export default function MyReportsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: T.bg }}>
-      <StatusBar barStyle="light-content" />
-
       <LinearGradient colors={['#7c3aed', '#6d28d9']} style={{ paddingBottom: 28 }}>
         <SafeAreaView edges={['top']}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8 }}>
@@ -174,9 +169,9 @@ export default function MyReportsScreen() {
               <Feather name="arrow-left" size={20} color="#fff" />
             </Pressable>
             <View style={{ marginLeft: 14 }}>
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>My Reports</Text>
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>Mentor Reports</Text>
               {reports.length > 0 && (
-                <Text style={{ color: '#ddd6fe', fontSize: 12, marginTop: 2 }}>{reports.length} report{reports.length !== 1 ? 's' : ''} submitted</Text>
+                <Text style={{ color: '#ddd6fe', fontSize: 12, marginTop: 2 }}>{reports.length} report{reports.length !== 1 ? 's' : ''} assigned</Text>
               )}
             </View>
           </View>
@@ -186,49 +181,29 @@ export default function MyReportsScreen() {
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#7c3aed" />
-          <Text style={{ color: T.sub, marginTop: 12 }}>Loading your reports…</Text>
+          <Text style={{ color: T.sub, marginTop: 12 }}>Loading your assigned reports…</Text>
         </View>
       ) : (
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7c3aed" />}
         >
-          {submitted === 'true' && (
-            <View style={{ backgroundColor: '#f0fdf4', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#bbf7d0', marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <MaterialCommunityIcons name="check-circle" size={22} color="#16a34a" />
-                <Text style={{ color: '#15803d', fontWeight: '700', fontSize: 15 }}>Report submitted successfully</Text>
-              </View>
-              <Text style={{ color: '#166534', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
-                {ref
-                  ? `Your reference number is ${ref}. A mentor will review your report and you will be notified here when they respond.`
-                  : 'Your report has been received. You will be notified when a mentor responds.'}
-              </Text>
-            </View>
-          )}
-
           {reports.length === 0 ? (
             <View style={{ alignItems: 'center', marginTop: 60 }}>
               <MaterialCommunityIcons name="file-document-outline" size={56} color={T.sub} />
-              <Text style={{ color: T.text, fontWeight: '700', fontSize: 17, marginTop: 16 }}>No Reports Yet</Text>
+              <Text style={{ color: T.text, fontWeight: '700', fontSize: 17, marginTop: 16 }}>No Assigned Reports Yet</Text>
               <Text style={{ color: T.sub, textAlign: 'center', marginTop: 8, fontSize: 14, lineHeight: 22 }}>
-                Reports you submit will appear here. You can track their status and read mentor responses.
+                Reports assigned to you will appear here. Refresh to check for new cases.
               </Text>
-              <Pressable
-                onPress={() => router.push('/(protected)/reportHarrasmentScreen')}
-                style={{ marginTop: 24, backgroundColor: '#7c3aed', borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13 }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Submit a Report</Text>
-              </Pressable>
             </View>
           ) : (
             reports.map(r => (
               <ReportCard
                 key={r.id ?? r.reference_number}
                 report={r}
-                onChat={handleChat}
                 isDark={isDark}
                 T={T}
+                onViewDetails={(report) => router.push({ pathname: '/(protected)/ReportDetailsScreen', params: { id: report.id.toString() } })}
               />
             ))
           )}

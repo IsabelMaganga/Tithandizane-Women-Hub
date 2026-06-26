@@ -152,6 +152,7 @@ export interface HarassmentReport {
   admin_response?: string;
   responded_at?: string;
   assigned_mentor?: { id: number; name: string } | null;
+  user?: User | null;
   submitted_at?: string;
   has_response?: boolean;
   response?: string;
@@ -252,16 +253,16 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://192.168.43.103:8000/api/v1`;
+      return `http://192.168.38.205:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
       return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://192.168.1.132:8000/api/v1`;
+    return `http://192.168.38.205:8000/api/v1`;
   } else {
-    return 'http://192.168.1.132:8000/api/v1';
+    return 'http://192.168.38.205:8000/api/v1';
   }
 };
 
@@ -773,6 +774,38 @@ export const getMyReports = async (): Promise<HarassmentReport[]> => {
     return [];
   } catch (error: any) {
     console.error('❌ Error fetching my reports:', error.message);
+    throw error;
+  }
+};
+
+export const getMentorReports = async (): Promise<HarassmentReport[]> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get('/mentor/harassment-reports', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const payload = response.data;
+    if (payload?.success && Array.isArray(payload.data)) return payload.data;
+    if (payload?.success && Array.isArray(payload.reports)) return payload.reports;
+    if (Array.isArray(payload)) return payload;
+    return [];
+  } catch (error: any) {
+    console.error('❌ Error fetching mentor reports:', error.message);
+    throw error;
+  }
+};
+
+export const getMentorReportById = async (id: number): Promise<HarassmentReport | null> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get(`/mentor/harassment-reports/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const payload = response.data;
+    if (payload?.success && payload.data) return payload.data;
+    return null;
+  } catch (error: any) {
+    console.error('❌ Error fetching mentor report by id:', error.message);
     throw error;
   }
 };
