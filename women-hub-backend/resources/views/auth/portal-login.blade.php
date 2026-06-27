@@ -64,11 +64,11 @@
 
         <main class="z-20 grid items-center justify-center w-full max-w-4xl grid-cols-1 gap-5 pt-4 mx-auto mb-5 text-gray-200 animate-fade-in md:pt-4">
 
-            <div class="flex-1 mx-auto w-[90%] md:w-[480px] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75 p-8 backdrop-blur-xl text-[#ffffff] shadow-2xl rounded-2xl">
+            <div class="flex-1 mx-auto w-[90%] md:w-[480px] border-2 border-amber-50/20 hover:border-[#962980]/80 transition delay-75 p-8  text-[#ffffff] shadow-2xl rounded-2xl">
 
                 <!-- Title -->
                 <div class="flex items-center gap-3 mb-5">
-                    <div class="w-10 h-10 rounded-full bg-[#962980]/40 border border-[#962980]/60 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full  border border-[#962980]/60 flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
@@ -208,5 +208,7 @@
             @endif
         });
     </script>
+
+    @include('components.inactive-modal')
 </body>
 </html>

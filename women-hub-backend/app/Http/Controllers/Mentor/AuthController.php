@@ -16,7 +16,10 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        return redirect()->route('portal.login');
+        // ✅ FIXED: render the view directly instead of redirecting.
+        // The previous redirect()->route('portal.login') was killing flash
+        // session data before the Blade template could read it.
+        return view('auth.mentor-login');
     }
 
     /**
@@ -26,37 +29,30 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
-        // Attempt login - mentors table doesn't have a role column
+        // Attempt login with credentials only — status is checked separately below
         if (Auth::guard('mentor')->attempt($credentials)) {
             $request->session()->regenerate();
 
             $user = Auth::guard('mentor')->user();
 
-            // Check if mentor is active
+            // If the account is not active, log them back out immediately and
+            // redirect with a session flag so the view can show the modal.
             if ($user->status !== 'active') {
                 Auth::guard('mentor')->logout();
-                return back()->withErrors([
-                    'email' => 'Your account is ' . $user->status . '. Please contact administrator.',
-                ])->onlyInput('email');
-            }
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-            // Create a local notification record matching our custom schema
-            // AppNotification::create([
-            //     'type' => WelcomeNotification::class,
-            //     'user_id' => $user->id,
-            //     'report_id' => null,
-            //     'title' => "Tithandizane Women's Hub,",
-            //     'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
-            //     'data' => [
-            //         'title' => "Tithandizane Women's Hub,",
-            //         'message' => 'welcome back! ' . $user->name . '. You have successfully logged in as a mentor.',
-            //         'time' => now()->toDateTimeString(),
-            //     ],
-            // ]);
+                // ✅ FIXED: redirect directly to the login VIEW route (portal.login),
+                // not to a route that itself redirects — that double-redirect
+                // was swallowing the flash data before Blade could read it.
+                return redirect()->route('portal.login')
+                    ->with('account_inactive', true)
+                    ->with('account_status', $user->status); // 'pending' | 'inactive'
+            }
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $user->name . '!');
@@ -77,7 +73,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('mentor.login')->with('success', 'Logged out successfully.');
+        return redirect()->route('portal.login')->with('success', 'Logged out successfully.');
     }
 
     public function logoutAllSessions(Request $request)
@@ -90,7 +86,7 @@ class AuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('mentor.login')->with('success', 'Logged out successfully.');
+            return redirect()->route('portal.login')->with('success', 'Logged out successfully.');
         } catch (\Exception $e) {
             Log::error("Logout failed | Error: " . $e->getMessage());
             return back()->withErrors([

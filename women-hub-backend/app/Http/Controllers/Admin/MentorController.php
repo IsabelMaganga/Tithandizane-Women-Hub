@@ -26,17 +26,11 @@ class MentorController extends Controller
     // ADMIN CRUD
     // -------------------------------------------------------------------------
 
-    /**
-     * List mentors.
-     * AJAX → full collection + stats as JSON.
-     * Web  → paginated blade view.
-     */
     public function index(Request $request)
     {
         if ($request->expectsJson() || $request->ajax()) {
             $query = $this->mentorQuery();
 
-            // Search
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
@@ -46,7 +40,6 @@ class MentorController extends Controller
                 });
             }
 
-            // Status filter
             if ($request->filled('status') && $request->status !== 'all') {
                 $query->where('status', $request->status);
             }
@@ -70,14 +63,10 @@ class MentorController extends Controller
             ]);
         }
 
-        // Normal web request — paginated
         $mentors = $this->mentorQuery()->with('expertises')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.mentors.index', compact('mentors'));
     }
 
-    /**
-     * Show create form.
-     */
     public function create()
     {
         $adminName  = Auth::guard('admin')->user()->name  ?? 'Admin User';
@@ -86,9 +75,29 @@ class MentorController extends Controller
         return view('admin.mentors.create', compact('adminName', 'adminEmail'));
     }
 
-    /**
-     * Store a new mentor.
-     */
+    private function generateSecurePassword(): string
+    {
+        $upper   = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $lower   = 'abcdefghjkmnpqrstuvwxyz';
+        $digits  = '23456789';
+        $special = '@#$%&*!';
+
+        $password  = '';
+        $password .= $upper[random_int(0, strlen($upper) - 1)];
+        $password .= $upper[random_int(0, strlen($upper) - 1)];
+        $password .= $upper[random_int(0, strlen($upper) - 1)];
+        $password .= $lower[random_int(0, strlen($lower) - 1)];
+        $password .= $lower[random_int(0, strlen($lower) - 1)];
+        $password .= $lower[random_int(0, strlen($lower) - 1)];
+        $password .= $digits[random_int(0, strlen($digits) - 1)];
+        $password .= $digits[random_int(0, strlen($digits) - 1)];
+        $password .= $digits[random_int(0, strlen($digits) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+
+        return str_shuffle($password);
+    }
+
     public function store(Request $request)
     {
         try {
@@ -96,7 +105,6 @@ class MentorController extends Controller
                 'name'                 => 'required|string|max:255',
                 'email'                => 'required|email|unique:users,email',
                 'phone'                => 'nullable|string|max:20',
-                'password'             => 'required|string|min:8|confirmed',
                 'location'             => 'nullable|string|max:255',
                 'photo'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                 'expertise'            => 'nullable|array',
@@ -111,41 +119,35 @@ class MentorController extends Controller
                 'twitter_url'          => 'nullable|url',
                 'website_url'          => 'nullable|url',
                 'notes'                => 'nullable|string',
-                'status'               => 'sometimes|string|in:active,pending,inactive',
+
+                // ✅ FIXED: required (not 'sometimes'), only two allowed values
+                'status'               => 'required|string|in:active,inactive',
+
                 'notify_welcome'       => 'nullable|boolean',
                 'notify_training'      => 'nullable|boolean',
             ]);
 
-            // ── Pull out expertise before creating the user ──────────────────
+            $plainPassword         = $this->generateSecurePassword();
+            $validated['password'] = Hash::make($plainPassword);
+
             $expertiseNames = $validated['expertise'] ?? [];
             unset($validated['expertise']);
-
-            // ── Pull out fields not in users table ───────────────────────────
-            unset($validated['password_confirmation']);
             unset($validated['notify_welcome']);
             unset($validated['notify_training']);
 
-            // ── Photo upload ─────────────────────────────────────────────────
             if ($request->hasFile('photo')) {
                 $validated['photo'] = $request->file('photo')->store('mentors', 'public');
             }
 
-            // ── Hash password ────────────────────────────────────────────────
-            $validated['password'] = Hash::make($validated['password']);
-
-            // ── JSON encode available_days ───────────────────────────────────
             if (isset($validated['available_days']) && is_array($validated['available_days'])) {
                 $validated['available_days'] = json_encode($validated['available_days']);
             }
 
-            // ── Force role and default status ────────────────────────────────
-            $validated['role']   = 'mentor';
-            $validated['status'] = $validated['status'] ?? 'pending';
+            $validated['role'] = 'mentor';
+            // ✅ FIXED: status comes directly from the validated input — no override
 
-            // ── Create user ──────────────────────────────────────────────────
             $mentor = User::create($validated);
 
-            // ── Attach expertise via pivot table ─────────────────────────────
             if (!empty($expertiseNames)) {
                 $expertiseIds = [];
                 foreach ($expertiseNames as $name) {
@@ -163,13 +165,21 @@ class MentorController extends Controller
 
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Mentor created successfully',
-                    'mentor'  => $mentor->load('expertises'),
+                    'success'        => true,
+                    'message'        => 'Mentor created successfully',
+                    'mentor'         => $mentor->load('expertises'),
+                    'mentor_email'   => $mentor->email,
+                    'plain_password' => $plainPassword,
                 ]);
             }
 
-            return redirect()->route('admin.mentors.index')->with('success', 'Mentor created successfully.');
+            return redirect()
+                ->route('admin.mentors.index')
+                ->with('success', 'Mentor created successfully.')
+                ->with('mentor_credentials', [
+                    'email'    => $mentor->email,
+                    'password' => $plainPassword,
+                ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson() || $request->ajax()) {
@@ -193,9 +203,6 @@ class MentorController extends Controller
         }
     }
 
-    /**
-     * Show a single mentor (admin view).
-     */
     public function show($id)
     {
         $mentor = $this->mentorQuery()->with('expertises')->findOrFail($id);
@@ -208,9 +215,6 @@ class MentorController extends Controller
         return view('admin.mentors.show', compact('mentor'));
     }
 
-    /**
-     * Show edit form.
-     */
     public function edit($id)
     {
         $mentor = $this->mentorQuery()->with('expertises')->findOrFail($id);
@@ -222,13 +226,13 @@ class MentorController extends Controller
         return view('admin.mentors.edit', compact('mentor', 'adminName', 'adminEmail'));
     }
 
-    /**
-     * Update a mentor.
-     */
     public function update(Request $request, $id)
     {
         try {
             $mentor = $this->mentorQuery()->findOrFail($id);
+
+            $request->request->remove('password');
+            $request->request->remove('password_confirmation');
 
             $validated = $request->validate([
                 'name'                 => 'required|string|max:255',
@@ -242,20 +246,50 @@ class MentorController extends Controller
                 'availability'         => 'nullable|string',
                 'available_days'       => 'nullable|array',
                 'available_days.*'     => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-                'available_time_start' => 'nullable|date_format:H:i',
-                'available_time_end'   => 'nullable|date_format:H:i|after:available_time_start',
-                'linkedin_url'         => 'nullable|url',
-                'twitter_url'          => 'nullable|url',
-                'website_url'          => 'nullable|url',
+                'profile_platform'     => 'nullable|array',
+                'profile_platform.*'   => 'nullable|string',
+                'profile_url'          => 'nullable|array',
+                'profile_url.*'        => 'nullable|url',
                 'notes'                => 'nullable|string',
-                'status'               => 'sometimes|string|in:active,pending,inactive',
+
+                // ✅ FIXED: required (not 'sometimes'), only two allowed values
+                'status'               => 'required|string|in:active,inactive',
             ]);
 
-            // ── Pull out expertise before updating ───────────────────────────
             $expertiseNames = $validated['expertise'] ?? null;
             unset($validated['expertise']);
+            unset($validated['profile_platform']);
+            unset($validated['profile_url']);
 
-            // ── Photo upload ─────────────────────────────────────────────────
+            $validated['linkedin_url'] = null;
+            $validated['twitter_url']  = null;
+            $validated['website_url']  = null;
+
+            $platforms = $request->input('profile_platform', []);
+            $urls      = $request->input('profile_url', []);
+
+            foreach ($platforms as $i => $platform) {
+                $url = isset($urls[$i]) ? trim($urls[$i]) : '';
+                if ($url === '') continue;
+
+                switch ($platform) {
+                    case 'linkedin':
+                        $validated['linkedin_url'] = $url;
+                        break;
+                    case 'twitter':
+                        $validated['twitter_url'] = $url;
+                        break;
+                    case 'website':
+                        $validated['website_url'] = $url;
+                        break;
+                    default:
+                        if (empty($validated['website_url'])) {
+                            $validated['website_url'] = $url;
+                        }
+                        break;
+                }
+            }
+
             if ($request->hasFile('photo')) {
                 if ($mentor->photo && Storage::disk('public')->exists($mentor->photo)) {
                     Storage::disk('public')->delete($mentor->photo);
@@ -263,20 +297,17 @@ class MentorController extends Controller
                 $validated['photo'] = $request->file('photo')->store('mentors', 'public');
             }
 
-            // ── JSON encode available_days ───────────────────────────────────
             if (isset($validated['available_days']) && is_array($validated['available_days'])) {
                 $validated['available_days'] = json_encode($validated['available_days']);
             } else {
-                // Keep existing value if not submitted
                 unset($validated['available_days']);
             }
 
-            // Never allow role to change via update
             unset($validated['role']);
 
+            // ✅ FIXED: status is in $validated directly — no override needed
             $mentor->update($validated);
 
-            // ── Sync expertise pivot ─────────────────────────────────────────
             if ($expertiseNames !== null) {
                 $expertiseIds = [];
                 foreach ($expertiseNames as $name) {
@@ -324,9 +355,6 @@ class MentorController extends Controller
         }
     }
 
-    /**
-     * Delete a mentor.
-     */
     public function destroy($id)
     {
         try {
@@ -336,7 +364,6 @@ class MentorController extends Controller
                 Storage::disk('public')->delete($mentor->photo);
             }
 
-            // Detach expertise pivot rows first (cascade should handle it, but being explicit)
             $mentor->expertises()->detach();
             $mentor->delete();
 
@@ -355,9 +382,6 @@ class MentorController extends Controller
         }
     }
 
-    /**
-     * Toggle active / inactive status.
-     */
     public function toggleStatus($id)
     {
         try {
@@ -469,10 +493,6 @@ class MentorController extends Controller
     // PRIVATE HELPERS
     // -------------------------------------------------------------------------
 
-    /**
-     * Decode JSON fields (available_days) on a User instance.
-     * Expertise is now loaded via the relationship, not a JSON column.
-     */
     private function decodeJsonFields(User $mentor): User
     {
         $mentor->available_days = is_string($mentor->available_days)
@@ -482,12 +502,8 @@ class MentorController extends Controller
         return $mentor;
     }
 
-    /**
-     * Format a mentor for the mobile API response.
-     */
     private function formatForApi(User $mentor, bool $includeNotes = false): array
     {
-        // expertises is a relationship collection now
         $expertise = $mentor->relationLoaded('expertises')
             ? $mentor->expertises->pluck('name')->toArray()
             : $mentor->expertises()->pluck('name')->toArray();

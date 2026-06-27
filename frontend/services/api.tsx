@@ -254,7 +254,7 @@ export interface CommunityPost {
 }
 
 // computer or wifi ip
-const COMPUTER_IP = '192.168.43.103';
+const COMPUTER_IP = '192.168.1.132';
 const BACKEND_PORT = '8000';
 
 // Function to get the correct base URL based on platform
@@ -263,16 +263,16 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://192.168.43.103:8000/api/v1`;
+      return `http://192.168.1.132:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
       return `http://192.168.38.205:8000/api/v1`;
     }
 
-    return `http://192.168.43.103:8000/api/v1`;
+    return `http://192.168.1.132:8000/api/v1`;
   } else {
-    return 'http://192.168.43.103:8000/api/v1';
+    return 'http://192.168.1.132:8000/api/v1';
   }
 };
 
