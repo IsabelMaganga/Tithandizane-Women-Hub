@@ -349,6 +349,18 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: var(--card-bg); border-radius: 16px; padding: 0; max-width: 500px; width: 90%; animation: slideIn .3s ease; }
         @keyframes slideIn { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Modal Overlay */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-container { background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 500px; animation: slideIn .3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-header { padding: 16px 20px; border-radius: 16px 16px 0 0; display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: white; }
+        .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
+        .modal-close:hover { opacity: 1; }
+        .modal-body { padding: 24px 20px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+        .modal-footer.justify-center { justify-content: center; }
     </style>
 
     @stack('styles')
@@ -413,7 +425,8 @@
                     <span class="nav-pill nav-pill-alert hidden" id="pendingReportsBadge"></span>
                 </a>
 
-                <a href="#" class="nav-item">
+                <a href="{{ route('admin.guidance.index') }}"
+                   class="nav-item {{ request()->routeIs('admin.guidance.*') ? 'active-nav' : '' }}">
                     <i class="fas fa-book-open"></i><span>Guidance Content</span>
                 </a>
 

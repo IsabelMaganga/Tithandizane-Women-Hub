@@ -764,6 +764,35 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-container max-w-md">
+        <div class="modal-header" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+            <h3><i class="fas fa-exclamation-triangle mr-2"></i>Confirm Deletion</h3>
+            <button onclick="closeModal('deleteModal')" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-4">
+                <i class="fas fa-trash-alt text-5xl" style="color: #dc2626;"></i>
+            </div>
+            <p class="text-primary-color mb-4 text-center">
+                Are you sure you want to delete <strong id="deleteUserName" class="text-red"></strong>?
+            </p>
+            <p class="text-sm text-secondary-color text-center">
+                This action cannot be undone. All associated data will be permanently removed.
+            </p>
+        </div>
+        <div class="modal-footer justify-center">
+            <button onclick="closeModal('deleteModal')" class="px-6 py-2.5 rounded-lg border transition hover:bg-gray-100" style="border-color: var(--border-color); color: var(--text-secondary);">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button onclick="confirmDelete()" class="px-6 py-2.5 rounded-lg transition hover:opacity-90" style="background: #dc2626; color: white;">
+                <i class="fas fa-trash-alt mr-2"></i>Delete User
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -771,6 +800,8 @@
     let selectedUsers = [];
     let statusUserId = null;
     let statusUserName = '';
+    let deleteUserId = null;
+    let deleteUserName = '';
 
     // Toggle advanced filters
     function toggleFilters() {
@@ -924,16 +955,27 @@
             if (data.success) {
                 showNotification(data.message, 'success');
                 setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
             }
+        })
+        .catch(err => {
+            showNotification('Failed to update status', 'error');
         });
         closeModal('statusModal');
     }
 
     // Delete user
     function deleteUser(id, name) {
-        if (!confirm(`⚠️ Delete "${name}"?\n\nThis action cannot be undone.`)) return;
-        
-        fetch(`/admin/users/${id}`, {
+        deleteUserId = id;
+        deleteUserName = name;
+        document.getElementById('deleteUserName').textContent = name;
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    // Confirm delete
+    function confirmDelete() {
+        fetch(`/admin/users/${deleteUserId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -944,8 +986,14 @@
         .then(data => {
             if (data.success) {
                 showNotification(data.message, 'success');
+                closeModal('deleteModal');
                 setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
             }
+        })
+        .catch(err => {
+            showNotification('Failed to delete user', 'error');
         });
     }
 

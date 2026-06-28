@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\{AuthController, DashboardController, HarassmentReportController, MentorController, SettingsController, UserController};
+use App\Http\Controllers\Admin\GuidanceContentController as AdminGuidanceContentController;
 use App\Http\Controllers\Mentor\{AuthController as MentorAuthController, CalenderController, ChatController, DashboardController as MentorDashboardController, GuidanceContentController, NotificationController, ReportController, SecurityController as MentorSecurityController,AvailabilityController};
 use App\Http\Controllers\Admin\ReportManagementController;
 use App\Http\Controllers\HarassmentReportController as UserHarassmentReportController;
@@ -102,6 +103,16 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
 
     Route::resource('mentors', MentorController::class);
     Route::patch('/mentors/{mentor}/toggle-status', [MentorController::class, 'toggleStatus'])->name('mentors.toggle-status');
+
+    // ── Guidance Content ───────────────────────────────────────────────────────
+
+    Route::prefix('guidance')->name('guidance.')->group(function () {
+        Route::get('/',                    [AdminGuidanceContentController::class, 'index'])->name('index');
+        Route::get('/{id}',               [AdminGuidanceContentController::class, 'show'])->name('show');
+        Route::delete('/{id}',            [AdminGuidanceContentController::class, 'destroy'])->name('destroy');
+        Route::patch('/{id}/publish',    [AdminGuidanceContentController::class, 'publish'])->name('publish');
+        Route::patch('/{id}/unpublish',  [AdminGuidanceContentController::class, 'unpublish'])->name('unpublish');
+    });
 
     // ── Notifications (AJAX) ──────────────────────────────────────────────────
 

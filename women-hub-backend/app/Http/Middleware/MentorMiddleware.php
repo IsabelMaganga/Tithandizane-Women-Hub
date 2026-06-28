@@ -18,6 +18,11 @@ class MentorMiddleware
     {
         // role based authorization
         if(!Auth::guard('mentor')->check()){
+            // If user is authenticated as admin, redirect to admin dashboard
+            if(Auth::guard('admin')->check()){
+                return redirect('/admin/dashboard');
+            }
+            // Otherwise redirect to mentor login
             return redirect('/mentor/login');
         }
 
