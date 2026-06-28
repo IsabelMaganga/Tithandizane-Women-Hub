@@ -17,6 +17,7 @@ class PortalAuthController extends Controller
             return redirect()->route('mentor.dashboard');
         }
 
+        // ✅ Render the view directly — no redirect, so flash data survives
         return view('auth.portal-login');
     }
 
@@ -29,30 +30,38 @@ class PortalAuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        // Try admin guard first
+        // ── Try admin guard first ──────────────────────────────────────
         if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'))
                 ->with('success', 'Welcome back!');
         }
 
-        // Try mentor guard
+        // ── Try mentor guard ───────────────────────────────────────────
         if (Auth::guard('mentor')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             $mentor = Auth::guard('mentor')->user();
 
             if ($mentor->status !== 'active') {
+                // Log them back out immediately
                 Auth::guard('mentor')->logout();
-                return back()->withErrors([
-                    'email' => 'Your account is ' . $mentor->status . '. Please contact the administrator.',
-                ])->onlyInput('email');
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                // ✅ FIXED: use flash session so the modal picks it up.
+                // Previously this used back()->withErrors() which only showed
+                // a text error — the modal never triggered.
+                return redirect()->route('portal.login')
+                    ->with('account_inactive', true)
+                    ->with('account_status', $mentor->status);
             }
 
             return redirect()->intended(route('mentor.dashboard'))
                 ->with('success', 'Welcome back, ' . $mentor->name . '!');
         }
 
+        // ── No match ───────────────────────────────────────────────────
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');

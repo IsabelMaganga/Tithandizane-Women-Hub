@@ -284,3 +284,7 @@ Route::get('/debug-mentor', function () {
         'cast' => $mentor->available_days,
     ];
 });
+
+Route::post('/debug-mentor-status', function (\Illuminate\Http\Request $request) {
+    dd($request->all());
+});

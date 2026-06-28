@@ -36,6 +36,7 @@
                     <p class="mt-2 text-sm" style="color: var(--text-secondary);">
                         Complete the form below to add a new mentor to the platform.
                         Fields marked <span style="color: var(--red); font-weight: 600;">*</span> are required.
+                        A secure password will be generated automatically.
                     </p>
                 </div>
                 <div class="hidden sm:block">
@@ -123,50 +124,12 @@
                             </div>
                         </div>
 
-                        <!-- Password Section -->
-                        <div class="pt-6 border-t" style="border-color: var(--border-color);">
-                            <h4 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">Account Credentials</h4>
-                            <p class="text-xs mb-4" style="color: var(--text-secondary);">Password must be at least 8 characters.</p>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="password" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Password <span style="color: var(--red);">*</span></label>
-                                    <div class="relative">
-                                        <input type="password" name="password" id="password" placeholder="••••••••••••"
-                                               class="block w-full px-4 py-3 pr-10 border rounded-lg shadow-sm transition-all focus:ring-2"
-                                               style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
-                                        <button type="button" class="toggle-pw absolute right-3 top-3.5" data-target="password" style="color: var(--text-secondary);">
-                                            <i class="fas fa-eye text-sm"></i>
-                                        </button>
-                                    </div>
-                                    <div class="mt-2 space-y-1">
-                                        <div class="flex gap-1">
-                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar1"></div>
-                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar2"></div>
-                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar3"></div>
-                                            <div class="strength-bar flex-1" style="background: var(--border-color);" id="bar4"></div>
-                                        </div>
-                                        <p id="strength-label" class="text-xs" style="color: var(--text-secondary);"></p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="password_confirmation" class="block text-sm font-semibold mb-2" style="color: var(--text-primary);">Confirm Password <span style="color: var(--red);">*</span></label>
-                                    <div class="relative">
-                                        <input type="password" name="password_confirmation" id="password_confirmation" placeholder="••••••••••••"
-                                               class="block w-full px-4 py-3 pr-10 border rounded-lg shadow-sm transition-all focus:ring-2"
-                                               style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
-                                        <button type="button" class="toggle-pw absolute right-3 top-3.5" data-target="password_confirmation" style="color: var(--text-secondary);">
-                                            <i class="fas fa-eye text-sm"></i>
-                                        </button>
-                                    </div>
-                                    <div id="password-match" class="mt-2 text-xs"></div>
-                                </div>
-                            </div>
-                            <div class="mt-4 grid grid-cols-2 gap-1 text-xs" id="pw-reqs">
-                                <span id="req-length"  class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> 8+ characters</span>
-                                <span id="req-upper"   class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Uppercase letter</span>
-                                <span id="req-lower"   class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Lowercase letter</span>
-                                <span id="req-number"  class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Number</span>
-                                <span id="req-special" class="flex items-center gap-1" style="color: var(--text-secondary);"><i class="fas fa-circle-dot"></i> Special character</span>
+                        <!-- Auto-password notice -->
+                        <div class="flex items-start gap-3 p-4 rounded-lg border" style="background: var(--light-purple); border-color: var(--purple);">
+                            <i class="fas fa-wand-magic-sparkles mt-0.5" style="color: var(--purple);"></i>
+                            <div>
+                                <p class="text-sm font-semibold" style="color: var(--purple);">Password will be auto-generated</p>
+                                <p class="text-xs mt-0.5" style="color: var(--text-secondary);">A secure, random password will be created for this mentor. It will be shown to you after the account is created so you can share it with them.</p>
                             </div>
                         </div>
                     </div>
@@ -255,12 +218,15 @@
                         <select name="status" id="status"
                                 class="block w-full md:w-1/2 px-4 py-3 border rounded-lg shadow-sm transition-all focus:ring-2"
                                 style="background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary);">
-                            <option value="active" selected>Active</option>
-                            <option value="pending">Pending</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="active"   {{ old('status') === 'inactive' ? '' : 'selected' }}>Active</option>
+                            <option value="inactive" {{ old('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
                         </select>
-                        <p class="text-xs mt-1" style="color: var(--text-secondary);"><i class="fas fa-info-circle mr-1" style="color: var(--purple);"></i> Active mentors can immediately access the platform and be matched with mentees.</p>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            <i class="fas fa-info-circle mr-1" style="color: var(--purple);"></i>
+                            Active mentors can immediately access the platform and be matched with mentees.
+                        </p>
                     </div>
+                    
                 </div>
             </div>
 
@@ -406,10 +372,43 @@
             <i class="fas fa-check checkmark"></i>
         </div>
         <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">Mentor Created Successfully!</h2>
-        <p class="mb-6" style="color: var(--text-secondary);">The mentor profile has been created and is now available in the system.</p>
+        <p class="mb-5" style="color: var(--text-secondary);">The mentor profile has been created. Share the login credentials below with the mentor.</p>
+
+        <!-- Credentials box -->
+        <div class="credentials-box" style="background: var(--light-purple); border: 1.5px solid var(--purple); border-radius: 0.75rem; padding: 1rem 1.25rem; text-align: left; margin-bottom: 1.25rem;">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: var(--purple);">
+                <i class="fas fa-key mr-1.5"></i> Login Credentials
+            </p>
+            <div class="space-y-2">
+                <div class="credential-row">
+                    <span class="credential-label">Email</span>
+                    <span id="modalEmail" class="credential-value"></span>
+                    <button type="button" class="copy-btn" data-copy="email" title="Copy email">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">Password</span>
+                    <span id="modalPassword" class="credential-value font-mono"></span>
+                    <button type="button" class="copy-btn" data-copy="password" title="Copy password">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs mt-3" style="color: var(--text-secondary);">
+                <i class="fas fa-triangle-exclamation mr-1" style="color: var(--orange);"></i>
+                Copy these credentials now — the password won't be shown again.
+            </p>
+        </div>
+
+        <!-- Copy all button -->
+        <button type="button" id="copyAllBtn" class="copy-all-btn" style="background: var(--light-gray); color: var(--text-primary); border: 1px solid var(--border-color);">
+            <i class="fas fa-clipboard mr-2"></i> Copy All Credentials
+        </button>
+
         <div class="success-buttons">
             <button onclick="addAnotherMentor()" class="btn-secondary" style="background: var(--light-gray); color: var(--text-primary);">
-                <i class="fas fa-plus-circle"></i> Add Another Mentor
+                <i class="fas fa-plus-circle"></i> Add Another
             </button>
             <button onclick="viewMentors()" class="btn-primary" style="background: linear-gradient(135deg, var(--purple), var(--purple)); color: white;">
                 <i class="fas fa-eye"></i> View Mentors
@@ -427,7 +426,6 @@
     .tab-content.active { display: block; }
     .tab-button { transition: all 0.3s ease; }
     .tab-button.active { border-bottom-width: 3px; }
-    .strength-bar { height: 4px; border-radius: 2px; transition: all 0.3s ease; }
 
     .expertise-tag {
         display: inline-flex; align-items: center; gap: 0.4rem;
@@ -454,14 +452,23 @@
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .success-modal { border-radius: 1.5rem; max-width: 500px; width: 90%; padding: 2rem; text-align: center; animation: modalSlideIn 0.3s ease-out; background: var(--card-bg); }
+    .success-modal { border-radius: 1.5rem; max-width: 520px; width: 90%; padding: 2rem; text-align: center; animation: modalSlideIn 0.3s ease-out; background: var(--card-bg); max-height: 90vh; overflow-y: auto; }
     @keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .checkmark-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
     .checkmark { font-size: 3rem; color: white; }
-    .success-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
+    .success-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap; }
     .btn-primary, .btn-secondary { padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(135,65,121,0.3); }
     .btn-secondary:hover { opacity: 0.8; }
+
+    /* Credential rows */
+    .credential-row { display: flex; align-items: center; gap: 0.5rem; }
+    .credential-label { font-size: 0.75rem; font-weight: 600; width: 4.5rem; flex-shrink: 0; color: var(--text-secondary); }
+    .credential-value { flex: 1; font-size: 0.875rem; color: var(--text-primary); word-break: break-all; }
+    .copy-btn { flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 0.35rem; color: var(--purple); font-size: 0.8rem; transition: background 0.2s; }
+    .copy-btn:hover { background: var(--card-bg); }
+    .copy-all-btn { width: 100%; padding: 0.6rem 1rem; border-radius: 0.65rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; margin-bottom: 0; }
+    .copy-all-btn:hover { opacity: 0.85; }
 
     .toast { visibility: hidden; min-width: 280px; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; font-size: 14px; font-weight: 500; transform: translateX(-50%); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .toast.show { visibility: visible; animation: fadein 0.4s, fadeout 0.5s 2.5s; }
@@ -480,7 +487,7 @@ function showToast(message, isError = false) {
     toast.textContent = message;
     toast.style.backgroundColor = isError ? '#dc2626' : '#22c55e';
     document.body.appendChild(toast);
-    toast.offsetHeight; // force reflow
+    toast.offsetHeight;
     toast.classList.add('show');
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3000);
 }
@@ -527,12 +534,10 @@ function updateNavButtons() {
     const idx = tabs.indexOf(currentTab);
     const isLast = idx === tabs.length - 1;
 
-    // Desktop
     document.getElementById('prevBtn')?.classList.toggle('hidden', idx === 0);
     document.getElementById('nextBtn')?.classList.toggle('hidden', isLast);
     document.getElementById('submitBtn')?.classList.toggle('hidden', !isLast);
 
-    // Mobile
     const mobileNext   = document.getElementById('mobileNextBtn');
     const mobileSubmit = document.getElementById('mobileSubmitBtn');
     if (mobileNext)   mobileNext.classList.toggle('hidden', isLast);
@@ -543,67 +548,6 @@ document.querySelectorAll('.tab-button').forEach(btn => btn.addEventListener('cl
 document.getElementById('nextBtn')?.addEventListener('click',       () => { const i = tabs.indexOf(currentTab); if (i < tabs.length - 1) { showTab(tabs[i + 1]); scrollTo({ top: 0, behavior: 'smooth' }); } });
 document.getElementById('prevBtn')?.addEventListener('click',       () => { const i = tabs.indexOf(currentTab); if (i > 0)               { showTab(tabs[i - 1]); scrollTo({ top: 0, behavior: 'smooth' }); } });
 document.getElementById('mobileNextBtn')?.addEventListener('click', () => { const i = tabs.indexOf(currentTab); if (i < tabs.length - 1) { showTab(tabs[i + 1]); scrollTo({ top: 0, behavior: 'smooth' }); } });
-
-// ─── Password Strength ────────────────────────────────────────────────────────
-const passwordInput = document.getElementById('password');
-const confirmInput  = document.getElementById('password_confirmation');
-const matchEl       = document.getElementById('password-match');
-const bars          = [1, 2, 3, 4].map(n => document.getElementById(`bar${n}`));
-const strengthLabel = document.getElementById('strength-label');
-
-const reqs = {
-    length:  { el: document.getElementById('req-length'),  test: v => v.length >= 8 },
-    upper:   { el: document.getElementById('req-upper'),   test: v => /[A-Z]/.test(v) },
-    lower:   { el: document.getElementById('req-lower'),   test: v => /[a-z]/.test(v) },
-    number:  { el: document.getElementById('req-number'),  test: v => /[0-9]/.test(v) },
-    special: { el: document.getElementById('req-special'), test: v => /[^A-Za-z0-9]/.test(v) },
-};
-
-const strengthConfig = [
-    { color: '#ef4444', label: 'Weak' },
-    { color: '#f97316', label: 'Fair' },
-    { color: '#eab308', label: 'Good' },
-    { color: '#22c55e', label: 'Strong' },
-    { color: '#10b981', label: 'Very Strong' },
-];
-
-passwordInput?.addEventListener('input', function () {
-    const val = this.value;
-    Object.values(reqs).forEach(({ el, test }) => {
-        if (!el) return;
-        const pass = test(val);
-        el.style.color = pass ? '#22c55e' : 'var(--text-secondary)';
-        const icon = el.querySelector('i');
-        if (icon) icon.className = pass ? 'fas fa-check-circle' : 'fas fa-circle-dot';
-    });
-    const score = Object.values(reqs).filter(({ test }) => test(val)).length;
-    bars.forEach((bar, i) => {
-        if (bar) bar.style.background = i < score ? strengthConfig[score - 1].color : 'var(--border-color)';
-    });
-    if (strengthLabel) strengthLabel.textContent = val.length ? (strengthConfig[score - 1]?.label || 'Weak') : '';
-    checkPasswordMatch();
-});
-
-function checkPasswordMatch() {
-    if (!matchEl || !confirmInput?.value) { if (matchEl) matchEl.innerHTML = ''; return; }
-    const match = passwordInput?.value === confirmInput.value;
-    matchEl.innerHTML = match
-        ? '<i class="fas fa-check-circle mr-1" style="color:#22c55e;"></i> Passwords match'
-        : '<i class="fas fa-times-circle mr-1" style="color:#ef4444;"></i> Passwords do not match';
-    matchEl.style.color = match ? '#22c55e' : '#ef4444';
-}
-confirmInput?.addEventListener('input', checkPasswordMatch);
-
-// Toggle password visibility
-document.querySelectorAll('.toggle-pw').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const input = document.getElementById(btn.dataset.target);
-        if (!input) return;
-        const isText = input.type === 'text';
-        input.type = isText ? 'password' : 'text';
-        btn.querySelector('i').className = isText ? 'fas fa-eye text-sm' : 'fas fa-eye-slash text-sm';
-    });
-});
 
 // ─── Bio Counter ──────────────────────────────────────────────────────────────
 const bioField = document.getElementById('bio');
@@ -619,7 +563,6 @@ function renderExpertiseTags() {
     const emptyHint       = document.getElementById('expertiseEmptyHint');
     if (!tagsContainer || !hiddenContainer) return;
 
-    // Remove all tags (keep emptyHint)
     Array.from(tagsContainer.children).forEach(c => { if (c.id !== 'expertiseEmptyHint') c.remove(); });
     hiddenContainer.innerHTML = '';
 
@@ -725,7 +668,6 @@ function buildProfileRow(platform = 'other') {
     return row;
 }
 
-// Attach to pre-rendered rows
 document.querySelectorAll('#profilesList .remove-profile-btn').forEach(btn => btn.addEventListener('click', () => btn.closest('.profile-row').remove()));
 document.querySelectorAll('#profilesList select').forEach(select => {
     const row      = select.closest('.profile-row');
@@ -738,20 +680,58 @@ document.querySelectorAll('#profilesList select').forEach(select => {
 });
 document.getElementById('addProfileBtn')?.addEventListener('click', () => document.getElementById('profilesList').appendChild(buildProfileRow('other')));
 
+// ─── Credentials store ────────────────────────────────────────────────────────
+let _createdEmail    = '';
+let _createdPassword = '';
+
 // ─── Success Modal ────────────────────────────────────────────────────────────
-function showSuccessModal() {
+function showSuccessModal(email, password) {
+    _createdEmail    = email;
+    _createdPassword = password;
+
+    const emailEl    = document.getElementById('modalEmail');
+    const passwordEl = document.getElementById('modalPassword');
+    if (emailEl)    emailEl.textContent    = email;
+    if (passwordEl) passwordEl.textContent = password;
+
     document.getElementById('successModal')?.classList.add('active');
 }
+
+// Copy individual field
+document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const text = btn.dataset.copy === 'email' ? _createdEmail : _createdPassword;
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = btn.querySelector('i');
+            if (icon) { icon.className = 'fas fa-check'; setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500); }
+        });
+    });
+});
+
+// Copy all
+document.getElementById('copyAllBtn')?.addEventListener('click', () => {
+    const text = `Email: ${_createdEmail}\nPassword: ${_createdPassword}`;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+            btn.style.background = '#22c55e';
+            btn.style.color = '#fff';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-clipboard mr-2"></i> Copy All Credentials';
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
+        }
+    });
+});
 
 window.addAnotherMentor = function () {
     document.getElementById('successModal')?.classList.remove('active');
     document.getElementById('mentorForm')?.reset();
     const photoPreview = document.getElementById('photo-preview');
     if (photoPreview) photoPreview.innerHTML = `<div class="text-center"><i class="fas fa-user text-5xl mb-2" style="color:var(--text-secondary);"></i><p class="text-xs" style="color:var(--text-secondary);">Click to upload</p></div>`;
-    bars.forEach(bar => { if (bar) bar.style.background = 'var(--border-color)'; });
-    if (strengthLabel) strengthLabel.textContent = '';
-    if (matchEl)       matchEl.innerHTML = '';
-    if (bioCount)      bioCount.textContent = '0 / 500 characters';
+    if (bioCount) bioCount.textContent = '0 / 500 characters';
     selectedExpertise.clear();
     renderExpertiseTags();
     showTab('basic');
@@ -767,12 +747,10 @@ document.getElementById('successModal')?.addEventListener('click', function (e) 
 async function submitMentorForm(e) {
     e.preventDefault();
 
-    const name            = document.getElementById('name')?.value.trim()               || '';
-    const email           = document.getElementById('email')?.value.trim()              || '';
-    const password        = document.getElementById('password')?.value                  || '';
-    const passwordConfirm = document.getElementById('password_confirmation')?.value     || '';
+    const name            = document.getElementById('name')?.value.trim()  || '';
+    const email           = document.getElementById('email')?.value.trim() || '';
     const expertiseInputs = document.querySelectorAll('#expertiseHiddenInputs input');
-    const bio             = document.getElementById('bio')?.value.trim()                || '';
+    const bio             = document.getElementById('bio')?.value.trim()   || '';
 
     // ── Tab 1 validations ──
     if (!name) {
@@ -785,18 +763,6 @@ async function submitMentorForm(e) {
         showTab('basic');
         showToast('Please enter an email address', true);
         document.getElementById('email')?.focus();
-        return;
-    }
-    if (password.length < 8) {
-        showTab('basic');
-        showToast('Password must be at least 8 characters', true);
-        document.getElementById('password')?.focus();
-        return;
-    }
-    if (password !== passwordConfirm) {
-        showTab('basic');
-        showToast('Passwords do not match', true);
-        document.getElementById('password_confirmation')?.focus();
         return;
     }
 
@@ -837,12 +803,11 @@ async function submitMentorForm(e) {
         const data = await response.json();
 
         if (data.success) {
-            showSuccessModal();
+            showSuccessModal(data.mentor_email, data.plain_password);
         } else if (data.errors) {
-            // Jump to the tab with the first server-side error
             const firstField = Object.keys(data.errors)[0];
             const firstMsg   = data.errors[firstField][0];
-            if (['name', 'email', 'password', 'password_confirmation'].includes(firstField)) {
+            if (['name', 'email'].includes(firstField)) {
                 showTab('basic');
             } else if (['bio', 'expertise'].includes(firstField)) {
                 showTab('professional');

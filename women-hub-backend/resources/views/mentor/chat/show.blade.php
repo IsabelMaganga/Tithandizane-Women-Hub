@@ -139,7 +139,7 @@
     if (window.Echo) {
         const channelName = 'chat.{{ $conversation->id }}';
         window.Echo.private(channelName)
-            .listen('App\\Events\\MessageSent', (event) => {
+                .listen('.MessageSent', (event) => {
                 if (event.message?.message) {
                     appendMessage(event.message);
                 }
