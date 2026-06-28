@@ -142,9 +142,9 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="rounded-2xl shadow-lg p-6 text-white empower-card">
+        <div class="rounded-2xl shadow-lg p-6 text-black empower-card">
             <div class="flex items-center gap-3">
-                <i class="fas fa-chalkboard fa-fw text-3xl text-white"></i>
+                <i class="fas fa-chalkboard fa-fw text-3xl text-black"></i>
                 <h3 class="text-xl font-bold">Empower a session</h3>
             </div>
             <p class="text-sm mt-2 opacity-90">Organize next mentor training or community circle</p>
