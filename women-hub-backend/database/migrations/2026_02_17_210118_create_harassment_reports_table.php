@@ -9,7 +9,7 @@ class CreateHarassmentReportsTable extends Migration
     {
         Schema::create('harassment_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->string('reference_number')->unique();
             $table->string('incident_type');
             $table->string('incident_title');

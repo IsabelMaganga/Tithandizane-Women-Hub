@@ -29,7 +29,7 @@ return new class extends Migration
             ])->default('pending')->change();
 
             // Add missed_at timestamp so we know exactly when it was flagged
-            $table->timestamp('missed_at')->nullable()->after('ended_at');
+            $table->timestamp('missed_at')->nullable();
         });
 
         // ── 2. Notifications table (skip if it already exists) ────────────────
