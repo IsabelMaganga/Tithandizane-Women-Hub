@@ -757,7 +757,11 @@ async function loadNotifications() {
         var data = await res.json();
         var notifications = data.notifications ?? data.data ?? [];
 
-        if (!notifications.length) {
+        if (notifications && typeof notifications === 'object' && !Array.isArray(notifications) && notifications.data) {
+            notifications = notifications.data;
+        }
+
+        if (!Array.isArray(notifications) || !notifications.length) {
             list.innerHTML = '<div style="text-align:center;padding:48px 0;"><i class="fas fa-bell-slash" style="font-size:32px;color:var(--text-secondary);opacity:.35;"></i><p style="font-size:13px;color:var(--text-secondary);margin-top:10px;">No notifications</p></div>';
             return;
         }

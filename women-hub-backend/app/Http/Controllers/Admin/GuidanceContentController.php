@@ -80,19 +80,33 @@ class GuidanceContentController extends Controller
         }
     }
     
-    public function publish($id)
+    public function publish(Request $request, $id)
     {
         $content = GuidanceContent::findOrFail($id);
         $content->update(['status' => 'published']);
-        
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Content published successfully!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Content published successfully!');
     }
     
-    public function unpublish($id)
+    public function unpublish(Request $request, $id)
     {
         $content = GuidanceContent::findOrFail($id);
         $content->update(['status' => 'unpublished']);
-        
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Content unpublished successfully!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Content unpublished successfully!');
     }
 }

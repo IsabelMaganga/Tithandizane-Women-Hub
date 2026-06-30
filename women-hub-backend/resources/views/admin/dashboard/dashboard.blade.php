@@ -70,7 +70,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Total Users</p>
-                <p class="text-3xl font-extrabold" style="color: var(--text-primary);" id="statTotalUsers">0</p>
+                <p class="text-3xl font-extrabold" style="color: var(--text-primary);" id="statTotalUsers">{{ $totalUsers ?? 0 }}</p>
             </div>
             <div class="p-3 rounded-full" style="background: var(--light-orange);">
                 <i class="fas fa-users text-2xl text-warning"></i>
@@ -78,7 +78,7 @@
         </div>
         <div class="mt-3 text-sm">
             <i class="fas fa-arrow-up text-success"></i> 
-            <span class="font-semibold text-success" id="userGrowthPercent">0%</span> 
+            <span class="font-semibold text-success" id="userGrowthPercent">{{ $userGrowthPercent ?? 0 }}%</span> 
             <span style="color: var(--text-secondary);">from last month</span>
         </div>
     </div>
@@ -142,16 +142,22 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="rounded-2xl shadow-lg p-6 text-black empower-card">
+        <div class="rounded-2xl shadow-md hover-lift transition p-6" style="background: var(--card-bg); border: 1px solid var(--border-color);">
             <div class="flex items-center gap-3">
-                <i class="fas fa-chalkboard fa-fw text-3xl text-black"></i>
-                <h3 class="text-xl font-bold">Empower a session</h3>
+                <div class="p-3 rounded-2xl" style="background: var(--light-purple);">
+                    <i class="fas fa-chalkboard fa-fw text-2xl" style="color: var(--purple);"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold" style="color: var(--text-primary);">Empower a session</h3>
+                    <p class="text-sm mt-2" style="color: var(--text-secondary);">Organize next mentor training or community circle</p>
+                </div>
             </div>
-            <p class="text-sm mt-2 opacity-90">Organize next mentor training or community circle</p>
-            <button class="mt-5 w-full bg-white font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 shadow-md" style="color: var(--purple);" id="scheduleTrainingBtn">
+            <button class="mt-5 w-full font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm" style="background: var(--purple); color: white;" id="scheduleTrainingBtn">
                 <i class="fas fa-calendar-alt"></i> Schedule Training
             </button>
-            <div class="mt-5 pt-2 border-t border-white/30 text-xs text-center opacity-80">45+ active community members this month</div>
+            <div class="mt-5 pt-4 border-t" style="border-color: var(--border-color);">
+                <p class="text-xs text-center" style="color: var(--text-secondary);">45+ active community members this month</p>
+            </div>
         </div>
     </div>
 
@@ -372,33 +378,6 @@
         }).join('');
     }
 
-    // Load total users count for stat card
-    function loadTotalUsersStat() {
-        const url = '{{ route("admin.users.index") }}';
-        
-        fetch(url, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const statTotalUsers = document.getElementById('statTotalUsers');
-            if (statTotalUsers && data.totalUsers !== undefined) {
-                statTotalUsers.innerText = data.totalUsers;
-            }
-            if (data.userGrowthPercent !== undefined) {
-                const userGrowthPercent = document.getElementById('userGrowthPercent');
-                if (userGrowthPercent) {
-                    userGrowthPercent.innerText = data.userGrowthPercent + '%';
-                }
-            }
-        })
-        .catch(error => console.error('Error loading users stat:', error));
-    }
-
     function loadNotificationBadge() {
         const url = '{{ route("admin.notifications.unread-count") }}';
 
@@ -422,7 +401,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadMentors();
         loadRecentReports();
-        loadTotalUsersStat();
         loadNotificationBadge();
         
         document.getElementById('scheduleTrainingBtn')?.addEventListener('click', () => {

@@ -59,8 +59,8 @@
                     </div>
                     @endif
 
-                    {{-- <form method="POST" action="{{ route('settings.password.update') }}" class="space-y-6"> --}}
-                    <form method="POST" action="" class="space-y-6">
+                    {{-- Form posts to mentor password update route --}}
+                    <form method="POST" action="{{ route('mentor.updateSecurity') }}" class="space-y-6">
                         @csrf
                         @method('PUT')
 
@@ -164,10 +164,10 @@
                         <!-- Form Actions -->
                         <div class="flex items-center gap-4 pt-4">
                             <button type="submit"
-                                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    id="submit-button">
-                                Update Password
-                            </button>
+    class="px-6 py-2.5 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    id="submit-button">
+    Update Password
+</button>
                             <button type="reset"
                                     class="px-6 py-2.5 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                                 Cancel

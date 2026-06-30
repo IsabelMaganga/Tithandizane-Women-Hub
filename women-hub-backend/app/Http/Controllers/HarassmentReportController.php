@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\AdminNotification;
 use App\Models\HarassmentReport;
 use App\Models\User;
 use App\Notifications\NewNotification;
@@ -52,13 +54,19 @@ class HarassmentReportController extends Controller
 
             $report = HarassmentReport::create($reportData);
 
-            // Notify all admins using Laravel's notification system
-            $admins = User::where('role', 'admin')->get();
+            // Notify all admins in the admin_notifications table
+            $admins = Admin::all();
             foreach ($admins as $admin) {
-                $admin->notify(new NewNotification(
-                    'New Harassment Report',
-                    "A new harassment report has been submitted. Reference: {$report->reference_number}"
-                ));
+                AdminNotification::create([
+                    'admin_id' => $admin->id,
+                    'type' => 'info',
+                    'title' => 'New Harassment Report',
+                    'message' => "A new harassment report has been submitted. Reference: {$report->reference_number}",
+                    'data' => [
+                        'report_id' => $report->id,
+                        'reference_number' => $report->reference_number,
+                    ],
+                ]);
             }
 
             DB::commit();
@@ -114,13 +122,19 @@ class HarassmentReportController extends Controller
                 'status'               => 'pending'
             ]);
 
-            // Notify all admins using Laravel's notification system
-            $admins = User::where('role', 'admin')->get();
+            // Notify all admins in the admin_notifications table
+            $admins = Admin::all();
             foreach ($admins as $admin) {
-                $admin->notify(new NewNotification(
-                    'New Anonymous Report',
-                    "A new anonymous harassment report has been submitted. Reference: {$report->reference_number}"
-                ));
+                AdminNotification::create([
+                    'admin_id' => $admin->id,
+                    'type' => 'info',
+                    'title' => 'New Anonymous Report',
+                    'message' => "A new anonymous harassment report has been submitted. Reference: {$report->reference_number}",
+                    'data' => [
+                        'report_id' => $report->id,
+                        'reference_number' => $report->reference_number,
+                    ],
+                ]);
             }
 
             DB::commit();

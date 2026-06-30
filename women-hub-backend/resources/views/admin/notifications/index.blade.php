@@ -112,6 +112,8 @@
     </div>
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
     function markAsRead(notificationId) {

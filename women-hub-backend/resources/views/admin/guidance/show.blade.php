@@ -44,13 +44,13 @@
                     
                     <div class="flex gap-2">
                         @if($content->status === 'unpublished')
-                            <a href="{{ route('admin.guidance.publish', $content->id) }}" class="px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--light-teal); color: var(--teal-green);">
+                            <button onclick="publishContent({{ $content->id }})" class="px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--light-teal); color: var(--teal-green);">
                                 <i class="fas fa-check mr-1"></i> Publish
-                            </a>
+                            </button>
                         @else
-                            <a href="{{ route('admin.guidance.unpublish', $content->id) }}" class="px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--light-orange); color: var(--orange);">
+                            <button onclick="unpublishContent({{ $content->id }})" class="px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--light-orange); color: var(--orange);">
                                 <i class="fas fa-times mr-1"></i> Unpublish
-                            </a>
+                            </button>
                         @endif
                         
                         <button onclick="deleteContent({{ $content->id }}, '{{ Str::limit($content->title, 30) }}')" class="px-4 py-2 rounded-lg font-medium transition hover:opacity-90" style="background: var(--light-red); color: var(--red);">
@@ -121,6 +121,46 @@
 <script>
 let deleteContentId = null;
 let deleteContentTitle = '';
+
+function publishContent(id) {
+    fetch(`/admin/guidance/${id}/publish`, {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Failed to publish content', 'error');
+        }
+    })
+    .catch(() => showNotification('Failed to publish content', 'error'));
+}
+
+function unpublishContent(id) {
+    fetch(`/admin/guidance/${id}/unpublish`, {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Failed to unpublish content', 'error');
+        }
+    })
+    .catch(() => showNotification('Failed to unpublish content', 'error'));
+}
 
 function deleteContent(id, title) {
     deleteContentId = id;

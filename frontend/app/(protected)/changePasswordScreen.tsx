@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-paper";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { changePassword } from "../../services/api";
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -46,14 +47,21 @@ export default function ChangePassword() {
 
     try {
       setLoading(true);
-      //Replace with your actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
+      await changePassword(currentPassword, newPassword, confirmPassword);
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
       Alert.alert("Success", "Your password has been updated.", [
         { text: "Done", onPress: () => router.back() }
       ]);
-    } catch (error) {
-      Alert.alert("Error", "Could not update password. Try again.");
+    } catch (error: any) {
+      const message = error?.response?.data?.message ||
+                      error?.response?.data?.errors?.current_password?.[0] ||
+                      error?.message ||
+                      "Could not update password. Try again.";
+      Alert.alert("Error", message.toString());
     } finally {
       setLoading(false);
     }

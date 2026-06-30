@@ -263,16 +263,16 @@ const getBaseURL = (): string => {
     console.log('📱 Platform:', Platform.OS);
 
     if (Platform.OS === 'android') {
-      return `http://192.168.1.132:8000/api/v1`;
+      return `http://192.168.127.205:8000/api/v1`;
     }
 
     if (Platform.OS === 'ios') {
-      return `http://192.168.38.205:8000/api/v1`;
+      return `http://192.168.127.205:8000/api/v1`;
     }
 
-    return `http://192.168.1.132:8000/api/v1`;
+    return `http://192.168.127.205:8000/api/v1`;
   } else {
-    return 'http://192.168.1.132:8000/api/v1';
+    return 'http://192.168.127.205:8000/api/v1';
   }
 };
 
@@ -378,7 +378,6 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
     if (response.data.token) {
       await AsyncStorage.setItem('token', response.data.token);
     }
-
     return response.data;
   } catch (error: any) {
     console.error('❌ Registration error:', error.message);
@@ -402,6 +401,20 @@ export const registerUser = async (userData: RegisterData): Promise<LoginRespons
     throw error;
   }
 };
+
+  // Change mentor password
+  export const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string
+  ) => {
+    const response = await api.put('/mentor/settings/security', {
+      current_password: currentPassword,
+      new_password: newPassword,
+      new_password_confirmation: newPasswordConfirmation,
+    });
+    return response.data;
+  };
 
 // User Login
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {

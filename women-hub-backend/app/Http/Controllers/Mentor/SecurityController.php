@@ -194,6 +194,8 @@ public function showAppointments()
 
         $data['mentorPasswordUpdatedDate'] = $mentor->updated_at->format('d F Y');
         $data['mentorPasswordUpdatedTime'] = $mentor->updated_at->format('H:i:s A');
+        // expose availability flag for the view
+        $data['mentorAvailable'] = $mentor->is_available;
 
         return view('mentor.settings.security.index', $data);
     }

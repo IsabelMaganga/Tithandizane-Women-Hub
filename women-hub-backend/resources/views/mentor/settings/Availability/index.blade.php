@@ -41,7 +41,7 @@
             --sidebar-text:      #6b7280;
             --sidebar-text-bold: #1e1b38;
             --sidebar-border:    #e5e2f0;
-            --sidebar-accent:    #7c3aed;
+            --sidebar-accent:   #7c3aed ;
             --bg-primary:        #f5f4f9;
             --bg-secondary:      #ffffff;
             --card-bg:           #ffffff;

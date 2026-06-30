@@ -846,7 +846,8 @@
         const actions = {
             'delete': { confirm: `Delete ${selectedUsers.length} user(s)?`, method: 'DELETE', url: '/admin/users/' },
             'active': { confirm: `Activate ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' },
-            'inactive': { confirm: `Deactivate ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' }
+            'inactive': { confirm: `Deactivate ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' },
+            'banned': { confirm: `Ban ${selectedUsers.length} user(s)?`, method: 'PUT', url: '/admin/users/' }
         };
         
         const config = actions[action];

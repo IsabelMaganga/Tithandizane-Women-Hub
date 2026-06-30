@@ -47,7 +47,7 @@ class NotificationController extends Controller
         $admin = Auth::guard('admin')->user();
         $count = $admin->unreadNotifications()->count();
         
-        return response()->json(['count' => $count]);
+        return response()->json(['unread_count' => $count]);
     }
 
     /**
